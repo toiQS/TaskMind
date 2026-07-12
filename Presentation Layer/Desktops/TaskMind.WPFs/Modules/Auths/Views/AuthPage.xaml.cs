@@ -21,6 +21,7 @@ namespace TaskMind.WPFs.Modules.Auths.Views
         public AuthPage()
         {
             InitializeComponent();
+            DataContext = new AuthPage();
         }
     }
 }

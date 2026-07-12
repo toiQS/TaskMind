@@ -3,7 +3,7 @@
                     xmlns:authVM="clr-namespace:TaskMind.WPFs.Modules.Auths.ViewModels" 
                     xmlns:authView="clr-namespace:TaskMind.WPFs.Modules.Auths.Views">
 
-    <DataTemplate DataType="{x:Type authVM: LoginVM}">
+    <DataTemplate DataType="{x:Type authVM:LoginVM}">
         <authView:LoginView/>
     </DataTemplate>
 </ResourceDictionary>
