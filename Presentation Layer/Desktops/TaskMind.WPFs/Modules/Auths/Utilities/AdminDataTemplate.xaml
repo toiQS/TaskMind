@@ -1,0 +1,9 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+                    xmlns:authVM="clr-namespace:TaskMind.WPFs.Modules.Auths.ViewModels" 
+                    xmlns:authView="clr-namespace:TaskMind.WPFs.Modules.Auths.Views">
+
+    <DataTemplate DataType="{x:Type authVM: LoginVM}">
+        <authView:LoginView/>
+    </DataTemplate>
+</ResourceDictionary>

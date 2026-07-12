@@ -13,4 +13,27 @@
     <PackageReference Include="WPF-UI" Version="4.3.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Modules\Admins\Models\" />
+    <Folder Include="Modules\Admins\" />
+    <Folder Include="Modules\Auths\Models\" />
+    <Folder Include="Modules\Companies\Models\" />
+    <Folder Include="Modules\Companies\ViewModels\" />
+    <Folder Include="Modules\Companies\Views\" />
+    <Folder Include="Modules\Schools\Models\" />
+    <Folder Include="Modules\Schools\ViewModels\" />
+    <Folder Include="Modules\Schools\Views\" />
+    <Folder Include="Modules\Staffs\Models\" />
+    <Folder Include="Modules\Staffs\ViewModels\" />
+    <Folder Include="Modules\Staffs\Views\" />
+    <Folder Include="Modules\Teachers\Models\" />
+    <Folder Include="Modules\Teachers\ViewModels\" />
+    <Folder Include="Modules\Teachers\Views\" />
+    <Folder Include="Modules\Admins\ViewModels\" />
+    <Folder Include="Modules\Admins\Views\" />
+    <Folder Include="Modules\Users\Models\" />
+    <Folder Include="Modules\Users\ViewModels\" />
+    <Folder Include="Modules\Users\Views\" />
+  </ItemGroup>
+
 </Project>

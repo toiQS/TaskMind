@@ -5,8 +5,18 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TaskMind.WPFs"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-
-    </Grid>
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        Background="Transparent"
+        AllowsTransparency="True"
+        ResizeMode="CanResizeWithGrip"
+        MinHeight="400"
+        MinWidth="600"
+        Height="700" Width="1350">
+    <Border Background="#282D33" BorderBrush="#3A4149" BorderThickness="5" CornerRadius="8,8,0,8">
+        <Grid Margin="5">
+            <ContentControl x:Name="Pages" Margin="10" 
+                                Content="{Binding CurrentView}"/>
+        </Grid>
+    </Border>
 </Window>
