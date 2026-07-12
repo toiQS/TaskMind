@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TaskMind.WPFs"
-        xmlns:vm="clr-namespace:TaskMind.WPFs.Modules.Auths.ViewModels"
+        xmlns:vm="clr-namespace:TaskMind.WPFs.Modules"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None"
