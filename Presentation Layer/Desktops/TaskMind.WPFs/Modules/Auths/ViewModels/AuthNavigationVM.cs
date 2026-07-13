@@ -21,14 +21,11 @@ namespace TaskMind.WPFs.Modules.Auths.ViewModels
         public ICommand ForgotPasswordCommand { get; set; }
 
         public void Login(object obj) => AuthCurrentView = new LoginVM();
-        public void Register(object obj) => AuthCurrentView = new RegisterVM();
-        public void ForgotPassword(object obj) => AuthCurrentView = new ForgotPasswordVM();
+        
 
         public AuthNavigationVM()
         {
             LoginCommand = new RelayCommand(Login);
-            RegisterCommand = new RelayCommand(Register);
-            ForgotPasswordCommand = new RelayCommand(ForgotPassword);
 
             AuthCurrentView = new LoginVM();
         }

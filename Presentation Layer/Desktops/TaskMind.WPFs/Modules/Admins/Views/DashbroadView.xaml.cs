@@ -11,14 +11,14 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace TaskMind.WPFs.Modules.Auths.Views
+namespace TaskMind.WPFs.Modules.Admins.Views
 {
     /// <summary>
-    /// Interaction logic for ForgotPasswordView.xaml
+    /// Interaction logic for DashbroadView.xaml
     /// </summary>
-    public partial class ForgotPasswordView : UserControl
+    public partial class DashbroadView : UserControl
     {
-        public ForgotPasswordView()
+        public DashbroadView()
         {
             InitializeComponent();
         }

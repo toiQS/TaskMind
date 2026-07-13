@@ -11,14 +11,14 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace TaskMind.WPFs.Modules.Auths.Views
+namespace TaskMind.WPFs.Modules.Admins.Views
 {
     /// <summary>
-    /// Interaction logic for RegisterView.xaml
+    /// Interaction logic for AdminPage.xaml
     /// </summary>
-    public partial class RegisterView : UserControl
+    public partial class AdminPage : Page
     {
-        public RegisterView()
+        public AdminPage()
         {
             InitializeComponent();
         }

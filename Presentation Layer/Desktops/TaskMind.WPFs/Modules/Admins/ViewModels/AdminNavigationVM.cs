@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace TaskMind.WPFs.Modules.Auths.ViewModels
+namespace TaskMind.WPFs.Modules.Admins.ViewModels
 {
-    public class ForgotPasswordVM
+    internal class AdminNavigation
     {
     }
 }

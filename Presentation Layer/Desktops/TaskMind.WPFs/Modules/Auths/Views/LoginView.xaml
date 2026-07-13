@@ -12,17 +12,77 @@
             <ColumnDefinition Width="2*"/>
             <ColumnDefinition Width="3*"/>
         </Grid.ColumnDefinitions>
-        <StackPanel Grid.Column="0">
-            <Image Source="/Images/logo.png" Height="250" Width="200" Margin="0,50,0,0"/>
-            <TextBlock Text="TaskMind" Foreground="White" FontSize="50" Width="210"/>
-        </StackPanel>
-        <Grid Grid.Column="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="7*"/>
-                <RowDefinition Height="2*"/>
-            </Grid.RowDefinitions>
-            <StackPanel Grid.Row="0">
-                
+
+        <!-- Cột trái: Logo / Branding -->
+        <Border Grid.Column="0" Background="#20242A">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Image Source="/Images/logo.png" Height="180" Width="180" Margin="0,0,0,20"/>
+                <TextBlock Text="TaskMind" Foreground="White" FontSize="34" FontWeight="Bold" HorizontalAlignment="Center"/>
+                <TextBlock Text="Quản lý công việc thông minh" Foreground="#8A93A0" FontSize="14"
+                           HorizontalAlignment="Center" Margin="0,8,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Cột phải: Form đăng nhập -->
+        <Grid Grid.Column="1" Margin="60,0">
+            <StackPanel VerticalAlignment="Center">
+
+                <TextBlock Text="Đăng nhập" Foreground="White" FontSize="30" FontWeight="SemiBold"/>
+                <TextBlock Text="Chào mừng bạn quay lại!" Foreground="#8A93A0" FontSize="14" Margin="0,4,0,32"/>
+
+                <TextBlock Text="Email" Foreground="#C7CDD6" FontSize="13" Margin="0,0,0,6"/>
+                <ui:TextBox Icon="{ui:SymbolIcon Mail24}"
+                            PlaceholderText="you@example.com"
+                            Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}"
+                            Height="44" Margin="0,0,0,18"/>
+
+                <TextBlock Text="Mật khẩu" Foreground="#C7CDD6" FontSize="13" Margin="0,0,0,6"/>
+                <ui:PasswordBox Icon="{ui:SymbolIcon LockClosed24}"
+                                PlaceholderText="Nhập mật khẩu"
+                                Password="{Binding Password, UpdateSourceTrigger=PropertyChanged}"
+                                Height="44" Margin="0,0,0,10"/>
+
+                <Grid Margin="0,0,0,26">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <CheckBox Grid.Column="0" Content="Ghi nhớ đăng nhập"
+                              Foreground="#C7CDD6"
+                              IsChecked="{Binding RememberMe}"
+                              VerticalAlignment="Center"/>
+
+                    <TextBlock Grid.Column="1" Text="Quên mật khẩu?"
+                               Foreground="#4C9AFF" Cursor="Hand"
+                               VerticalAlignment="Center">
+                        <TextBlock.InputBindings>
+                            <MouseBinding MouseAction="LeftClick"
+                                          Command="{Binding DataContext.ForgotPasswordCommand,
+                                                    RelativeSource={RelativeSource AncestorType=Page}}"/>
+                        </TextBlock.InputBindings>
+                    </TextBlock>
+                </Grid>
+
+                <ui:Button Content="Đăng nhập"
+                           Appearance="Primary"
+                           HorizontalAlignment="Stretch"
+                           HorizontalContentAlignment="Center"
+                           Height="46"
+                           FontSize="15" FontWeight="SemiBold"
+                           Command="{Binding LoginCommand}"/>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,26,0,0">
+                    <TextBlock Text="Chưa có tài khoản? " Foreground="#8A93A0"/>
+                    <TextBlock Text="Đăng ký ngay" Foreground="#4C9AFF" Cursor="Hand" FontWeight="SemiBold">
+                        <TextBlock.InputBindings>
+                            <MouseBinding MouseAction="LeftClick"
+                                          Command="{Binding DataContext.RegisterCommand,
+                                                    RelativeSource={RelativeSource AncestorType=Page}}"/>
+                        </TextBlock.InputBindings>
+                    </TextBlock>
+                </StackPanel>
+
             </StackPanel>
         </Grid>
     </Grid>

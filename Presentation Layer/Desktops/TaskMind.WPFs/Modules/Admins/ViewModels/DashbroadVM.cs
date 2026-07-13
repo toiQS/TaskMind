@@ -4,7 +4,7 @@ using System.Text;
 
 namespace TaskMind.WPFs.Modules.Auths.ViewModels
 {
-    public class RegisterVM
+    public class DashbroadVM
     {
     }
 }

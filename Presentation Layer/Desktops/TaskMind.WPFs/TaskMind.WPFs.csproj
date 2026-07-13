@@ -32,7 +32,6 @@
   <ItemGroup>
     <Folder Include="Modules\Admins\Models\" />
     <Folder Include="Modules\Admins\" />
-    <Folder Include="Modules\Auths\Models\" />
     <Folder Include="Modules\Companies\Models\" />
     <Folder Include="Modules\Companies\ViewModels\" />
     <Folder Include="Modules\Companies\Views\" />
