@@ -5,7 +5,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Documents;
 using System.Windows.Markup;
 
-namespace TaskMind.WPFs.Modules.Auths.Models
+namespace TaskMind.WPFs.Modules.Admins.Models
 {
     public class DashBroadModel
     {

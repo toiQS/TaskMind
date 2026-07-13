@@ -4,7 +4,7 @@ using System.Text;
 
 namespace TaskMind.WPFs.Modules.Admins.ViewModels
 {
-    internal class AdminNavigation
+    internal class AdminNavigationVM
     {
     }
 }
