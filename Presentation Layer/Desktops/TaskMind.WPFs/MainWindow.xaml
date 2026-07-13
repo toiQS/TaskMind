@@ -20,7 +20,7 @@
     </Window.DataContext>
     <Border Background="#282D33" BorderBrush="#3A4149" BorderThickness="5" CornerRadius="8,8,0,8">
         <Grid Margin="5">
-            <ContentControl x:Name="Pages" Margin="10" 
+            <Frame x:Name="Pages" Margin="10" 
                                 Content="{Binding CurrentView}"/>
         </Grid>
     </Border>

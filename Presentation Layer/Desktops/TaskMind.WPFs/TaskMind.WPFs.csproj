@@ -9,6 +9,22 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Images\back.png" />
+    <None Remove="Images\business.png" />
+    <None Remove="Images\exam.png" />
+    <None Remove="Images\img_home.png" />
+    <None Remove="Images\img_setting.png" />
+    <None Remove="Images\logo.png" />
+    <None Remove="Images\profile.png" />
+    <None Remove="Images\project.png" />
+    <None Remove="Images\shutdown_def.png" />
+    <None Remove="Images\shutdown_mo.png" />
+    <None Remove="Images\skill.png" />
+    <None Remove="Images\teacher.png" />
+    <None Remove="Images\user.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="WPF-UI" Version="4.3.0" />
   </ItemGroup>
@@ -34,6 +50,22 @@
     <Folder Include="Modules\Users\Models\" />
     <Folder Include="Modules\Users\ViewModels\" />
     <Folder Include="Modules\Users\Views\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Images\back.png" />
+    <Resource Include="Images\business.png" />
+    <Resource Include="Images\exam.png" />
+    <Resource Include="Images\img_home.png" />
+    <Resource Include="Images\img_setting.png" />
+    <Resource Include="Images\logo.png" />
+    <Resource Include="Images\profile.png" />
+    <Resource Include="Images\project.png" />
+    <Resource Include="Images\shutdown_def.png" />
+    <Resource Include="Images\shutdown_mo.png" />
+    <Resource Include="Images\skill.png" />
+    <Resource Include="Images\teacher.png" />
+    <Resource Include="Images\user.png" />
   </ItemGroup>
 
 </Project>
