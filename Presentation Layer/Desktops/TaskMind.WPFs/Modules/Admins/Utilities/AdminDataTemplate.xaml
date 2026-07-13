@@ -30,5 +30,12 @@
         <adminView:ProfitView/>
     </DataTemplate>
     
+    <DataTemplate DataType="{x:Type adminVM:AdminNavigationVM}">
+        <adminView:AdminPage/>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type adminVM:ReportVM}">
+        <adminView:ReportView/>
+    </DataTemplate>
     
 </ResourceDictionary>

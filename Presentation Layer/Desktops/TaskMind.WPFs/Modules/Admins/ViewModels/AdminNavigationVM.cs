@@ -27,6 +27,7 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
         public ICommand SchoolCommand { get; set; }
         public ICommand ProfitCommand { get; set; }
         public ICommand SkillCommand { get; set; }
+        public ICommand ReportCommand {  get; set; }
 
         private void Dashbroad(object obj) => AdminCurrentView = new DashbroadVM();
         private void User(object obj) => AdminCurrentView = new UserVM();
@@ -35,6 +36,7 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
         private void Company(object obj) => AdminCurrentView = new CompanyVM();
         private void School(object obj) => AdminCurrentView = new SchoolVM();
         private void Profit(object obj) => AdminCurrentView = new ProfitVM();
+        private void Report(object obj) => AdminCurrentView = new ReportVM();
 
 
         public AdminNavigationVM()
@@ -46,6 +48,7 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
             SchoolCommand = new RelayCommand(School);
             ProfitCommand = new RelayCommand(Profit);
             SkillCommand = new RelayCommand(Skill);
+            ReportCommand = new RelayCommand(Report);
 
             AdminCurrentView = new DashbroadVM();
         }
