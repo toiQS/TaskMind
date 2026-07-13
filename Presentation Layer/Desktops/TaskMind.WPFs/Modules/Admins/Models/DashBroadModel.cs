@@ -9,11 +9,11 @@ namespace TaskMind.WPFs.Modules.Admins.Models
 {
     public class DashBroadModel
     {
-        public DashbroadStatistic Statistic = new DashbroadStatistic();
-        public List<TodoModel> TodoList = new List<TodoModel>();
+        public DashbroadStatistic Statistic { get; set; } = new DashbroadStatistic();
+        public List<TodoModel> TodoList { get; set; } = new List<TodoModel>();
 
-
-        ///line chart
+        /// Dữ liệu cho line chart (ví dụ: tăng trưởng người dùng/doanh thu theo tháng)
+        public List<ChartPoint> RevenueChart { get; set; } = new List<ChartPoint>();
     }
 
     public class TodoModel
@@ -23,11 +23,20 @@ namespace TaskMind.WPFs.Modules.Admins.Models
         public int PriorityLevel { get; set; }
     }
 
+    /// <summary>
+    /// Một điểm dữ liệu trên line chart (ví dụ: tháng - giá trị)
+    /// </summary>
+    public class ChartPoint
+    {
+        public string Label { get; set; }
+        public double Value { get; set; }
+    }
+
     public class DashbroadStatistic
     {
         public int CountAllUsers { get; set; }
         public int CountNewUsers { get; set; }
-        public int CountAllProject {  get; set; }
+        public int CountAllProject { get; set; }
         public int CountNewProjects { get; set; }
         public int CountAllCompanies { get; set; }
         public int CountNewCompanies { get; set; }

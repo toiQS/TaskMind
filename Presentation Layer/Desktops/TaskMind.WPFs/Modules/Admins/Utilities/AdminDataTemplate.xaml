@@ -1,0 +1,34 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+                    xmlns:adminVM="clr-namespace:TaskMind.WPFs.Modules.Admins.ViewModels"
+                    xmlns:adminView="clr-namespace:TaskMind.WPFs.Modules.Admins.Views">
+    <DataTemplate DataType="{x:Type adminVM:DashbroadVM}">
+        <adminView:DashbroadView/>
+    </DataTemplate>
+    
+    <DataTemplate DataType="{x:Type adminVM:UserVM}">
+        <adminView:UserView/>
+    </DataTemplate>
+    
+    <DataTemplate DataType="{x:Type adminVM:ProfileVM}">
+        <adminView:ProfileView/>
+    </DataTemplate>
+    
+    <DataTemplate DataType="{x:Type adminVM:CompanyVM}">
+        <adminView:CompanyView/>
+    </DataTemplate>
+    
+    <DataTemplate DataType="{x:Type adminVM:SchoolVM}">
+        <adminView:SchoolView/>
+    </DataTemplate>
+    
+    <DataTemplate DataType="{x:Type adminVM:SkillVM}">
+        <adminView:SkillView/>
+    </DataTemplate>
+    
+    <DataTemplate DataType="{x:Type adminVM:ProfitVM}">
+        <adminView:ProfitView/>
+    </DataTemplate>
+    
+    
+</ResourceDictionary>

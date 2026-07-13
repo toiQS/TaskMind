@@ -6,8 +6,223 @@
              xmlns:local="clr-namespace:TaskMind.WPFs.Modules.Admins.Views"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
-            
-    </Grid>
+             d:DesignHeight="650" d:DesignWidth="1000"
+             Background="Transparent">
+
+    <UserControl.Resources>
+
+        <Style x:Key="StatCard" TargetType="Border">
+            <Setter Property="Background" Value="#2B3036"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="18,14"/>
+            <Setter Property="Margin" Value="0,0,14,14"/>
+            <Setter Property="Width" Value="196"/>
+        </Style>
+
+        <Style x:Key="StatLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#8A93A0"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+
+        <Style x:Key="StatValue" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="26"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Margin" Value="0,4,0,0"/>
+        </Style>
+
+        <Style x:Key="StatDelta" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#3FD07A"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Margin" Value="0,2,0,0"/>
+        </Style>
+
+        <Style x:Key="SectionCard" TargetType="Border">
+            <Setter Property="Background" Value="#2B3036"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="20"/>
+        </Style>
+
+        <Style x:Key="SectionTitle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+        </Style>
+
+        <Style x:Key="TodoItemCard" TargetType="Border">
+            <Setter Property="Background" Value="#20242A"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+        </Style>
+
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Margin="24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="360"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Grid Grid.Row="0" Margin="0,0,0,20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="Dashboard" Foreground="White" FontSize="26" FontWeight="Bold"/>
+                    <TextBlock Text="Tổng quan hệ thống" Foreground="#8A93A0" FontSize="13" Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <ui:Button Grid.Column="1"
+                           Content="Làm mới"
+                           Appearance="Secondary"
+                           Icon="{ui:SymbolIcon ArrowSync24}"
+                           Command="{Binding RefreshCommand}"
+                           VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- Stat cards -->
+            <ItemsControl Grid.Row="1">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.Items>
+
+                    <Border Style="{StaticResource StatCard}">
+                        <StackPanel>
+                            <TextBlock Text="Người dùng" Style="{StaticResource StatLabel}"/>
+                            <TextBlock Text="{Binding Statistic.CountAllUsers}" Style="{StaticResource StatValue}"/>
+                            <TextBlock Style="{StaticResource StatDelta}">
+                                <Run Text="+"/><Run Text="{Binding Statistic.CountNewUsers, Mode=OneWay}"/><Run Text=" mới"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource StatCard}">
+                        <StackPanel>
+                            <TextBlock Text="Dự án" Style="{StaticResource StatLabel}"/>
+                            <TextBlock Text="{Binding Statistic.CountAllProject}" Style="{StaticResource StatValue}"/>
+                            <TextBlock Style="{StaticResource StatDelta}">
+                                <Run Text="+"/><Run Text="{Binding Statistic.CountNewProjects, Mode=OneWay}"/><Run Text=" mới"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource StatCard}">
+                        <StackPanel>
+                            <TextBlock Text="Công ty" Style="{StaticResource StatLabel}"/>
+                            <TextBlock Text="{Binding Statistic.CountAllCompanies}" Style="{StaticResource StatValue}"/>
+                            <TextBlock Style="{StaticResource StatDelta}">
+                                <Run Text="+"/><Run Text="{Binding Statistic.CountNewCompanies, Mode=OneWay}"/><Run Text=" mới"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource StatCard}">
+                        <StackPanel>
+                            <TextBlock Text="Cơ sở đào tạo" Style="{StaticResource StatLabel}"/>
+                            <TextBlock Text="{Binding Statistic.CountAllSchools}" Style="{StaticResource StatValue}"/>
+                            <TextBlock Style="{StaticResource StatDelta}">
+                                <Run Text="+"/><Run Text="{Binding Statistic.CountNewSchools, Mode=OneWay}"/><Run Text=" mới"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource StatCard}">
+                        <StackPanel>
+                            <TextBlock Text="Giảng viên" Style="{StaticResource StatLabel}"/>
+                            <TextBlock Text="{Binding Statistic.CountAllTeachers}" Style="{StaticResource StatValue}"/>
+                            <TextBlock Style="{StaticResource StatDelta}">
+                                <Run Text="+"/><Run Text="{Binding Statistic.CountNewTeacher, Mode=OneWay}"/><Run Text=" mới"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource StatCard}">
+                        <StackPanel>
+                            <TextBlock Text="Nhân viên" Style="{StaticResource StatLabel}"/>
+                            <TextBlock Text="{Binding Statistic.CountAllStaff}" Style="{StaticResource StatValue}"/>
+                            <TextBlock Style="{StaticResource StatDelta}">
+                                <Run Text="+"/><Run Text="{Binding Statistic.CountNewStaff, Mode=OneWay}"/><Run Text=" mới"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                </ItemsControl.Items>
+            </ItemsControl>
+
+            <!-- Chart + Todo -->
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="14"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Line chart tự vẽ (không cần thư viện ngoài) -->
+                <Border Grid.Column="0" Style="{StaticResource SectionCard}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Text="Tăng trưởng theo tháng" Style="{StaticResource SectionTitle}"/>
+
+                        <Viewbox Grid.Row="1" Stretch="Fill">
+                            <Canvas Width="600" Height="160">
+                                <Path Data="{Binding ChartGeometry}"
+                                      Stroke="#4C9AFF"
+                                      StrokeThickness="3"
+                                      StrokeLineJoin="Round"
+                                      StrokeStartLineCap="Round"
+                                      StrokeEndLineCap="Round"/>
+                            </Canvas>
+                        </Viewbox>
+                    </Grid>
+                </Border>
+
+                <!-- Todo list -->
+                <Border Grid.Column="2" Style="{StaticResource SectionCard}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Text="Việc cần xử lý" Style="{StaticResource SectionTitle}"/>
+
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding TodoList}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource TodoItemCard}">
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Name}"
+                                                           Foreground="#DBDBDB"
+                                                           FontSize="13"
+                                                           TextWrapping="Wrap"/>
+                                                <TextBlock Foreground="#8A93A0" FontSize="11" Margin="0,4,0,0">
+                                                    <Run Text="Ưu tiên: "/><Run Text="{Binding PriorityLevel}"/>
+                                                </TextBlock>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+
+            </Grid>
+        </Grid>
+    </ScrollViewer>
 </UserControl>
