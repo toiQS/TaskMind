@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Controls.Primitives;
-using System.Windows.Documents;
-using System.Windows.Markup;
+﻿using System.Collections.Generic;
 
 namespace TaskMind.WPFs.Modules.Admins.Models
 {
@@ -12,7 +7,9 @@ namespace TaskMind.WPFs.Modules.Admins.Models
         public DashbroadStatistic Statistic { get; set; } = new DashbroadStatistic();
         public List<TodoModel> TodoList { get; set; } = new List<TodoModel>();
 
+        /// <summary>
         /// Dữ liệu cho line chart (ví dụ: tăng trưởng người dùng/doanh thu theo tháng)
+        /// </summary>
         public List<ChartPoint> RevenueChart { get; set; } = new List<ChartPoint>();
     }
 
@@ -20,6 +17,8 @@ namespace TaskMind.WPFs.Modules.Admins.Models
     {
         public string Index { get; set; }
         public string Name { get; set; }
+
+        /// <summary>1 = Cao, 2 = Trung bình, 3 = Thấp</summary>
         public int PriorityLevel { get; set; }
     }
 

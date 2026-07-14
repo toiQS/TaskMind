@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -31,20 +32,34 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
             set { _chartGeometry = value; OnPropertyChanged(); }
         }
 
+        private bool _isBusy;
+        /// <summary>Dùng để hiện ui:ProgressRing khi đang tải/làm mới dữ liệu</summary>
+        public bool IsBusy
+        {
+            get => _isBusy;
+            set { _isBusy = value; OnPropertyChanged(); }
+        }
+
         public ICommand RefreshCommand { get; }
 
         public DashbroadVM()
         {
-            RefreshCommand = new RelayCommand(_ => LoadData());
-            LoadData();
+            RefreshCommand = new RelayCommand(async _ => await LoadDataAsync());
+            _ = LoadDataAsync();
         }
 
         /// <summary>
         /// TODO: thay bằng gọi service/API thực tế lấy dữ liệu Dashboard.
         /// Hiện tại đang seed dữ liệu mẫu để dựng giao diện.
         /// </summary>
-        private void LoadData()
+        private async Task LoadDataAsync()
         {
+            if (IsBusy) return;
+            IsBusy = true;
+
+            // TODO: thay Task.Delay bằng await _dashboardService.GetDataAsync()
+            await Task.Delay(400);
+
             Statistic = new DashbroadStatistic
             {
                 CountAllUsers = 1240,
@@ -68,6 +83,7 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
                 new TodoModel { Index = "2", Name = "Xử lý báo cáo vi phạm", PriorityLevel = 1 },
                 new TodoModel { Index = "3", Name = "Duyệt đề xuất kỹ năng mới", PriorityLevel = 2 },
                 new TodoModel { Index = "4", Name = "Kiểm tra hoá đơn tháng", PriorityLevel = 3 },
+                new TodoModel { Index = "5", Name = "Phản hồi ticket hỗ trợ", PriorityLevel = 2 },
             })
             {
                 TodoList.Add(todo);
@@ -88,6 +104,8 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
             }
 
             ChartGeometry = BuildChartGeometry(RevenueChart, width: 600, height: 160, padding: 12);
+
+            IsBusy = false;
         }
 
         /// <summary>
