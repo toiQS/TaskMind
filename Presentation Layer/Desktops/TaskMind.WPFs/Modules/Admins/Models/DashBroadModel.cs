@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Windows.Automation;
+using System.Windows.Media.Animation;
 
 namespace TaskMind.WPFs.Modules.Admins.Models
 {
@@ -11,6 +13,8 @@ namespace TaskMind.WPFs.Modules.Admins.Models
         /// Dữ liệu cho line chart (ví dụ: tăng trưởng người dùng/doanh thu theo tháng)
         /// </summary>
         public List<ChartPoint> RevenueChart { get; set; } = new List<ChartPoint>();
+
+        public List<NotificationModel> NotificationList { get; set; } = new List<NotificationModel>();
     }
 
     public class TodoModel
@@ -45,5 +49,10 @@ namespace TaskMind.WPFs.Modules.Admins.Models
         public int CountNewTeacher { get; set; }
         public int CountAllStaff { get; set; }
         public int CountNewStaff { get; set; }
+    }
+
+    public class NotificationModel
+    {
+        
     }
 }
