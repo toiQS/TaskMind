@@ -186,9 +186,9 @@
                                         </Grid>
 
                                         <TextBlock Foreground="#8A93A0" FontSize="11" Margin="0,4,0,0">
-                                            <Run Text="{Binding ViolationType, Converter={StaticResource ViolationText}, Mode=OneWay}"/>
-                                            <Run Text=" · "/>
-                                            <Run Text="{Binding EntityTypeText, Mode=OneWay}"/>
+                                           <Run Text="{Binding ViolationType, Converter={StaticResource ViolationText}, Mode=OneWay}"/>
+                                           <Run Text=" · "/>
+                                           <Run Text="{Binding ReportedEntityType, Converter={StaticResource EntityTypeText}, Mode=OneWay}"/>  
                                         </TextBlock>
 
                                         <TextBlock Text="{Binding Description}" Foreground="#8A93A0" FontSize="11"
