@@ -17,27 +17,36 @@
         
         <!--thanh menu-->
         <StackPanel Grid.Column="0" CanHorizontallyScroll="True">
-            <!--Dashbroad-->
-            <!--School
-            Company
-            Staff
-            Teacher
-            User
-            Skill
-            Setting
-            Profile-->
-        </StackPanel>
-        <Grid Grid.Column="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="3*"/>
-                <RowDefinition Height="20*"/>
-            </Grid.RowDefinitions>
-
-            <Grid Grid.Row="0" Height="70">
-                
-                <!--chứa nút thoát hệ thống (close)-->
+            <Grid>
+                <Image Source="/Images/logo.png"/>
             </Grid>
-            <ContentControl Grid.Row="1" Content="{Binding AdminCurrentView}" x:Name="AdminPages"/>
-        </Grid>
+            <Grid>
+                
+                <!--thẻ menu-->
+               <!--
+                   Dashbroad
+                   Chat
+                   Company
+                   Handler
+                   profile
+                   Profit
+                   Report
+                   School
+                   Skill
+                   User
+                -->
+               
+               
+            </Grid>
+            <Grid>
+                <!--button đăng xuât hệ thông--> 
+                <!--button thoát và đăng xuất hệ thống-->
+            </Grid>
+            
+        </StackPanel>
+        
+          
+        <ContentControl Grid.Column="1" Content="{Binding AdminCurrentView}" x:Name="AdminPages"/>
+        
     </Grid>
 </Page>

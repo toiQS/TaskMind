@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -22,6 +23,23 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
 
         public ObservableCollection<ChartPoint> RevenueChart { get; } = new ObservableCollection<ChartPoint>();
 
+        /// <summary>Danh sách thông báo hệ thống, mới nhất lên đầu.</summary>
+        public ObservableCollection<NotificationModel> Notifications { get; } = new ObservableCollection<NotificationModel>();
+
+        /// <summary>Số thông báo chưa đọc, dùng để hiện badge trên chuông thông báo.</summary>
+        public int UnreadCount => Notifications.Count(n => !n.IsRead);
+
+        /// <summary>true khi có ít nhất 1 thông báo chưa đọc, dùng để ẩn/hiện badge.</summary>
+        public bool HasUnread => UnreadCount > 0;
+
+        private bool _isNotificationPanelOpen;
+        /// <summary>Đóng/mở dropdown danh sách thông báo khi bấm chuông.</summary>
+        public bool IsNotificationPanelOpen
+        {
+            get => _isNotificationPanelOpen;
+            set { _isNotificationPanelOpen = value; OnPropertyChanged(); }
+        }
+
         private Geometry _chartGeometry = Geometry.Empty;
         /// <summary>
         /// Đường line chart đã được dựng sẵn (Path.Data bind trực tiếp vào đây)
@@ -41,10 +59,17 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
         }
 
         public ICommand RefreshCommand { get; }
+        public ICommand ToggleNotificationPanelCommand { get; }
+        public ICommand MarkAsReadCommand { get; }
+        public ICommand MarkAllAsReadCommand { get; }
 
         public DashbroadVM()
         {
             RefreshCommand = new RelayCommand(async _ => await LoadDataAsync());
+            ToggleNotificationPanelCommand = new RelayCommand(_ => IsNotificationPanelOpen = !IsNotificationPanelOpen);
+            MarkAsReadCommand = new RelayCommand(MarkAsRead);
+            MarkAllAsReadCommand = new RelayCommand(_ => MarkAllAsRead());
+
             _ = LoadDataAsync();
         }
 
@@ -105,7 +130,61 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
 
             ChartGeometry = BuildChartGeometry(RevenueChart, width: 600, height: 160, padding: 12);
 
+            // TODO: thay bằng gọi service/API thực tế lấy thông báo hệ thống của Admin đang đăng nhập.
+            Notifications.Clear();
+            foreach (var n in new[]
+            {
+                new NotificationModel { Id = "N001", Title = "Công ty mới chờ duyệt", Message = "CloudBase JSC vừa đăng ký, cần Admin kiểm duyệt.", Type = NotificationType.Approval, CreatedDate = DateTime.Now.AddMinutes(-15), IsRead = false },
+                new NotificationModel { Id = "N002", Title = "Cơ sở đào tạo mới chờ duyệt", Message = "DevMaster Institute vừa gửi yêu cầu tham gia hệ thống.", Type = NotificationType.Approval, CreatedDate = DateTime.Now.AddHours(-2), IsRead = false },
+                new NotificationModel { Id = "N003", Title = "Cảnh báo vi phạm", Message = "Tài khoản anh.vu@spam.net bị báo cáo spam nhiều lần.", Type = NotificationType.Warning, CreatedDate = DateTime.Now.AddHours(-5), IsRead = false },
+                new NotificationModel { Id = "N004", Title = "Đề xuất kỹ năng mới", Message = "FUNiX Academy đề xuất thêm kỹ năng \"Tư duy phản biện\".", Type = NotificationType.System, CreatedDate = DateTime.Now.AddDays(-1), IsRead = true },
+                new NotificationModel { Id = "N005", Title = "Đổi mật khẩu thành công", Message = "Mật khẩu quản trị viên đã được cập nhật.", Type = NotificationType.Success, CreatedDate = DateTime.Now.AddDays(-2), IsRead = true },
+            })
+            {
+                Notifications.Add(n);
+            }
+            RaiseNotificationSummaryChanged();
+
             IsBusy = false;
+        }
+
+        private void MarkAsRead(object obj)
+        {
+            if (obj is NotificationModel notification && !notification.IsRead)
+            {
+                notification.IsRead = true;
+                // TODO: gọi service PUT /notifications/{id}/read
+                Touch(notification);
+                RaiseNotificationSummaryChanged();
+            }
+        }
+
+        private void MarkAllAsRead()
+        {
+            foreach (var n in Notifications.Where(x => !x.IsRead).ToList())
+            {
+                n.IsRead = true;
+                // TODO: gọi service PUT /notifications/read-all
+                Touch(n);
+            }
+            RaiseNotificationSummaryChanged();
+        }
+
+        /// <summary>NotificationModel chưa implement INotifyPropertyChanged nên cần "chạm" lại item để UI + badge cập nhật.</summary>
+        private void Touch(NotificationModel changed)
+        {
+            int index = Notifications.IndexOf(changed);
+            if (index >= 0)
+            {
+                Notifications.RemoveAt(index);
+                Notifications.Insert(index, changed);
+            }
+        }
+
+        private void RaiseNotificationSummaryChanged()
+        {
+            OnPropertyChanged(nameof(UnreadCount));
+            OnPropertyChanged(nameof(HasUnread));
         }
 
         /// <summary>

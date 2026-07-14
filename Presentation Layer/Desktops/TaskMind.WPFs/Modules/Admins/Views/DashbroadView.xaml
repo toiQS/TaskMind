@@ -5,6 +5,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:TaskMind.WPFs.Modules.Admins.Views"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:util="clr-namespace:TaskMind.WPFs.Utilities"
+             xmlns:models="clr-namespace:TaskMind.WPFs.Modules.Admins.Models"
              mc:Ignorable="d"
              d:DesignHeight="650" d:DesignWidth="1000"
              Background="Transparent">
@@ -12,6 +14,10 @@
     <UserControl.Resources>
 
         <BooleanToVisibilityConverter x:Key="B2V"/>
+        <util:NotificationTypeToTextConverter x:Key="NotifTypeText"/>
+        <util:NotificationTypeToBrushConverter x:Key="NotifTypeBrush"/>
+        <util:InverseBooleanToVisibilityConverter x:Key="InverseB2V"/>
+        <util:ZeroCountToVisibilityConverter x:Key="ZeroCountVisible"/>
 
         <Style x:Key="StatCard" TargetType="Border">
             <Setter Property="Background" Value="#2B3036"/>
@@ -85,6 +91,56 @@
             <Setter Property="Margin" Value="0,0,0,8"/>
         </Style>
 
+        <!-- ===== Notification bell + dropdown ===== -->
+
+        <Style x:Key="NotifBadge" TargetType="Border">
+            <Setter Property="Background" Value="#E5484D"/>
+            <Setter Property="CornerRadius" Value="9"/>
+            <Setter Property="MinWidth" Value="18"/>
+            <Setter Property="Height" Value="18"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="Margin" Value="0,-4,-4,0"/>
+        </Style>
+
+        <Style x:Key="NotifPanel" TargetType="Border">
+            <Setter Property="Background" Value="#2B3036"/>
+            <Setter Property="BorderBrush" Value="#3A4149"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Width" Value="360"/>
+            <Setter Property="Margin" Value="0,8,0,0"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="Black" Opacity="0.4" BlurRadius="18" ShadowDepth="4"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Hàng thông báo: viền trái xanh + nền nhạt hơn khi chưa đọc -->
+        <Style x:Key="NotifRow" TargetType="Border">
+            <Setter Property="Background" Value="#20242A"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="14,12"/>
+            <Setter Property="Margin" Value="16,4,16,4"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsRead}" Value="False">
+                    <Setter Property="Background" Value="#232B3A"/>
+                    <Setter Property="BorderBrush" Value="#4C9AFF"/>
+                    <Setter Property="BorderThickness" Value="2,0,0,0"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="NotifDot" TargetType="Ellipse">
+            <Setter Property="Width" Value="8"/>
+            <Setter Property="Height" Value="8"/>
+            <Setter Property="Margin" Value="0,4,10,0"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="Fill" Value="{Binding Type, Converter={StaticResource NotifTypeBrush}}"/>
+        </Style>
+
     </UserControl.Resources>
 
     <Grid>
@@ -101,6 +157,7 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0">
@@ -108,12 +165,107 @@
                         <TextBlock Text="Tổng quan hệ thống" Foreground="#8A93A0" FontSize="13" Margin="0,4,0,0"/>
                     </StackPanel>
 
-                    <ui:Button Grid.Column="1"
+                    <!-- Chuông thông báo + badge + dropdown -->
+                    <Grid Grid.Column="1" Margin="0,0,12,0" VerticalAlignment="Center">
+                        <ui:Button x:Name="NotificationBell"
+                                   Icon="{ui:SymbolIcon Alert24}"
+                                   Appearance="Secondary"
+                                   Command="{Binding ToggleNotificationPanelCommand}"/>
+
+                        <Border Style="{StaticResource NotifBadge}"
+                                Visibility="{Binding HasUnread, Converter={StaticResource B2V}}"
+                                IsHitTestVisible="False">
+                            <TextBlock Text="{Binding UnreadCount}"
+                                       Foreground="White" FontSize="10" FontWeight="Bold"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       Margin="4,0"/>
+                        </Border>
+
+                        <Popup IsOpen="{Binding IsNotificationPanelOpen, Mode=TwoWay}"
+                               PlacementTarget="{Binding ElementName=NotificationBell}"
+                               Placement="Bottom"
+                               StaysOpen="False"
+                               AllowsTransparency="True"
+                               PopupAnimation="Fade">
+                            <Border Style="{StaticResource NotifPanel}">
+                                <StackPanel>
+
+                                    <Grid Margin="16,14,16,10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="Thông báo" Foreground="White" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="Đánh dấu tất cả đã đọc"
+                                                   Foreground="#4C9AFF" FontSize="12" Cursor="Hand" VerticalAlignment="Center">
+                                            <TextBlock.InputBindings>
+                                                <MouseBinding MouseAction="LeftClick" Command="{Binding MarkAllAsReadCommand}"/>
+                                            </TextBlock.InputBindings>
+                                        </TextBlock>
+                                    </Grid>
+
+                                    <Separator Background="#3A4149"/>
+
+                                    <ScrollViewer MaxHeight="360" VerticalScrollBarVisibility="Auto" Margin="0,6,0,0">
+                                        <ItemsControl ItemsSource="{Binding Notifications}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate DataType="{x:Type models:NotificationModel}">
+                                                    <Border Style="{StaticResource NotifRow}">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                            </Grid.ColumnDefinitions>
+
+                                                            <Ellipse Grid.Column="0" Style="{StaticResource NotifDot}"/>
+
+                                                            <StackPanel Grid.Column="1">
+                                                                <TextBlock Text="{Binding Title}" Foreground="White" FontSize="13" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                                                <TextBlock Text="{Binding Message}" Foreground="#8A93A0" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                                                                <Grid Margin="0,6,0,0">
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="Auto"/>
+                                                                        <ColumnDefinition Width="Auto"/>
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <TextBlock Grid.Column="0" Text="{Binding Type, Converter={StaticResource NotifTypeText}}"
+                                                                               Foreground="#5C6470" FontSize="11"/>
+                                                                    <TextBlock Grid.Column="1" Text="{Binding CreatedDate, StringFormat=' · dd/MM/yyyy HH:mm'}"
+                                                                               Foreground="#5C6470" FontSize="11"/>
+                                                                </Grid>
+                                                            </StackPanel>
+
+                                                            <ui:Button Grid.Column="2"
+                                                                       Appearance="Transparent"
+                                                                       Padding="0" Width="26" Height="26"
+                                                                       Icon="{ui:SymbolIcon Checkmark24}"
+                                                                       ToolTip="Đánh dấu đã đọc"
+                                                                       Visibility="{Binding IsRead, Converter={StaticResource InverseB2V}}"
+                                                                       Command="{Binding DataContext.MarkAsReadCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                       CommandParameter="{Binding}"/>
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+
+                                    <TextBlock Text="Không có thông báo nào"
+                                               Foreground="#8A93A0" FontSize="12"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,16,0,20"
+                                               Visibility="{Binding Notifications.Count, Converter={StaticResource ZeroCountVisible}}"/>
+
+                                </StackPanel>
+                            </Border>
+                        </Popup>
+                    </Grid>
+
+                    <ui:Button Grid.Column="2"
                                Content="Làm mới"
                                Appearance="Secondary"
                                Icon="{ui:SymbolIcon ArrowSync24}"
                                Command="{Binding RefreshCommand}"
-                               IsEnabled="{Binding IsBusy, Converter={StaticResource B2V}, ConverterParameter=Invert}"
                                VerticalAlignment="Center"/>
                 </Grid>
 

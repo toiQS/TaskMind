@@ -1,6 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Windows.Automation;
-using System.Windows.Media.Animation;
+﻿using System;
+using System.Collections.Generic;
 
 namespace TaskMind.WPFs.Modules.Admins.Models
 {
@@ -14,6 +13,7 @@ namespace TaskMind.WPFs.Modules.Admins.Models
         /// </summary>
         public List<ChartPoint> RevenueChart { get; set; } = new List<ChartPoint>();
 
+        /// <summary>Danh sách thông báo hệ thống gửi tới Admin (duyệt công ty, cảnh báo vi phạm, v.v.)</summary>
         public List<NotificationModel> NotificationList { get; set; } = new List<NotificationModel>();
     }
 
@@ -51,8 +51,24 @@ namespace TaskMind.WPFs.Modules.Admins.Models
         public int CountNewStaff { get; set; }
     }
 
+    /// <summary>Phân loại thông báo hệ thống, dùng để tô màu/nhóm trên UI.</summary>
+    public enum NotificationType
+    {
+        System,     // Thông báo hệ thống chung
+        Approval,   // Cần duyệt (công ty / cơ sở đào tạo / kỹ năng đề xuất...)
+        Warning,    // Cảnh báo, vi phạm
+        Success     // Xác nhận thao tác thành công
+    }
+
     public class NotificationModel
     {
-        
+        public string Id { get; set; }
+        public string Title { get; set; }
+        public string Message { get; set; }
+        public NotificationType Type { get; set; } = NotificationType.System;
+        public DateTime CreatedDate { get; set; }
+
+        /// <summary>true = đã đọc, false = chưa đọc</summary>
+        public bool IsRead { get; set; }
     }
 }

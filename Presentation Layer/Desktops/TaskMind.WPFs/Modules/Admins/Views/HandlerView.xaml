@@ -1,0 +1,355 @@
+﻿<UserControl x:Class="TaskMind.WPFs.Modules.Admins.Views.HandlerView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:TaskMind.WPFs.Modules.Admins.Views"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:util="clr-namespace:TaskMind.WPFs.Utilities"
+             mc:Ignorable="d"
+             d:DesignHeight="750" d:DesignWidth="1100"
+             Background="Transparent">
+
+    <UserControl.Resources>
+
+        <BooleanToVisibilityConverter x:Key="B2V"/>
+        <util:FilterAppearanceConverter x:Key="FilterAppearance"/>
+        <util:ReportStatusToBrushConverter x:Key="StatusBrush"/>
+        <util:ReportStatusToTextConverter x:Key="StatusText"/>
+        <util:PriorityToBrushConverter x:Key="PriorityBrush"/>
+        <util:ViolationTypeToTextConverter x:Key="ViolationText"/>
+        <util:ReportedEntityTypeToTextConverter x:Key="EntityTypeText"/>
+        <util:ResolutionActionToTextConverter x:Key="ActionText"/>
+
+        <Style x:Key="SectionCard" TargetType="Border">
+            <Setter Property="Background" Value="#2B3036"/>
+            <Setter Property="CornerRadius" Value="10"/>
+        </Style>
+
+        <Style x:Key="SectionTitle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+        </Style>
+
+        <Style x:Key="FilterChip" TargetType="ui:Button">
+            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Padding" Value="12,0"/>
+            <Setter Property="FontSize" Value="11"/>
+        </Style>
+
+        <Style x:Key="StatusBadge" TargetType="Border">
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="8,3"/>
+            <Setter Property="Background" Value="{Binding Status, Converter={StaticResource StatusBrush}}"/>
+        </Style>
+
+        <!-- Item báo cáo trong ListBox -->
+        <Style x:Key="ReportItemStyle" TargetType="ListBoxItem">
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="bd" Background="#20242A" CornerRadius="8" Padding="14,12">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#33445566"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PriorityBar" TargetType="Border">
+            <Setter Property="Width" Value="4"/>
+            <Setter Property="CornerRadius" Value="2"/>
+            <Setter Property="Background" Value="{Binding Priority, Converter={StaticResource PriorityBrush}}"/>
+        </Style>
+
+        <!-- Dòng audit log dạng timeline -->
+        <Style x:Key="TimelineDot" TargetType="Ellipse">
+            <Setter Property="Width" Value="10"/>
+            <Setter Property="Height" Value="10"/>
+            <Setter Property="Fill" Value="#4C9AFF"/>
+            <Setter Property="Margin" Value="0,4,12,0"/>
+        </Style>
+
+        <Style x:Key="ResolutionFieldLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#C7CDD6"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Margin" Value="0,0,0,6"/>
+        </Style>
+
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid Margin="24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Grid Grid.Row="0" Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="Xử lý báo cáo vi phạm" Foreground="White" FontSize="26" FontWeight="Bold"/>
+                    <TextBlock Text="Tiếp nhận, xác minh qua audit log và ghi nhận hướng giải quyết" Foreground="#8A93A0" FontSize="13" Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <ui:TextBox Grid.Column="1"
+                            Width="240"
+                            Icon="{ui:SymbolIcon Search24}"
+                            PlaceholderText="Tìm theo tên đối tượng..."
+                            Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                            VerticalAlignment="Center"
+                            Margin="0,0,12,0"/>
+
+                <ui:Button Grid.Column="2"
+                           Content="Làm mới"
+                           Appearance="Secondary"
+                           Icon="{ui:SymbolIcon ArrowSync24}"
+                           Command="{Binding RefreshCommand}"
+                           VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- Filter theo trạng thái -->
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,16">
+                <ui:Button Style="{StaticResource FilterChip}" Content="Tất cả"
+                           Command="{Binding FilterStatusCommand}" CommandParameter="All"
+                           Appearance="{Binding StatusFilter, Converter={StaticResource FilterAppearance}, ConverterParameter=All}"/>
+                <ui:Button Style="{StaticResource FilterChip}" Content="Chờ xử lý"
+                           Command="{Binding FilterStatusCommand}" CommandParameter="Pending"
+                           Appearance="{Binding StatusFilter, Converter={StaticResource FilterAppearance}, ConverterParameter=Pending}"/>
+                <ui:Button Style="{StaticResource FilterChip}" Content="Đang xác minh"
+                           Command="{Binding FilterStatusCommand}" CommandParameter="Reviewing"
+                           Appearance="{Binding StatusFilter, Converter={StaticResource FilterAppearance}, ConverterParameter=Reviewing}"/>
+                <ui:Button Style="{StaticResource FilterChip}" Content="Đã xử lý"
+                           Command="{Binding FilterStatusCommand}" CommandParameter="Resolved"
+                           Appearance="{Binding StatusFilter, Converter={StaticResource FilterAppearance}, ConverterParameter=Resolved}"/>
+                <ui:Button Style="{StaticResource FilterChip}" Content="Đã bỏ qua"
+                           Command="{Binding FilterStatusCommand}" CommandParameter="Dismissed"
+                           Appearance="{Binding StatusFilter, Converter={StaticResource FilterAppearance}, ConverterParameter=Dismissed}"/>
+            </StackPanel>
+
+            <!-- ===== Nội dung chính: danh sách + chi tiết ===== -->
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="360"/>
+                    <ColumnDefinition Width="14"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Danh sách báo cáo -->
+                <Border Grid.Column="0" Style="{StaticResource SectionCard}" Padding="14">
+                    <ListBox Background="Transparent" BorderThickness="0"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             ItemContainerStyle="{StaticResource ReportItemStyle}"
+                             ItemsSource="{Binding ReportsView}"
+                             SelectedItem="{Binding SelectedReport}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border Grid.Column="0" Style="{StaticResource PriorityBar}" Margin="0,0,10,0"/>
+
+                                    <StackPanel Grid.Column="1">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{Binding ReportedEntityName}"
+                                                       Foreground="White" FontSize="14" FontWeight="SemiBold"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                            <Border Grid.Column="1" Style="{StaticResource StatusBadge}">
+                                                <TextBlock Text="{Binding Status, Converter={StaticResource StatusText}}"
+                                                           Foreground="#20242A" FontSize="10" FontWeight="SemiBold"/>
+                                            </Border>
+                                        </Grid>
+
+                                        <TextBlock Foreground="#8A93A0" FontSize="11" Margin="0,4,0,0">
+                                            <Run Text="{Binding ViolationType, Converter={StaticResource ViolationText}, Mode=OneWay}"/>
+                                            <Run Text=" · "/>
+                                            <Run Text="{Binding EntityTypeText, Mode=OneWay}"/>
+                                        </TextBlock>
+
+                                        <TextBlock Text="{Binding Description}" Foreground="#8A93A0" FontSize="11"
+                                                   TextTrimming="CharacterEllipsis" Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Border>
+
+                <!-- Chi tiết báo cáo -->
+                <Border Grid.Column="2" Style="{StaticResource SectionCard}" Padding="0"
+                        Visibility="{Binding HasSelectedReport, Converter={StaticResource B2V}}">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="22">
+                        <StackPanel>
+
+                            <!-- Thông tin báo cáo -->
+                            <Grid Margin="0,0,0,16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{Binding SelectedReport.ReportedEntityName}" Foreground="White" FontSize="20" FontWeight="Bold"/>
+                                    <TextBlock Foreground="#8A93A0" FontSize="12" Margin="0,4,0,0">
+                                        <Run Text="Đối tượng: "/>
+                                        <Run Text="{Binding SelectedReport.ReportedEntityType, Converter={StaticResource EntityTypeText}, Mode=OneWay}"/>
+                                        <Run Text=" · Người báo cáo: "/>
+                                        <Run Text="{Binding SelectedReport.ReporterName, Mode=OneWay}"/>
+                                    </TextBlock>
+                                </StackPanel>
+                                <Border Grid.Column="1" Style="{StaticResource StatusBadge}" DataContext="{Binding SelectedReport}" VerticalAlignment="Top">
+                                    <TextBlock Text="{Binding Status, Converter={StaticResource StatusText}}"
+                                               Foreground="#20242A" FontSize="12" FontWeight="SemiBold"/>
+                                </Border>
+                            </Grid>
+
+                            <Border Background="#20242A" CornerRadius="8" Padding="16" Margin="0,0,0,20">
+                                <StackPanel>
+                                    <TextBlock Foreground="#8A93A0" FontSize="12" Margin="0,0,0,6">
+                                        <Run Text="Loại vi phạm: "/>
+                                        <Run Text="{Binding SelectedReport.ViolationType, Converter={StaticResource ViolationText}, Mode=OneWay}" Foreground="#DBDBDB"/>
+                                        <Run Text="   ·   Ngày báo cáo: "/>
+                                        <Run Text="{Binding SelectedReport.CreatedDate, StringFormat='dd/MM/yyyy HH:mm', Mode=OneWay}" Foreground="#DBDBDB"/>
+                                    </TextBlock>
+                                    <TextBlock Text="{Binding SelectedReport.Description}"
+                                               Foreground="#DBDBDB" FontSize="13" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Đã xử lý trước đó (nếu có) -->
+                            <Border Background="#1E3A2A" CornerRadius="8" Padding="16" Margin="0,0,0,20"
+                                    Visibility="{Binding SelectedReport.Resolution, Converter={StaticResource B2V}}">
+                                <StackPanel>
+                                    <TextBlock Text="Kết quả xử lý" Foreground="#3FD07A" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                                    <TextBlock Foreground="#DBDBDB" FontSize="12">
+                                        <Run Text="Hành động: "/>
+                                        <Run Text="{Binding SelectedReport.Resolution.Action, Converter={StaticResource ActionText}, Mode=OneWay}"/>
+                                    </TextBlock>
+                                    <TextBlock Text="{Binding SelectedReport.Resolution.Note}" Foreground="#DBDBDB" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                    <TextBlock Foreground="#8A93A0" FontSize="11" Margin="0,6,0,0">
+                                        <Run Text="Bởi "/><Run Text="{Binding SelectedReport.Resolution.ResolvedBy, Mode=OneWay}"/>
+                                        <Run Text=" lúc "/><Run Text="{Binding SelectedReport.Resolution.ResolvedDate, StringFormat='dd/MM/yyyy HH:mm', Mode=OneWay}"/>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Audit log liên quan -->
+                            <TextBlock Text="Audit log liên quan đến đối tượng" Style="{StaticResource SectionTitle}"/>
+                            <ItemsControl ItemsSource="{Binding AuditLogView}" Margin="0,0,0,20">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,0,0,14">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Ellipse Grid.Column="0" Style="{StaticResource TimelineDot}"/>
+                                            <StackPanel Grid.Column="1">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0" Text="{Binding Action}" Foreground="White" FontSize="13" FontWeight="SemiBold"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding Timestamp, StringFormat='dd/MM HH:mm'}" Foreground="#8A93A0" FontSize="11"/>
+                                                </Grid>
+                                                <TextBlock Text="{Binding Description}" Foreground="#8A93A0" FontSize="12" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                                <TextBlock Foreground="#8A93A0" FontSize="10" Margin="0,2,0,0">
+                                                    <Run Text="Thực hiện bởi: "/><Run Text="{Binding PerformedBy}"/>
+                                                </TextBlock>
+                                            </StackPanel>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <!-- Form ghi nhận hướng xử lý -->
+                            <Border Background="#20242A" CornerRadius="8" Padding="18"
+                                    Visibility="{Binding CanResolve, Converter={StaticResource B2V}}">
+                                <StackPanel>
+                                    <TextBlock Text="Ghi nhận hướng giải quyết" Style="{StaticResource SectionTitle}"/>
+
+                                    <TextBlock Text="Hành động xử lý" Style="{StaticResource ResolutionFieldLabel}"/>
+                                    <ComboBox Height="42" Margin="0,0,0,14"
+                                              ItemsSource="{Binding ResolutionActionOptions}"
+                                              SelectedItem="{Binding SelectedResolutionAction}">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Converter={StaticResource ActionText}}"/>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+
+                                    <TextBlock Text="Ghi chú xác minh / lý do" Style="{StaticResource ResolutionFieldLabel}"/>
+                                    <ui:TextBox AcceptsReturn="True" TextWrapping="Wrap" Height="90" Margin="0,0,0,16"
+                                                PlaceholderText="Mô tả căn cứ xác minh từ audit log và quyết định xử lý..."
+                                                Text="{Binding ResolutionNote, UpdateSourceTrigger=PropertyChanged}"/>
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="12"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <ui:Button Grid.Column="0" Content="Bắt đầu xác minh" Appearance="Secondary" Height="40"
+                                                   Command="{Binding StartReviewCommand}"
+                                                   Visibility="{Binding SelectedReport.Status, Converter={StaticResource B2V}}"/>
+
+                                        <ui:Button Grid.Column="4" Content="Bỏ qua báo cáo" Appearance="Secondary" Height="40" Width="150" Margin="0,0,10,0"
+                                                   Command="{Binding DismissCommand}"/>
+
+                                        <ui:Button Grid.Column="4" Content="Xác nhận xử lý" Appearance="Primary" Height="40" Width="160"
+                                                   HorizontalAlignment="Right"
+                                                   Command="{Binding SubmitResolutionCommand}"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+
+                <!-- Chưa chọn báo cáo -->
+                <Border Grid.Column="2" Style="{StaticResource SectionCard}"
+                        Visibility="{Binding HasSelectedReport, Converter={StaticResource B2V}, ConverterParameter=Invert}">
+                    <TextBlock Text="Chọn một báo cáo để xem chi tiết" Foreground="#8A93A0" FontSize="14"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+
+            </Grid>
+        </Grid>
+
+        <!-- Overlay loading -->
+        <Border Background="#902B3036"
+                Visibility="{Binding IsBusy, Converter={StaticResource B2V}}">
+            <ui:ProgressRing IsIndeterminate="True" Width="42" Height="42"/>
+        </Border>
+    </Grid>
+</UserControl>

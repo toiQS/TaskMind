@@ -38,4 +38,13 @@
         <adminView:ReportView/>
     </DataTemplate>
     
+    <DataTemplate DataType="{x:Type adminVM:ChatVM}">
+        <adminView:ChatView/>
+    </DataTemplate>
+    
+    <DataTemplate DataType="{x:Type adminVM:HandlerVM}">
+        <adminView:HandlerView/>
+    </DataTemplate>
+    
+    
 </ResourceDictionary>
