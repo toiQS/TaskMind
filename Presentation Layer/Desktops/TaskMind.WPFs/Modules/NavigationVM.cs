@@ -26,8 +26,8 @@ namespace TaskMind.WPFs.Modules
             AuthCommand = new RelayCommand(Auth);
             AdminCommand = new RelayCommand(Admin);
 
-            CurrentView = new AuthNavigationVM();
-            //CurrentView = new AdminNavigationVM();
+            //CurrentView = new AuthNavigationVM();
+            CurrentView = new AdminNavigationVM();
         }
     }
 }
