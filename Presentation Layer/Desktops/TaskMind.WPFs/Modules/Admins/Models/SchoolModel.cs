@@ -16,6 +16,13 @@ namespace TaskMind.WPFs.Modules.Admins.Models
         public string Name { get; set; }
         public string Field { get; set; }       // Lĩnh vực đào tạo
         public string Email { get; set; }
+
+        /// <summary>Số điện thoại liên hệ của cơ sở đào tạo.</summary>
+        public string Phone { get; set; }
+
+        /// <summary>Địa chỉ cơ sở, dùng khi Admin tạo/xem chi tiết.</summary>
+        public string Address { get; set; }
+
         public string Package { get; set; }
         public SchoolStatus Status { get; set; }
         public DateTime JoinedDate { get; set; }

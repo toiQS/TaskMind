@@ -42,11 +42,27 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
             set { _isBusy = value; OnPropertyChanged(); }
         }
 
+        // ----- Panel "Thêm cơ sở đào tạo mới" -----
+        private bool _isAddPanelOpen;
+        public bool IsAddPanelOpen
+        {
+            get => _isAddPanelOpen;
+            set { _isAddPanelOpen = value; OnPropertyChanged(); }
+        }
+
+        private AddSchoolVM _addSchoolVM;
+        public AddSchoolVM AddSchoolVM
+        {
+            get => _addSchoolVM;
+            private set { _addSchoolVM = value; OnPropertyChanged(); }
+        }
+
         public ICommand RefreshCommand { get; }
         public ICommand FilterCommand { get; }
         public ICommand ApproveCommand { get; }
         public ICommand RejectCommand { get; }
         public ICommand ToggleSuspendCommand { get; }
+        public ICommand OpenAddSchoolCommand { get; }
 
         public SchoolVM()
         {
@@ -55,6 +71,7 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
             ApproveCommand = new RelayCommand(Approve);
             RejectCommand = new RelayCommand(Reject);
             ToggleSuspendCommand = new RelayCommand(ToggleSuspend);
+            OpenAddSchoolCommand = new RelayCommand(_ => OpenAddPanel());
 
             SchoolsView = CollectionViewSource.GetDefaultView(Schools);
             SchoolsView.Filter = FilterSchools;
@@ -107,6 +124,28 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
                 // TODO: gọi service cập nhật trạng thái cơ sở đào tạo
                 Touch(school);
             }
+        }
+
+        /// <summary>Mở panel thêm cơ sở đào tạo, luôn tạo mới AddSchoolVM để form trống mỗi lần mở.</summary>
+        private void OpenAddPanel()
+        {
+            AddSchoolVM = new AddSchoolVM(OnSchoolCreated, CloseAddPanel);
+            IsAddPanelOpen = true;
+        }
+
+        private void CloseAddPanel()
+        {
+            IsAddPanelOpen = false;
+            AddSchoolVM = null;
+        }
+
+        /// <summary>Callback khi AddSchoolVM tạo cơ sở thành công: thêm vào danh sách và đóng panel.</summary>
+        private void OnSchoolCreated(SchoolModel newSchool)
+        {
+            // TODO: sau khi service tạo cơ sở đào tạo thành công (POST /schools), có thể gọi lại
+            // LoadDataAsync() để đồng bộ dữ liệu thay vì chỉ thêm vào collection tại chỗ.
+            Schools.Insert(0, newSchool);
+            CloseAddPanel();
         }
 
         /// <summary>

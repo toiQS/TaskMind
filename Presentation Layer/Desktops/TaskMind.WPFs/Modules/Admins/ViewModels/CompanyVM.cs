@@ -42,11 +42,27 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
             set { _isBusy = value; OnPropertyChanged(); }
         }
 
+        // ----- Panel "Thêm công ty mới" -----
+        private bool _isAddPanelOpen;
+        public bool IsAddPanelOpen
+        {
+            get => _isAddPanelOpen;
+            set { _isAddPanelOpen = value; OnPropertyChanged(); }
+        }
+
+        private AddCompanyVM _addCompanyVM;
+        public AddCompanyVM AddCompanyVM
+        {
+            get => _addCompanyVM;
+            private set { _addCompanyVM = value; OnPropertyChanged(); }
+        }
+
         public ICommand RefreshCommand { get; }
         public ICommand FilterCommand { get; }
         public ICommand ApproveCommand { get; }
         public ICommand RejectCommand { get; }
         public ICommand ToggleSuspendCommand { get; }
+        public ICommand OpenAddCompanyCommand { get; }
 
         public CompanyVM()
         {
@@ -55,6 +71,7 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
             ApproveCommand = new RelayCommand(Approve);
             RejectCommand = new RelayCommand(Reject);
             ToggleSuspendCommand = new RelayCommand(ToggleSuspend);
+            OpenAddCompanyCommand = new RelayCommand(_ => OpenAddPanel());
 
             CompaniesView = CollectionViewSource.GetDefaultView(Companies);
             CompaniesView.Filter = FilterCompanies;
@@ -107,6 +124,28 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
                 // TODO: gọi service cập nhật trạng thái công ty
                 Touch(company);
             }
+        }
+
+        /// <summary>Mở panel thêm công ty, luôn tạo mới AddCompanyVM để form trống mỗi lần mở.</summary>
+        private void OpenAddPanel()
+        {
+            AddCompanyVM = new AddCompanyVM(OnCompanyCreated, CloseAddPanel);
+            IsAddPanelOpen = true;
+        }
+
+        private void CloseAddPanel()
+        {
+            IsAddPanelOpen = false;
+            AddCompanyVM = null;
+        }
+
+        /// <summary>Callback khi AddCompanyVM tạo công ty thành công: thêm vào danh sách và đóng panel.</summary>
+        private void OnCompanyCreated(CompanyModel newCompany)
+        {
+            // TODO: sau khi service tạo công ty thành công (POST /companies), có thể gọi lại
+            // LoadDataAsync() để đồng bộ dữ liệu thay vì chỉ thêm vào collection tại chỗ.
+            Companies.Insert(0, newCompany);
+            CloseAddPanel();
         }
 
         /// <summary>
