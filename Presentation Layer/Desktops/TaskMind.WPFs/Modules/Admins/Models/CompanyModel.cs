@@ -23,4 +23,5 @@ namespace TaskMind.WPFs.Modules.Admins.Models
         public int StaffCount { get; set; }
         public int ProjectCount { get; set; }
     }
+   
 }

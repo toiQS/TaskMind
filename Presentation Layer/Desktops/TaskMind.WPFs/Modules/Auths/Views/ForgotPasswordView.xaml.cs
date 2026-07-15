@@ -10,24 +10,17 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using TaskMind.WPFs.Modules.Auths.ViewModels;
 
 namespace TaskMind.WPFs.Modules.Auths.Views
 {
     /// <summary>
-    /// Interaction logic for AuthPage.xaml
+    /// Interaction logic for ForgotPasswordView.xaml
     /// </summary>
-    public partial class AuthPage : Page
+    public partial class ForgotPasswordView : UserControl
     {
-        public AuthPage()
+        public ForgotPasswordView()
         {
             InitializeComponent();
-            DataContext = new AuthNavigationVM();
-        }
-        private void ExitApp_Click(object sender, RoutedEventArgs e)
-        {
-            Application.Current.Shutdown();
         }
     }
-
 }

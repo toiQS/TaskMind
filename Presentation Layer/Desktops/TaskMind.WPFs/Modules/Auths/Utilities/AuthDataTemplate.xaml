@@ -6,6 +6,12 @@
     <DataTemplate DataType="{x:Type authVM:LoginVM}">
         <authView:LoginView/>
     </DataTemplate>
+    <DataTemplate DataType="{x:Type authVM:RegisterVM}">
+        <authView:RegisterView/>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type authVM:ForgotPasswordVM}">
+        <authView:ForgotPasswordView/>
+    </DataTemplate>
     <DataTemplate DataType="{x:Type authVM:AuthNavigationVM}">
         <authView:AuthPage/>
     </DataTemplate>
