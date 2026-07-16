@@ -8,7 +8,7 @@
              xmlns:util="clr-namespace:TaskMind.WPFs.Utilities"
              xmlns:models="clr-namespace:TaskMind.WPFs.Modules.Admins.Models"
              mc:Ignorable="d"
-             d:DesignHeight="900" d:DesignWidth="1100"
+             d:DesignHeight="1100" d:DesignWidth="1100"
              Background="Transparent">
 
     <UserControl.Resources>
@@ -28,6 +28,10 @@
         <util:PriorityToBrushConverter x:Key="PriorityBrush"/>
         <util:ViolationTypeToTextConverter x:Key="ViolationText"/>
 
+        <!-- Tái sử dụng converter đã có sẵn cho phần Đánh giá (giống DetailCompanyView/DetailSchoolView) -->
+        <util:RatingToStarsConverter x:Key="Stars"/>
+        <util:ChatPartnerTypeToTextConverter x:Key="ReviewerTypeText"/>
+
         <Style x:Key="SectionCard" TargetType="Border">
             <Setter Property="Background" Value="#2B3036"/>
             <Setter Property="CornerRadius" Value="10"/>
@@ -43,10 +47,10 @@
         </Style>
 
         <Style x:Key="StatCard" TargetType="Border">
-        <Setter Property="Background" Value="#20242A"/>
-        <Setter Property="CornerRadius" Value="10"/>
-        <Setter Property="Padding" Value="16,12"/>
-        <Setter Property="Margin" Value="0,0,14,0"/>
+            <Setter Property="Background" Value="#20242A"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="16,12"/>
+            <Setter Property="Margin" Value="0,0,14,0"/>
         </Style>
 
         <Style x:Key="StatLabel" TargetType="TextBlock">
@@ -94,6 +98,20 @@
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Padding" Value="14,12"/>
             <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+
+        <!-- Thẻ đánh giá (giống ReviewCard ở DetailCompanyView/DetailSchoolView) -->
+        <Style x:Key="ReviewCard" TargetType="Border">
+            <Setter Property="Background" Value="#20242A"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="14,12"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+
+        <Style x:Key="ReviewerTypeBadge" TargetType="Border">
+            <Setter Property="Background" Value="#3A4149"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="8,3"/>
         </Style>
 
         <Style x:Key="ReportRow" TargetType="Border">
@@ -159,6 +177,8 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <!-- ===== Header: Back + tên user + trạng thái + hành động ===== -->
@@ -216,37 +236,53 @@
                                VerticalAlignment="Center"/>
                 </Grid>
 
-                <!-- ===== Stat cards ===== -->
+                <!-- ===== Stat cards: UniformGrid 5 cột chia đều, luôn nằm 1 hàng dù màn hình rộng/hẹp ===== -->
                 <ItemsControl Grid.Row="1" Margin="0,0,0,16">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <WrapPanel/>
+                            <UniformGrid Rows="1" Columns="5"/>
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.Items>
 
-                        <Border Style="{StaticResource StatCard}" Width="180">
+                        <Border Style="{StaticResource StatCard}">
                             <StackPanel>
                                 <TextBlock Text="Kỹ năng" Style="{StaticResource StatLabel}"/>
                                 <TextBlock Text="{Binding Detail.User.SkillCount}" Style="{StaticResource StatValue}"/>
                             </StackPanel>
                         </Border>
 
-                        <Border Style="{StaticResource StatCard}" Width="180">
+                        <Border Style="{StaticResource StatCard}">
                             <StackPanel>
                                 <TextBlock Text="Dự án đã tham gia" Style="{StaticResource StatLabel}"/>
                                 <TextBlock Text="{Binding Detail.User.ProjectCount}" Style="{StaticResource StatValue}"/>
                             </StackPanel>
                         </Border>
 
-                        <Border Style="{StaticResource StatCard}" Width="220">
+                        <!-- Đánh giá trung bình: dùng lại RatingToStarsConverter đã có sẵn -->
+                        <Border Style="{StaticResource StatCard}">
+                            <StackPanel>
+                                <TextBlock Text="Đánh giá trung bình" Style="{StaticResource StatLabel}"/>
+                                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                    <TextBlock Text="{Binding Detail.AverageRating, StringFormat='{}{0:0.0}'}"
+                                               Foreground="White" FontSize="20" FontWeight="Bold"/>
+                                    <TextBlock Text="{Binding Detail.AverageRating, Converter={StaticResource Stars}}"
+                                               Foreground="#F5A623" FontSize="13" VerticalAlignment="Bottom"
+                                               Margin="8,0,0,2"/>
+                                </StackPanel>
+                                <TextBlock Text="{Binding Detail.TotalReviews, StringFormat='{}{0} lượt đánh giá'}"
+                                           Foreground="#8A93A0" FontSize="11" Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource StatCard}">
                             <StackPanel>
                                 <TextBlock Text="Ngày tham gia hệ thống" Style="{StaticResource StatLabel}"/>
                                 <TextBlock Text="{Binding Detail.User.JoinedDate, StringFormat='dd/MM/yyyy'}" Style="{StaticResource StatValue}" FontSize="18"/>
                             </StackPanel>
                         </Border>
 
-                        <Border Style="{StaticResource StatCard}" Width="220">
+                        <Border Style="{StaticResource StatCard}">
                             <StackPanel>
                                 <TextBlock Text="Hoạt động gần nhất" Style="{StaticResource StatLabel}"/>
                                 <TextBlock Text="{Binding Detail.User.LastActiveDate, StringFormat='dd/MM/yyyy'}" Style="{StaticResource StatValue}" FontSize="18"/>
@@ -328,8 +364,51 @@
                     </StackPanel>
                 </Border>
 
-                <!-- ===== Báo cáo vi phạm liên quan ===== -->
+                <!-- ===== Đánh giá từ công ty / cơ sở đào tạo / người dùng khác (mục 5.2) ===== -->
                 <Border Grid.Row="4" Style="{StaticResource SectionCard}">
+                    <StackPanel>
+                        <TextBlock Text="Đánh giá từ đối tác đã hợp tác" Style="{StaticResource SectionTitle}"/>
+
+                        <ItemsControl ItemsSource="{Binding Detail.Reviews}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type models:UserReviewModel}">
+                                    <Border Style="{StaticResource ReviewCard}">
+                                        <StackPanel>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding ReviewerName}" Foreground="White" FontSize="13" FontWeight="SemiBold"/>
+                                                    <Border Style="{StaticResource ReviewerTypeBadge}" Margin="10,0,0,0" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding ReviewerType, Converter={StaticResource ReviewerTypeText}}"
+                                                                   Foreground="#DBDBDB" FontSize="10"/>
+                                                    </Border>
+                                                    <TextBlock Text="{Binding Rating, Converter={StaticResource Stars}}"
+                                                               Foreground="#F5A623" FontSize="13" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                                                </StackPanel>
+
+                                                <TextBlock Grid.Column="1" Text="{Binding CreatedDate, StringFormat='dd/MM/yyyy'}"
+                                                           Foreground="#8A93A0" FontSize="11"/>
+                                            </Grid>
+                                            <TextBlock Text="{Binding Comment}" Foreground="#DBDBDB" FontSize="13"
+                                                       TextWrapping="Wrap" Margin="0,6,0,0"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <TextBlock Text="Chưa có đánh giá nào dành cho người dùng này."
+                                   Foreground="#8A93A0" FontSize="13" Margin="0,4,0,0"
+                                   Visibility="{Binding Detail.Reviews.Count, Converter={StaticResource B2V}, ConverterParameter=Invert}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- ===== Báo cáo vi phạm liên quan ===== -->
+                <Border Grid.Row="5" Style="{StaticResource SectionCard}">
                     <StackPanel>
                         <TextBlock Text="Báo cáo vi phạm liên quan" Style="{StaticResource SectionTitle}"/>
 
@@ -376,7 +455,7 @@
                 </Border>
 
                 <!-- ===== Nhật ký hoạt động tài khoản (Audit Log) ===== -->
-                <Border Grid.Row="4" Style="{StaticResource SectionCard}" Margin="0,16,0,0">
+                <Border Grid.Row="6" Style="{StaticResource SectionCard}">
                     <StackPanel>
                         <TextBlock Text="Nhật ký hoạt động tài khoản" Style="{StaticResource SectionTitle}"/>
 

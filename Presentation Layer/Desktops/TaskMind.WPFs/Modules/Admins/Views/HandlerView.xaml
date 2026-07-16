@@ -13,6 +13,11 @@
     <UserControl.Resources>
 
         <BooleanToVisibilityConverter x:Key="B2V"/>
+        <!-- InverseB2V: dùng cho các placeholder "chưa chọn gì" thay vì B2V + ConverterParameter=Invert,
+             vì BooleanToVisibilityConverter built-in của WPF KHÔNG hỗ trợ ConverterParameter,
+             dẫn tới panel chi tiết và placeholder cùng hiển thị chồng lên nhau. -->
+        <util:InverseBooleanToVisibilityConverter x:Key="InverseB2V"/>
+        <util:EnumToVisibilityConverter x:Key="StatusVisible"/>
         <util:FilterAppearanceConverter x:Key="FilterAppearance"/>
         <util:ReportStatusToBrushConverter x:Key="StatusBrush"/>
         <util:ReportStatusToTextConverter x:Key="StatusText"/>
@@ -318,9 +323,11 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
 
+                                        <!-- Sửa: trước đây bind SelectedReport.Status (enum) qua B2V (chỉ nhận bool) nên
+                                             không hoạt động đúng. Dùng EnumToVisibilityConverter sẵn có để so khớp "Pending". -->
                                         <ui:Button Grid.Column="0" Content="Bắt đầu xác minh" Appearance="Secondary" Height="40"
                                                    Command="{Binding StartReviewCommand}"
-                                                   Visibility="{Binding SelectedReport.Status, Converter={StaticResource B2V}}"/>
+                                                   Visibility="{Binding SelectedReport.Status, Converter={StaticResource StatusVisible}, ConverterParameter=Pending}"/>
 
                                         <ui:Button Grid.Column="4" Content="Bỏ qua báo cáo" Appearance="Secondary" Height="40" Width="150" Margin="0,0,10,0"
                                                    Command="{Binding DismissCommand}"/>
@@ -338,7 +345,7 @@
 
                 <!-- Chưa chọn báo cáo -->
                 <Border Grid.Column="2" Style="{StaticResource SectionCard}"
-                        Visibility="{Binding HasSelectedReport, Converter={StaticResource B2V}, ConverterParameter=Invert}">
+                        Visibility="{Binding HasSelectedReport, Converter={StaticResource InverseB2V}}">
                     <TextBlock Text="Chọn một báo cáo để xem chi tiết" Foreground="#8A93A0" FontSize="14"
                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 </Border>

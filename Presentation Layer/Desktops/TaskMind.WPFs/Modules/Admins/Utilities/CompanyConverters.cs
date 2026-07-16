@@ -67,12 +67,21 @@ namespace TaskMind.WPFs.Utilities
             => throw new NotSupportedException();
     }
 
-    /// <summary>Chuyển điểm đánh giá (1-5) thành chuỗi sao ★★★★☆ để hiển thị.</summary>
+    /// <summary>
+    /// Chuyển điểm đánh giá thành chuỗi sao ★★★★☆ để hiển thị.
+    /// Nhận cả int (VD: Rating của 1 đánh giá đơn lẻ) lẫn double (VD: AverageRating tổng hợp),
+    /// double sẽ được làm tròn về số nguyên gần nhất trước khi vẽ sao.
+    /// </summary>
     public class RatingToStarsConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            int rating = value is int i ? i : 0;
+            int rating = value switch
+            {
+                int i => i,
+                double d => (int)Math.Round(d, MidpointRounding.AwayFromZero),
+                _ => 0
+            };
             rating = Math.Clamp(rating, 0, 5);
             return new string('★', rating) + new string('☆', 5 - rating);
         }

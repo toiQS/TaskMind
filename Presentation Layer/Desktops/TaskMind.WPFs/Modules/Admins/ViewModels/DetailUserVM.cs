@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using TaskMind.WPFs.Modules.Admins.Models;
@@ -90,7 +91,7 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
 
         /// <summary>
         /// TODO: thay bằng gọi service/API thực tế lấy chi tiết user theo UserId:
-        /// thông tin cá nhân, hồ sơ kỹ năng, lịch sử dự án, báo cáo vi phạm, audit log.
+        /// thông tin cá nhân, hồ sơ kỹ năng, lịch sử dự án, đánh giá, báo cáo vi phạm, audit log.
         /// </summary>
         private async Task LoadDataAsync()
         {
@@ -123,6 +124,14 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
             model.ProjectHistory.Add(new UserProjectHistoryItem { ProjectName = "TaskMind Core Platform", ProjectRole = "Technical leader", ProjectSource = "OpenSource", StartDate = new DateTime(2025, 1, 10), IsOngoing = true });
             model.ProjectHistory.Add(new UserProjectHistoryItem { ProjectName = "E-commerce API cho DataWise Corp", ProjectRole = "Developer", ProjectSource = "Company", StartDate = new DateTime(2024, 6, 1), EndDate = new DateTime(2024, 11, 20), IsOngoing = false });
             model.ProjectHistory.Add(new UserProjectHistoryItem { ProjectName = "Dự án thực hành React Native", ProjectRole = "Developer", ProjectSource = "School", StartDate = new DateTime(2023, 9, 1), EndDate = new DateTime(2023, 12, 15), IsOngoing = false });
+
+            // ----- Đánh giá từ công ty / cơ sở đào tạo / người dùng khác (mục 5.2) -----
+            model.Reviews.Add(new UserReviewModel { Id = "URV1", ReviewerName = "DataWise Corp", ReviewerType = ChatPartnerType.Company, Rating = 5, Comment = "Kỹ năng kỹ thuật tốt, chủ động báo cáo tiến độ đúng hạn.", CreatedDate = DateTime.Now.AddMonths(-3) });
+            model.Reviews.Add(new UserReviewModel { Id = "URV2", ReviewerName = "FUNiX Academy", ReviewerType = ChatPartnerType.School, Rating = 4, Comment = "Hoàn thành tốt dự án thực hành, cần cải thiện thêm tài liệu bàn giao.", CreatedDate = DateTime.Now.AddMonths(-6) });
+            model.Reviews.Add(new UserReviewModel { Id = "URV3", ReviewerName = "Trần Thị Bích", ReviewerType = ChatPartnerType.User, Rating = 5, Comment = "Đồng đội nhiệt tình, hỗ trợ review code và hướng dẫn rất kỹ.", CreatedDate = DateTime.Now.AddMonths(-1) });
+
+            model.TotalReviews = model.Reviews.Count;
+            model.AverageRating = model.Reviews.Count > 0 ? Math.Round(model.Reviews.Average(r => r.Rating), 1) : 0;
 
             model.Reports.Add(new ReportModel
             {

@@ -32,9 +32,28 @@ namespace TaskMind.WPFs.Modules.Admins.Models
     }
 
     /// <summary>
+    /// Một đánh giá về user hiện tại, do công ty/cơ sở đào tạo/người dùng khác gửi sau khi
+    /// kết thúc dự án hoặc giao dịch trao đổi (mục 5.2 - Quản lý đánh giá và phản hồi).
+    /// Tái sử dụng ChatPartnerType (Company/School/User) sẵn có để biểu thị loại người đánh giá,
+    /// tận dụng luôn ChatPartnerTypeToTextConverter đã tồn tại thay vì tạo converter mới.
+    /// </summary>
+    public class UserReviewModel
+    {
+        public string Id { get; set; }
+        public string ReviewerName { get; set; }
+        public ChatPartnerType ReviewerType { get; set; }
+
+        /// <summary>Thang điểm 1-5.</summary>
+        public int Rating { get; set; }
+        public string Comment { get; set; }
+        public DateTime CreatedDate { get; set; }
+    }
+
+    /// <summary>
     /// Dữ liệu chi tiết của một user, dùng cho DetailUserView.
     /// Gộp: thông tin cá nhân, hồ sơ kỹ năng, lịch sử tham gia dự án,
-    /// báo cáo vi phạm liên quan, nhật ký hoạt động tài khoản (mục 5.7 - Audit Log).
+    /// đánh giá từ công ty/cơ sở đào tạo/người dùng khác, báo cáo vi phạm liên quan,
+    /// nhật ký hoạt động tài khoản (mục 5.7 - Audit Log).
     /// </summary>
     public class DetailUserModel
     {
@@ -45,6 +64,11 @@ namespace TaskMind.WPFs.Modules.Admins.Models
 
         // ----- Lịch sử tham gia dự án -----
         public ObservableCollection<UserProjectHistoryItem> ProjectHistory { get; set; } = new ObservableCollection<UserProjectHistoryItem>();
+
+        // ----- Đánh giá từ công ty / cơ sở đào tạo / người dùng khác (mục 5.2) -----
+        public double AverageRating { get; set; }
+        public int TotalReviews { get; set; }
+        public ObservableCollection<UserReviewModel> Reviews { get; set; } = new ObservableCollection<UserReviewModel>();
 
         // ----- Báo cáo vi phạm liên quan đến user này -----
         public ObservableCollection<ReportModel> Reports { get; set; } = new ObservableCollection<ReportModel>();
