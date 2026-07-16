@@ -57,6 +57,12 @@
             <Setter Property="Background" Value="{Binding Status, Converter={StaticResource StatusBrush}}"/>
         </Style>
 
+        <!-- Nút xem chi tiết: hiện cho mọi trạng thái, điều hướng sang trang độc lập -->
+        <Style x:Key="DetailBtnStyle" TargetType="ui:Button">
+            <Setter Property="Content" Value="Xem chi tiết"/>
+            <Setter Property="Appearance" Value="Secondary"/>
+        </Style>
+
         <!-- Nút Khoá/Mở khoá đổi nhãn theo trạng thái, ẩn khi đã Banned -->
         <Style x:Key="LockBtnStyle" TargetType="ui:Button">
             <Setter Property="Content" Value="Khoá"/>
@@ -211,6 +217,9 @@
 
                                         <!-- Hành động -->
                                         <StackPanel Grid.Column="5" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <ui:Button Style="{StaticResource DetailBtnStyle}" Height="32" Margin="0,0,8,0"
+                                                       Command="{Binding DataContext.ViewDetailCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                       CommandParameter="{Binding}"/>
                                             <ui:Button Style="{StaticResource LockBtnStyle}" Height="32" Width="88" Margin="0,0,8,0"
                                                        Command="{Binding DataContext.ToggleLockCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                        CommandParameter="{Binding}"/>

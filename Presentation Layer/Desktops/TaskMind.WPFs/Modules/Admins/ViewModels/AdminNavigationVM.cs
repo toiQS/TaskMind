@@ -44,7 +44,7 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
         public ICommand ExitCommand { get; set; }
 
         private void Dashbroad(object obj) { AdminCurrentView = new DashbroadVM(); ActiveKey = "Dashbroad"; }
-        private void User(object obj) { AdminCurrentView = new UserVM(); ActiveKey = "User"; }
+        private void User(object obj) { AdminCurrentView = new UserVM(NavigateTo); ActiveKey = "User"; }
         private void Profile(object obj) { AdminCurrentView = new ProfileVM(); ActiveKey = "Profile"; }
         private void Skill(object obj) { AdminCurrentView = new SkillVM(); ActiveKey = "Skill"; }
         private void Company(object obj) { AdminCurrentView = new CompanyVM(NavigateTo); ActiveKey = "Company"; }

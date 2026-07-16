@@ -11,6 +11,13 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
 {
     public class UserVM : ViewModelBase
     {
+        /// <summary>
+        /// Callback điều hướng do AdminNavigationVM truyền vào, dùng để thay thế toàn bộ
+        /// AdminCurrentView (vd. chuyển sang DetailUserVM) thay vì hiển thị overlay.
+        /// Có thể null khi UserVM được tạo ở design-time.
+        /// </summary>
+        private readonly Action<object> _navigate;
+
         public ObservableCollection<UserModel> Users { get; } = new ObservableCollection<UserModel>();
 
         private ICollectionView _usersView;
@@ -55,14 +62,25 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
         public ICommand FilterTypeCommand { get; }
         public ICommand ToggleLockCommand { get; }
         public ICommand ToggleBanCommand { get; }
+        public ICommand ViewDetailCommand { get; }
 
-        public UserVM()
+        /// <summary>Constructor mặc định (dùng khi thiết kế XAML / không cần điều hướng).</summary>
+        public UserVM() : this(null) { }
+
+        /// <summary>
+        /// navigate: callback do AdminNavigationVM cung cấp để thay thế AdminCurrentView,
+        /// dùng khi mở DetailUserView như một trang độc lập.
+        /// </summary>
+        public UserVM(Action<object> navigate)
         {
+            _navigate = navigate;
+
             RefreshCommand = new RelayCommand(async _ => await LoadDataAsync());
             FilterStatusCommand = new RelayCommand(f => StatusFilter = f as string ?? "All");
             FilterTypeCommand = new RelayCommand(f => TypeFilter = f as string ?? "All");
             ToggleLockCommand = new RelayCommand(ToggleLock);
             ToggleBanCommand = new RelayCommand(ToggleBan);
+            ViewDetailCommand = new RelayCommand(ViewDetail);
 
             UsersView = CollectionViewSource.GetDefaultView(Users);
             UsersView.Filter = FilterUsers;
@@ -111,6 +129,20 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
                     : UserAccountStatus.Banned;
                 // TODO: gọi service PUT /users/{id}/ban hoặc /unban
                 Touch(user);
+            }
+        }
+
+        /// <summary>
+        /// Điều hướng sang DetailUserVM như một trang độc lập (thay thế toàn bộ nội dung),
+        /// thay vì hiển thị overlay. Khi bấm "Quay lại" ở DetailUserView, callback onBack
+        /// sẽ điều hướng ngược lại về chính UserVM hiện tại (giữ nguyên filter/search).
+        /// </summary>
+        private void ViewDetail(object obj)
+        {
+            if (obj is UserModel user && _navigate != null)
+            {
+                var detailVM = new DetailUserVM(user.Id, () => _navigate(this));
+                _navigate(detailVM);
             }
         }
 

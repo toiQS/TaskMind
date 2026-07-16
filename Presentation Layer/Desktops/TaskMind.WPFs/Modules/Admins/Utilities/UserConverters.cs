@@ -68,4 +68,51 @@ namespace TaskMind.WPFs.Utilities
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
             => throw new NotSupportedException();
     }
+
+    /// <summary>Chuyển ProjectSource ("Company"/"School"/"OpenSource") thành nhãn tiếng Việt.</summary>
+    public class ProjectSourceToTextConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            var source = value as string;
+            return source switch
+            {
+                "Company" => "Dự án công ty",
+                "School" => "Dự án đào tạo",
+                "OpenSource" => "Mã nguồn mở",
+                _ => source
+            };
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
+    }
+
+    /// <summary>true (đang thực hiện) -> "Đang tham gia", false -> "Đã hoàn thành".</summary>
+    public class IsOngoingToTextConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            bool ongoing = value is bool b && b;
+            return ongoing ? "Đang tham gia" : "Đã hoàn thành";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
+    }
+
+    /// <summary>true -> màu xanh (đang hoạt động), false -> màu xám (đã kết thúc).</summary>
+    public class IsOngoingToBrushConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            bool ongoing = value is bool b && b;
+            return ongoing
+                ? new SolidColorBrush(Color.FromRgb(0x3F, 0xD0, 0x7A))
+                : new SolidColorBrush(Color.FromRgb(0x8A, 0x93, 0xA0));
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
+    }
 }
