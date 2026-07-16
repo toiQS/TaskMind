@@ -47,12 +47,22 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
         private void User(object obj) { AdminCurrentView = new UserVM(); ActiveKey = "User"; }
         private void Profile(object obj) { AdminCurrentView = new ProfileVM(); ActiveKey = "Profile"; }
         private void Skill(object obj) { AdminCurrentView = new SkillVM(); ActiveKey = "Skill"; }
-        private void Company(object obj) { AdminCurrentView = new CompanyVM(); ActiveKey = "Company"; }
+        private void Company(object obj) { AdminCurrentView = new CompanyVM(NavigateTo); ActiveKey = "Company"; }
         private void School(object obj) { AdminCurrentView = new SchoolVM(); ActiveKey = "School"; }
         private void Profit(object obj) { AdminCurrentView = new ProfitVM(); ActiveKey = "Profit"; }
         private void Report(object obj) { AdminCurrentView = new ReportVM(); ActiveKey = "Report"; }
         private void Handler(object obj) { AdminCurrentView = new HandlerVM(); ActiveKey = "Handler"; }
         private void Chat(object obj) { AdminCurrentView = new ChatVM(); ActiveKey = "Chat"; }
+
+        /// <summary>
+        /// Cho phép các ViewModel con (vd. CompanyVM) điều hướng thay thế toàn bộ nội dung trang,
+        /// dùng khi cần hiển thị 1 view độc lập (không phải overlay) như DetailCompanyView.
+        /// ActiveKey không đổi khi gọi hàm này, để sidebar vẫn highlight đúng mục cha (vd. "Company").
+        /// </summary>
+        private void NavigateTo(object viewModel)
+        {
+            AdminCurrentView = viewModel;
+        }
 
         private void Logout(object obj)
         {

@@ -72,6 +72,12 @@
             </Style.Triggers>
         </Style>
 
+        <!-- Nút xem chi tiết: hiện cho mọi trạng thái, điều hướng sang trang độc lập -->
+        <Style x:Key="DetailBtnStyle" TargetType="ui:Button">
+            <Setter Property="Content" Value="Xem chi tiết"/>
+            <Setter Property="Appearance" Value="Secondary"/>
+        </Style>
+
     </UserControl.Resources>
 
     <Grid>
@@ -192,6 +198,9 @@
 
                                         <!-- Hành động -->
                                         <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <ui:Button Style="{StaticResource DetailBtnStyle}" Height="32" Margin="0,0,8,0"
+                                                       Command="{Binding DataContext.ViewDetailCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                       CommandParameter="{Binding}"/>
                                             <ui:Button Style="{StaticResource ApproveBtnStyle}"
                                                        Content="Duyệt" Appearance="Success" Height="32" Margin="0,0,8,0"
                                                        Command="{Binding DataContext.ApproveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
@@ -221,7 +230,7 @@
             <ui:ProgressRing IsIndeterminate="True" Width="42" Height="42"/>
         </Border>
 
-        <!-- Overlay modal: form Thêm công ty mới -->
+        <!-- Overlay modal: form Thêm công ty mới (vẫn giữ dạng modal vì là form nhập liệu ngắn) -->
         <Border Background="#B3181B1F"
                 Visibility="{Binding IsAddPanelOpen, Converter={StaticResource B2V}}">
             <local:AddCompanyView DataContext="{Binding AddCompanyVM}"

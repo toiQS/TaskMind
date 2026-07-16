@@ -66,4 +66,18 @@ namespace TaskMind.WPFs.Utilities
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
             => throw new NotSupportedException();
     }
+
+    /// <summary>Chuyển điểm đánh giá (1-5) thành chuỗi sao ★★★★☆ để hiển thị.</summary>
+    public class RatingToStarsConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            int rating = value is int i ? i : 0;
+            rating = Math.Clamp(rating, 0, 5);
+            return new string('★', rating) + new string('☆', 5 - rating);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
+    }
 }

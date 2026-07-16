@@ -5,31 +5,35 @@
     <DataTemplate DataType="{x:Type adminVM:DashbroadVM}">
         <adminView:DashbroadView/>
     </DataTemplate>
-    
+
     <DataTemplate DataType="{x:Type adminVM:UserVM}">
         <adminView:UserView/>
     </DataTemplate>
-    
+
     <DataTemplate DataType="{x:Type adminVM:ProfileVM}">
         <adminView:ProfileView/>
     </DataTemplate>
-    
+
     <DataTemplate DataType="{x:Type adminVM:CompanyVM}">
         <adminView:CompanyView/>
     </DataTemplate>
-    
+
+    <DataTemplate DataType="{x:Type adminVM:DetailCompanyVM}">
+        <adminView:DetailCompanyView/>
+    </DataTemplate>
+
     <DataTemplate DataType="{x:Type adminVM:SchoolVM}">
         <adminView:SchoolView/>
     </DataTemplate>
-    
+
     <DataTemplate DataType="{x:Type adminVM:SkillVM}">
         <adminView:SkillView/>
     </DataTemplate>
-    
+
     <DataTemplate DataType="{x:Type adminVM:ProfitVM}">
         <adminView:ProfitView/>
     </DataTemplate>
-    
+
     <DataTemplate DataType="{x:Type adminVM:AdminNavigationVM}">
         <adminView:AdminPage/>
     </DataTemplate>
@@ -37,14 +41,14 @@
     <DataTemplate DataType="{x:Type adminVM:ReportVM}">
         <adminView:ReportView/>
     </DataTemplate>
-    
+
     <DataTemplate DataType="{x:Type adminVM:ChatVM}">
         <adminView:ChatView/>
     </DataTemplate>
-    
+
     <DataTemplate DataType="{x:Type adminVM:HandlerVM}">
         <adminView:HandlerView/>
     </DataTemplate>
-    
-    
+
+
 </ResourceDictionary>
