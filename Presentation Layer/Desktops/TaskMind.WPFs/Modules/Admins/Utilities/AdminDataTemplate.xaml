@@ -38,6 +38,10 @@
         <adminView:SkillView/>
     </DataTemplate>
 
+    <DataTemplate DataType="{x:Type adminVM:DetailSkillVM}">
+        <adminView:DetailSkillView/>
+    </DataTemplate>
+
     <DataTemplate DataType="{x:Type adminVM:ProfitVM}">
         <adminView:ProfitView/>
     </DataTemplate>

@@ -46,7 +46,7 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
         private void Dashbroad(object obj) { AdminCurrentView = new DashbroadVM(); ActiveKey = "Dashbroad"; }
         private void User(object obj) { AdminCurrentView = new UserVM(NavigateTo); ActiveKey = "User"; }
         private void Profile(object obj) { AdminCurrentView = new ProfileVM(); ActiveKey = "Profile"; }
-        private void Skill(object obj) { AdminCurrentView = new SkillVM(); ActiveKey = "Skill"; }
+        private void Skill(object obj) { AdminCurrentView = new SkillVM(NavigateTo); ActiveKey = "Skill"; }
         private void Company(object obj) { AdminCurrentView = new CompanyVM(NavigateTo); ActiveKey = "Company"; }
         private void School(object obj) { AdminCurrentView = new SchoolVM(NavigateTo); ActiveKey = "School"; }
         private void Profit(object obj) { AdminCurrentView = new ProfitVM(); ActiveKey = "Profit"; }
@@ -55,9 +55,9 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
         private void Chat(object obj) { AdminCurrentView = new ChatVM(); ActiveKey = "Chat"; }
 
         /// <summary>
-        /// Cho phép các ViewModel con (vd. CompanyVM) điều hướng thay thế toàn bộ nội dung trang,
-        /// dùng khi cần hiển thị 1 view độc lập (không phải overlay) như DetailCompanyView.
-        /// ActiveKey không đổi khi gọi hàm này, để sidebar vẫn highlight đúng mục cha (vd. "Company").
+        /// Cho phép các ViewModel con (vd. CompanyVM, SkillVM) điều hướng thay thế toàn bộ nội dung trang,
+        /// dùng khi cần hiển thị 1 view độc lập (không phải overlay) như DetailCompanyView/DetailSkillView.
+        /// ActiveKey không đổi khi gọi hàm này, để sidebar vẫn highlight đúng mục cha (vd. "Skill").
         /// </summary>
         private void NavigateTo(object viewModel)
         {

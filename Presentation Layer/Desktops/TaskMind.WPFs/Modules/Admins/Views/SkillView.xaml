@@ -70,6 +70,36 @@
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Margin" Value="0,14,0,8"/>
         </Style>
+        
+        <!-- Icon-only action button (dùng thay ui:Button để tránh lỗi PressedForeground khi Content rỗng trong DataTemplate) -->
+        <Style x:Key="IconActionButton" TargetType="Button">
+            <Setter Property="Width" Value="20"/>
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd"
+                        Background="{TemplateBinding Background}"
+                        CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#3A4149"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#4C525A"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
     </UserControl.Resources>
 
@@ -190,6 +220,9 @@
                                             </StackPanel>
 
                                             <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                <ui:Button Content="Chi tiết" Appearance="Secondary" Height="30" Margin="0,0,8,0"
+                                                           Command="{Binding DataContext.ViewDetailCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                           CommandParameter="{Binding}"/>
                                                 <ui:Button Content="Duyệt" Appearance="Primary" Height="30" Margin="0,0,8,0"
                                                            Command="{Binding DataContext.ApproveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                            CommandParameter="{Binding}"/>
@@ -254,10 +287,18 @@
                                             <TextBlock Text="{Binding Name}" Foreground="#DBDBDB" FontSize="13" VerticalAlignment="Center"/>
                                             <TextBlock Text="{Binding Level, Converter={StaticResource LevelText}}"
                                                        Foreground="#8A93A0" FontSize="11" Margin="8,0,8,0" VerticalAlignment="Center"/>
-                                            <ui:Button Appearance="Transparent" Padding="0" Width="20" Height="20"
-                                                       Icon="{ui:SymbolIcon Delete24}"
-                                                       Command="{Binding DataContext.DeleteSkillCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                       CommandParameter="{Binding}"/>
+                                            <Button Style="{StaticResource IconActionButton}" Margin="0,0,4,0"
+                                                    ToolTip="Xem chi tiết"
+                                                    Command="{Binding DataContext.ViewDetailCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}">
+                                                <ui:SymbolIcon Symbol="Info24" FontSize="14" Foreground="#8A93A0"/>
+                                            </Button>
+                                            <Button Style="{StaticResource IconActionButton}"
+                                                    ToolTip="Xoá"
+                                                    Command="{Binding DataContext.DeleteSkillCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}">
+                                                <ui:SymbolIcon Symbol="Delete24" FontSize="14" Foreground="#8A93A0"/>
+                                            </Button>
                                         </StackPanel>
                                     </Border>
                                 </DataTemplate>

@@ -12,6 +12,13 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
 {
     public class SkillVM : ViewModelBase
     {
+        /// <summary>
+        /// Callback điều hướng do AdminNavigationVM truyền vào, dùng để thay thế toàn bộ
+        /// AdminCurrentView (vd. chuyển sang DetailSkillVM) thay vì hiển thị overlay.
+        /// Có thể null khi SkillVM được tạo ở design-time.
+        /// </summary>
+        private readonly Action<object> _navigate;
+
         public ObservableCollection<SkillModel> Skills { get; } = new ObservableCollection<SkillModel>();
 
         // ----- Danh mục chính thức (đã duyệt), nhóm theo Category -----
@@ -91,9 +98,19 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
         public ICommand DeleteSkillCommand { get; }
         public ICommand ApproveCommand { get; }
         public ICommand RejectCommand { get; }
+        public ICommand ViewDetailCommand { get; }
 
-        public SkillVM()
+        /// <summary>Constructor mặc định (dùng khi thiết kế XAML / không cần điều hướng).</summary>
+        public SkillVM() : this(null) { }
+
+        /// <summary>
+        /// navigate: callback do AdminNavigationVM cung cấp để thay thế AdminCurrentView,
+        /// dùng khi mở DetailSkillView như một trang độc lập.
+        /// </summary>
+        public SkillVM(Action<object> navigate)
         {
+            _navigate = navigate;
+
             RefreshCommand = new RelayCommand(async _ => await LoadDataAsync());
             FilterCommand = new RelayCommand(f => CategoryFilter = f as string ?? "All");
             ToggleAddPanelCommand = new RelayCommand(_ => IsAddPanelOpen = !IsAddPanelOpen);
@@ -101,6 +118,7 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
             DeleteSkillCommand = new RelayCommand(DeleteSkill);
             ApproveCommand = new RelayCommand(Approve);
             RejectCommand = new RelayCommand(Reject);
+            ViewDetailCommand = new RelayCommand(ViewDetail);
 
             SkillsView = CollectionViewSource.GetDefaultView(Skills);
             SkillsView.Filter = FilterApprovedSkills;
@@ -176,6 +194,20 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
             }
         }
 
+        /// <summary>
+        /// Điều hướng sang DetailSkillVM như một trang độc lập (thay thế toàn bộ nội dung),
+        /// thay vì hiển thị overlay. Khi bấm "Quay lại" ở DetailSkillView, callback onBack
+        /// sẽ điều hướng ngược lại về chính SkillVM hiện tại (giữ nguyên filter/search).
+        /// </summary>
+        private void ViewDetail(object obj)
+        {
+            if (obj is SkillModel skill && _navigate != null)
+            {
+                var detailVM = new DetailSkillVM(skill.Id, () => _navigate(this));
+                _navigate(detailVM);
+            }
+        }
+
         /// <summary>SkillModel chưa implement INotifyPropertyChanged nên cần "chạm" lại item để 2 view cùng refresh.</summary>
         private void Touch(SkillModel changed)
         {
@@ -200,16 +232,16 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
             Skills.Clear();
             foreach (var s in new[]
             {
-                new SkillModel { Id="K001", Name="C#", Category=SkillCategory.ProgrammingLanguage, Level=SkillLevel.Advanced, IsApproved=true, CreatedDate=new DateTime(2023,1,1) },
-                new SkillModel { Id="K002", Name="Python", Category=SkillCategory.ProgrammingLanguage, Level=SkillLevel.Advanced, IsApproved=true, CreatedDate=new DateTime(2023,1,1) },
-                new SkillModel { Id="K003", Name="JavaScript", Category=SkillCategory.ProgrammingLanguage, Level=SkillLevel.Intermediate, IsApproved=true, CreatedDate=new DateTime(2023,1,1) },
-                new SkillModel { Id="K004", Name="WPF", Category=SkillCategory.Framework, Level=SkillLevel.Intermediate, IsApproved=true, CreatedDate=new DateTime(2023,2,1) },
-                new SkillModel { Id="K005", Name="ASP.NET Core", Category=SkillCategory.Framework, Level=SkillLevel.Advanced, IsApproved=true, CreatedDate=new DateTime(2023,2,1) },
-                new SkillModel { Id="K006", Name="React", Category=SkillCategory.Framework, Level=SkillLevel.Intermediate, IsApproved=true, CreatedDate=new DateTime(2023,2,1) },
-                new SkillModel { Id="K007", Name="Giao tiếp", Category=SkillCategory.SoftSkill, Level=SkillLevel.Beginner, IsApproved=true, CreatedDate=new DateTime(2023,3,1) },
-                new SkillModel { Id="K008", Name="Làm việc nhóm", Category=SkillCategory.SoftSkill, Level=SkillLevel.Beginner, IsApproved=true, CreatedDate=new DateTime(2023,3,1) },
-                new SkillModel { Id="K009", Name="Git", Category=SkillCategory.Tool, Level=SkillLevel.Intermediate, IsApproved=true, CreatedDate=new DateTime(2023,3,10) },
-                new SkillModel { Id="K010", Name="Docker", Category=SkillCategory.Tool, Level=SkillLevel.Advanced, IsApproved=true, CreatedDate=new DateTime(2023,3,10) },
+                new SkillModel { Id="K001", Name="C#", Category=SkillCategory.ProgrammingLanguage, Level=SkillLevel.Advanced, IsApproved=true, CreatedDate=new DateTime(2023,1,1), UsageCount=410 },
+                new SkillModel { Id="K002", Name="Python", Category=SkillCategory.ProgrammingLanguage, Level=SkillLevel.Advanced, IsApproved=true, CreatedDate=new DateTime(2023,1,1), UsageCount=520 },
+                new SkillModel { Id="K003", Name="JavaScript", Category=SkillCategory.ProgrammingLanguage, Level=SkillLevel.Intermediate, IsApproved=true, CreatedDate=new DateTime(2023,1,1), UsageCount=610 },
+                new SkillModel { Id="K004", Name="WPF", Category=SkillCategory.Framework, Level=SkillLevel.Intermediate, IsApproved=true, CreatedDate=new DateTime(2023,2,1), UsageCount=95 },
+                new SkillModel { Id="K005", Name="ASP.NET Core", Category=SkillCategory.Framework, Level=SkillLevel.Advanced, IsApproved=true, CreatedDate=new DateTime(2023,2,1), UsageCount=180 },
+                new SkillModel { Id="K006", Name="React", Category=SkillCategory.Framework, Level=SkillLevel.Intermediate, IsApproved=true, CreatedDate=new DateTime(2023,2,1), UsageCount=342 },
+                new SkillModel { Id="K007", Name="Giao tiếp", Category=SkillCategory.SoftSkill, Level=SkillLevel.Beginner, IsApproved=true, CreatedDate=new DateTime(2023,3,1), UsageCount=280 },
+                new SkillModel { Id="K008", Name="Làm việc nhóm", Category=SkillCategory.SoftSkill, Level=SkillLevel.Beginner, IsApproved=true, CreatedDate=new DateTime(2023,3,1), UsageCount=350 },
+                new SkillModel { Id="K009", Name="Git", Category=SkillCategory.Tool, Level=SkillLevel.Intermediate, IsApproved=true, CreatedDate=new DateTime(2023,3,10), UsageCount=470 },
+                new SkillModel { Id="K010", Name="Docker", Category=SkillCategory.Tool, Level=SkillLevel.Advanced, IsApproved=true, CreatedDate=new DateTime(2023,3,10), UsageCount=210 },
 
                 // Đề xuất đang chờ duyệt
                 new SkillModel { Id="K011", Name="Rust", Category=SkillCategory.ProgrammingLanguage, Level=SkillLevel.Advanced, IsApproved=false, SuggestedBy="CloudBase JSC", CreatedDate=new DateTime(2026,7,10) },

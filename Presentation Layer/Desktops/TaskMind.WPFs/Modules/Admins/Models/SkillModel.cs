@@ -33,5 +33,8 @@ namespace TaskMind.WPFs.Modules.Admins.Models
         public string SuggestedBy { get; set; }
 
         public DateTime CreatedDate { get; set; }
+
+        /// <summary>Số người dùng đã khai báo kỹ năng này trong hồ sơ cá nhân (mục 4.3).</summary>
+        public int UsageCount { get; set; }
     }
 }
