@@ -25,6 +25,10 @@
     <DataTemplate DataType="{x:Type adminVM:SchoolVM}">
         <adminView:SchoolView/>
     </DataTemplate>
+    
+    <DataTemplate DataType="{x:Type adminVM:DetailSchoolVM}">
+        <adminView:DetailSchoolView/>
+    </DataTemplate>
 
     <DataTemplate DataType="{x:Type adminVM:SkillVM}">
         <adminView:SkillView/>

@@ -48,7 +48,7 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
         private void Profile(object obj) { AdminCurrentView = new ProfileVM(); ActiveKey = "Profile"; }
         private void Skill(object obj) { AdminCurrentView = new SkillVM(); ActiveKey = "Skill"; }
         private void Company(object obj) { AdminCurrentView = new CompanyVM(NavigateTo); ActiveKey = "Company"; }
-        private void School(object obj) { AdminCurrentView = new SchoolVM(); ActiveKey = "School"; }
+        private void School(object obj) { AdminCurrentView = new SchoolVM(NavigateTo); ActiveKey = "School"; }
         private void Profit(object obj) { AdminCurrentView = new ProfitVM(); ActiveKey = "Profit"; }
         private void Report(object obj) { AdminCurrentView = new ReportVM(); ActiveKey = "Report"; }
         private void Handler(object obj) { AdminCurrentView = new HandlerVM(); ActiveKey = "Handler"; }

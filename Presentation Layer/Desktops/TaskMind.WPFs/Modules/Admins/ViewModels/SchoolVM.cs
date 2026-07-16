@@ -11,6 +11,13 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
 {
     public class SchoolVM : ViewModelBase
     {
+        /// <summary>
+        /// Callback điều hướng do AdminNavigationVM truyền vào, dùng để thay thế toàn bộ
+        /// AdminCurrentView (vd. chuyển sang DetailSchoolVM) thay vì hiển thị overlay.
+        /// Có thể null khi SchoolVM được tạo ở design-time.
+        /// </summary>
+        private readonly Action<object> _navigate;
+
         public ObservableCollection<SchoolModel> Schools { get; } = new ObservableCollection<SchoolModel>();
 
         private ICollectionView _schoolsView;
@@ -42,7 +49,7 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
             set { _isBusy = value; OnPropertyChanged(); }
         }
 
-        // ----- Panel "Thêm cơ sở đào tạo mới" -----
+        // ----- Panel "Thêm cơ sở đào tạo mới" (vẫn hiển thị dạng overlay/modal) -----
         private bool _isAddPanelOpen;
         public bool IsAddPanelOpen
         {
@@ -63,15 +70,26 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
         public ICommand RejectCommand { get; }
         public ICommand ToggleSuspendCommand { get; }
         public ICommand OpenAddSchoolCommand { get; }
+        public ICommand ViewDetailCommand { get; }
 
-        public SchoolVM()
+        /// <summary>Constructor mặc định (dùng khi thiết kế XAML / không cần điều hướng).</summary>
+        public SchoolVM() : this(null) { }
+
+        /// <summary>
+        /// navigate: callback do AdminNavigationVM cung cấp để thay thế AdminCurrentView,
+        /// dùng khi mở DetailSchoolView như một trang độc lập.
+        /// </summary>
+        public SchoolVM(Action<object> navigate)
         {
+            _navigate = navigate;
+
             RefreshCommand = new RelayCommand(async _ => await LoadDataAsync());
             FilterCommand = new RelayCommand(f => StatusFilter = f as string ?? "All");
             ApproveCommand = new RelayCommand(Approve);
             RejectCommand = new RelayCommand(Reject);
             ToggleSuspendCommand = new RelayCommand(ToggleSuspend);
             OpenAddSchoolCommand = new RelayCommand(_ => OpenAddPanel());
+            ViewDetailCommand = new RelayCommand(ViewDetail);
 
             SchoolsView = CollectionViewSource.GetDefaultView(Schools);
             SchoolsView.Filter = FilterSchools;
@@ -146,6 +164,20 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
             // LoadDataAsync() để đồng bộ dữ liệu thay vì chỉ thêm vào collection tại chỗ.
             Schools.Insert(0, newSchool);
             CloseAddPanel();
+        }
+
+        /// <summary>
+        /// Điều hướng sang DetailSchoolVM như một trang độc lập (thay thế toàn bộ nội dung),
+        /// thay vì hiển thị overlay. Khi bấm "Quay lại" ở DetailSchoolView, callback onBack
+        /// sẽ điều hướng ngược lại về chính SchoolVM hiện tại (giữ nguyên filter/search).
+        /// </summary>
+        private void ViewDetail(object obj)
+        {
+            if (obj is SchoolModel school && _navigate != null)
+            {
+                var detailVM = new DetailSchoolVM(school.Id, () => _navigate(this));
+                _navigate(detailVM);
+            }
         }
 
         /// <summary>
