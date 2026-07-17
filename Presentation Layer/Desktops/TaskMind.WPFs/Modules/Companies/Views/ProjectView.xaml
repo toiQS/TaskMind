@@ -1,12 +1,300 @@
 ﻿<UserControl x:Class="TaskMind.WPFs.Modules.Companies.Views.ProjectView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:local="clr-namespace:TaskMind.WPFs.Modules.Companies.Views"
-             mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
-            
+             xmlns:util="clr-namespace:TaskMind.WPFs.Modules.Companies.Utilities"
+             xmlns:models="clr-namespace:TaskMind.WPFs.Modules.Companies.Models"
+             xmlns:vm="clr-namespace:TaskMind.WPFs.Modules.Companies.ViewModels"
+             mc:Ignorable="d"
+             d:DesignHeight="700" d:DesignWidth="1200"
+             Style="{StaticResource Page_Style}">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="B2V"/>
+        <util:StatusToTextConverter x:Key="StatusText"/>
+        <util:StatusToBrushConverter x:Key="StatusBrush"/>
+        <util:KindToTextConverter x:Key="KindText"/>
+        <util:KindToExchangeVisibilityConverter x:Key="ExchangeVisible"/>
+        <util:RoleToTextConverter x:Key="RoleText"/>
+        <util:ProgressToPercentTextConverter x:Key="ProgressPercent"/>
+
+        <!-- Badge loại dự án: đổi màu theo Kind -->
+        <Style x:Key="KindBadgeStyle" TargetType="Border">
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="8,3"/>
+            <Setter Property="Background" Value="#3A4149"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Kind}" Value="{x:Static models:ProjectKind.Exchange}">
+                    <Setter Property="Background" Value="#3A2E52"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- ===== Header: tiêu đề + hành động ===== -->
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0">
+                <TextBlock Text="Quản lý dự án" Foreground="White" FontSize="24" FontWeight="SemiBold"/>
+                <TextBlock Foreground="#8A93A0" FontSize="13" Margin="0,4,0,0">
+                    <Run Text="Tổng cộng "/><Run Text="{Binding Projects.Count, Mode=OneWay}"/><Run Text=" dự án"/>
+                </TextBlock>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <ui:Button Margin="0,0,10,0"
+                           Icon="{ui:SymbolIcon ArrowSync24}"
+                           Appearance="Secondary"
+                           Command="{Binding RefreshCommand}"
+                           ToolTip="Làm mới"/>
+                <ui:Button Content="Tạo dự án"
+                           Icon="{ui:SymbolIcon Add24}"
+                           Appearance="Primary"
+                           FontWeight="SemiBold"
+                           Command="{Binding CreateProjectCommand}"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- ===== Thanh tìm kiếm + bộ lọc trạng thái ===== -->
+        <Grid Grid.Row="1" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="320"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <ui:TextBox Grid.Column="0"
+                        Icon="{ui:SymbolIcon Search24}"
+                        PlaceholderText="Tìm theo tên dự án..."
+                        Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                        Height="40"/>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                <ui:Button Content="Tất cả" Appearance="Secondary" Margin="0,0,8,0" Height="36"
+                           Command="{Binding SetStatusFilterCommand}"/>
+                <ui:Button Content="Đang thực hiện" Appearance="Secondary" Margin="0,0,8,0" Height="36"
+                           Command="{Binding SetStatusFilterCommand}"
+                           CommandParameter="{x:Static models:ProjectStatus.InProgress}"/>
+                <ui:Button Content="Tạm dừng" Appearance="Secondary" Margin="0,0,8,0" Height="36"
+                           Command="{Binding SetStatusFilterCommand}"
+                           CommandParameter="{x:Static models:ProjectStatus.Paused}"/>
+                <ui:Button Content="Hoàn thành" Appearance="Secondary" Height="36"
+                           Command="{Binding SetStatusFilterCommand}"
+                           CommandParameter="{x:Static models:ProjectStatus.Completed}"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- ===== Danh sách dự án dạng card ===== -->
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding FilteredProjects}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type models:ProjectModel}">
+                        <ui:Card Width="340" Margin="0,0,16,16" Padding="18" Cursor="Hand">
+                            <ui:Card.InputBindings>
+                                <MouseBinding MouseAction="LeftClick"
+                                              Command="{Binding DataContext.OpenDetailCommand,
+                                                        RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                              CommandParameter="{Binding}"/>
+                            </ui:Card.InputBindings>
+
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Tên dự án + badge loại -->
+                                <Grid Grid.Row="0" Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{Binding Name}" Foreground="White"
+                                               FontSize="16" FontWeight="SemiBold"
+                                               TextTrimming="CharacterEllipsis"/>
+                                    <Border Grid.Column="1" Style="{StaticResource KindBadgeStyle}" Margin="8,0,0,0">
+                                        <TextBlock Text="{Binding Kind, Converter={StaticResource KindText}}"
+                                                   Foreground="#C7CDD6" FontSize="11"/>
+                                    </Border>
+                                </Grid>
+
+                                <!-- Mô tả -->
+                                <TextBlock Grid.Row="1" Text="{Binding Description}" Foreground="#8A93A0"
+                                           FontSize="12.5" TextWrapping="Wrap" MaxHeight="34"
+                                           TextTrimming="CharacterEllipsis" Margin="0,0,0,14"/>
+
+                                <!-- Tiến độ -->
+                                <Grid Grid.Row="2" Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <ProgressBar Grid.Column="0" Value="{Binding Progress, Mode=OneWay}"
+                                                 Minimum="0" Maximum="100" Height="6"
+                                                 VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Progress, Converter={StaticResource ProgressPercent}}"
+                                               Foreground="#C7CDD6" FontSize="12" FontWeight="SemiBold"/>
+                                </Grid>
+
+                                <!-- Số công việc -->
+                                <TextBlock Grid.Row="3" Foreground="#8A93A0" FontSize="12" Margin="0,0,0,14">
+                                    <Run Text="{Binding TaskDone, Mode=OneWay}"/><Run Text="/"/><Run Text="{Binding TaskTotal, Mode=OneWay}"/><Run Text=" công việc hoàn thành"/>
+                                </TextBlock>
+
+                                <!-- Trạng thái + số thành viên -->
+                                <Grid Grid.Row="4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border Grid.Column="0" HorizontalAlignment="Left" CornerRadius="10" Padding="8,3"
+                                            Background="{Binding Status, Converter={StaticResource StatusBrush}}">
+                                        <TextBlock Text="{Binding Status, Converter={StaticResource StatusText}}"
+                                                   Foreground="White" FontSize="11" FontWeight="SemiBold"/>
+                                    </Border>
+
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <ui:SymbolIcon Symbol="People24" FontSize="14" Foreground="#8A93A0" Margin="0,0,4,0"/>
+                                        <TextBlock Text="{Binding Members.Count, Mode=OneWay}" Foreground="#8A93A0" FontSize="12"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Grid>
+                        </ui:Card>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <!-- ===== Overlay: loading ===== -->
+        <Border Grid.RowSpan="3" Background="#902B3036"
+                Visibility="{Binding IsBusy, Converter={StaticResource B2V}}">
+            <ui:ProgressRing IsIndeterminate="True" Width="42" Height="42"/>
+        </Border>
+
+        <!-- ===== Overlay: chi tiết dự án ===== -->
+        <Border Grid.RowSpan="3" Background="#B0181B20"
+                Visibility="{Binding HasSelectedProject, Converter={StaticResource B2V}}">
+
+            <Border Width="460" HorizontalAlignment="Right" Background="#282D33"
+                    BorderBrush="#3A4149" BorderThickness="1,0,0,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="26">
+                    <StackPanel DataContext="{Binding SelectedProject}">
+
+                        <Grid Margin="0,0,0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{Binding Name}" Foreground="White"
+                                       FontSize="22" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                            <ui:Button Grid.Column="1" Icon="{ui:SymbolIcon Dismiss24}"
+                                       Appearance="Transparent"
+                                       Command="{Binding DataContext.CloseDetailCommand,
+                                                 RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                        </Grid>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,10,0,20">
+                            <Border CornerRadius="10" Padding="9,4" Margin="0,0,8,0"
+                                    Background="{Binding Status, Converter={StaticResource StatusBrush}}">
+                                <TextBlock Text="{Binding Status, Converter={StaticResource StatusText}}"
+                                           Foreground="White" FontSize="12" FontWeight="SemiBold"/>
+                            </Border>
+                            <Border CornerRadius="10" Padding="9,4" Background="#3A4149">
+                                <TextBlock Text="{Binding Kind, Converter={StaticResource KindText}}"
+                                           Foreground="#C7CDD6" FontSize="12"/>
+                            </Border>
+                        </StackPanel>
+
+                        <TextBlock Text="Mô tả" Foreground="#8A93A0" FontSize="12" Margin="0,0,0,6"/>
+                        <TextBlock Text="{Binding Description}" Foreground="#DBDBDB" FontSize="14"
+                                   TextWrapping="Wrap" Margin="0,0,0,22"/>
+
+                        <TextBlock Text="Tiến độ" Foreground="#8A93A0" FontSize="12" Margin="0,0,0,6"/>
+                        <Grid Margin="0,0,0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <ProgressBar Grid.Column="0" Value="{Binding Progress, Mode=OneWay}"
+                                         Minimum="0" Maximum="100" Height="8"
+                                         VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Progress, Converter={StaticResource ProgressPercent}}"
+                                       Foreground="White" FontSize="13" FontWeight="SemiBold"/>
+                        </Grid>
+                        <TextBlock Foreground="#8A93A0" FontSize="12" Margin="0,4,0,22">
+                            <Run Text="{Binding TaskDone, Mode=OneWay}"/><Run Text="/"/><Run Text="{Binding TaskTotal, Mode=OneWay}"/><Run Text=" công việc hoàn thành"/>
+                        </TextBlock>
+
+                        <TextBlock Text="Thời gian" Foreground="#8A93A0" FontSize="12" Margin="0,0,0,6"/>
+                        <TextBlock Foreground="#DBDBDB" FontSize="13" Margin="0,0,0,22">
+                            <Run Text="Bắt đầu: "/><Run Text="{Binding StartDate, StringFormat='dd/MM/yyyy'}"/>
+                            <LineBreak/>
+                            <Run Text="Kết thúc: "/><Run Text="{Binding EndDate, StringFormat='dd/MM/yyyy', TargetNullValue='Chưa xác định'}"/>
+                        </TextBlock>
+
+                        <!-- Thông tin đối tác (chỉ hiện với dự án trao đổi) -->
+                        <StackPanel Visibility="{Binding Kind, Converter={StaticResource ExchangeVisible}}" Margin="0,0,0,22">
+                            <TextBlock Text="Thông tin đối tác" Foreground="#8A93A0" FontSize="12" Margin="0,0,0,6"/>
+                            <TextBlock Foreground="#DBDBDB" FontSize="13">
+                                <Run Text="Đối tác: "/><Run Text="{Binding PartnerName}"/>
+                                <LineBreak/>
+                                <Run Text="Giá trị hợp đồng: "/><Run Text="{Binding ContractValue, StringFormat='{}{0:N0} đ'}"/>
+                            </TextBlock>
+                        </StackPanel>
+
+                        <TextBlock Text="Thành viên dự án" Foreground="#8A93A0" FontSize="12" Margin="0,0,0,10"/>
+                        <ItemsControl ItemsSource="{Binding Members}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type models:ProjectMemberModel}">
+                                    <Grid Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <Border Width="34" Height="34" CornerRadius="17" Background="#3E434A"
+                                                Margin="0,0,12,0">
+                                            <TextBlock Text="{Binding FullName[0]}" Foreground="White"
+                                                       FontWeight="Bold" FontSize="14"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding FullName}" Foreground="White" FontSize="13.5" FontWeight="SemiBold"/>
+                                            <TextBlock Text="{Binding Role, Converter={StaticResource RoleText}}"
+                                                       Foreground="#8A93A0" FontSize="12"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Border>
     </Grid>
 </UserControl>

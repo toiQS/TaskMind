@@ -16,14 +16,16 @@ namespace TaskMind.WPFs.Modules.Companies.ViewModels
         }
 
         public ICommand DashbroadCommand { get; set; }
+        public ICommand ProjectCommand { get; set; }
 
         private void Dashbroad(object obj) => CompanyCurrentView = new DashbroadVM();
-
+        private void Project(object obj) => CompanyCurrentView = new ProjectVM();
         public CompanyNavigationVM()
         {
             DashbroadCommand = new RelayCommand(Dashbroad);
-
-            CompanyCurrentView = new DashbroadVM();
+            ProjectCommand = new RelayCommand(Project);
+            //CompanyCurrentView = new DashbroadVM();
+            CompanyCurrentView = new ProjectVM();
         }
     }
 }

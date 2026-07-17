@@ -9,4 +9,7 @@
     <DataTemplate DataType="{x:Type companyVM:CompanyNavigationVM}">
         <companyView:CompanyPage/>
     </DataTemplate>
+    <DataTemplate DataType="{x:Type companyVM:ProjectVM}">
+        <companyView:ProjectView/>
+    </DataTemplate>
 </ResourceDictionary>
