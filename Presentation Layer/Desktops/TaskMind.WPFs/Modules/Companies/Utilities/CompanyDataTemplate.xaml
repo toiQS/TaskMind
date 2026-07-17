@@ -1,4 +1,12 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:companyVM="clr-namespace:TaskMind.WPFs.Modules.Companies.ViewModels"
+                    xmlns:companyView="clr-namespace:TaskMind.WPFs.Modules.Companies.Views">
+
+    <DataTemplate DataType="{x:Type companyVM:DashbroadVM}">
+        <companyView:DashbroadView/>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type companyVM:CompanyNavigationVM}">
+        <companyView:CompanyPage/>
+    </DataTemplate>
 </ResourceDictionary>

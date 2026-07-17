@@ -30,9 +30,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Modules\Companies\Models\" />
-    <Folder Include="Modules\Companies\ViewModels\" />
-    <Folder Include="Modules\Companies\Views\" />
     <Folder Include="Modules\Schools\Models\" />
     <Folder Include="Modules\Schools\ViewModels\" />
     <Folder Include="Modules\Schools\Views\" />

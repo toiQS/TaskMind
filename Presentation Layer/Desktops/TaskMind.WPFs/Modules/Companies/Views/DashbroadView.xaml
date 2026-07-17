@@ -1,12 +1,173 @@
 ﻿<UserControl x:Class="TaskMind.WPFs.Modules.Companies.Views.DashbroadView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:local="clr-namespace:TaskMind.WPFs.Modules.Companies.Views"
-             mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
-            
+             xmlns:util="clr-namespace:TaskMind.WPFs.Modules.Companies.Utilities"
+             xmlns:models="clr-namespace:TaskMind.WPFs.Modules.Companies.Models"
+             mc:Ignorable="d"
+             d:DesignHeight="700" d:DesignWidth="1100"
+             Style="{StaticResource Page_Style}">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="B2V"/>
+        <util:ChartPointsConverter x:Key="ChartPoints"/>
+        <util:PriorityToBrushConverter x:Key="PriorityBrush"/>
+    </UserControl.Resources>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
+            <TextBlock Text="Tổng quan công ty" Foreground="White" FontSize="24" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            <ui:Button Margin="16,0,0,0"
+                       Icon="{ui:SymbolIcon ArrowSync24}"
+                       Appearance="Secondary"
+                       Command="{Binding RefreshCommand}"
+                       ToolTip="Làm mới"/>
+        </StackPanel>
+
+        <!-- Stat cards -->
+        <ItemsControl Grid.Row="1" ItemsSource="{Binding StatCards}" Margin="0,0,0,20">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Rows="1"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="{x:Type models:StatCardModel}">
+                    <ui:Card Margin="0,0,16,0" Padding="18">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <Grid Grid.Row="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding Title}" Foreground="#8A93A0" FontSize="13"/>
+                                <ui:SymbolIcon Grid.Column="1" Symbol="{Binding Icon}" FontSize="20" Foreground="#4C9AFF"/>
+                            </Grid>
+
+                            <TextBlock Grid.Row="1" Text="{Binding Value}" Foreground="White" FontSize="28" FontWeight="Bold" Margin="0,10,0,6"/>
+
+                            <TextBlock Grid.Row="2" Text="{Binding TrendText}" FontSize="12">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="#FF8A8A"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsTrendPositive}" Value="True">
+                                                <Setter Property="Foreground" Value="#3FD07A"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                    </ui:Card>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- Chart + Activities -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="1*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Line chart: tiến độ dự án theo tháng -->
+            <ui:Card Grid.Column="0" Padding="20">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="Tiến độ dự án theo tháng" Foreground="White" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,16"/>
+
+                    <Grid Grid.Row="1" x:Name="ChartHost">
+                        <Polyline Stroke="#4C9AFF" StrokeThickness="2.5" StrokeLineJoin="Round">
+                            <Polyline.Points>
+                                <MultiBinding Converter="{StaticResource ChartPoints}">
+                                    <Binding Path="ProjectProgress"/>
+                                    <Binding ElementName="ChartHost" Path="ActualWidth"/>
+                                    <Binding ElementName="ChartHost" Path="ActualHeight"/>
+                                </MultiBinding>
+                            </Polyline.Points>
+                        </Polyline>
+                    </Grid>
+
+                    <ItemsControl Grid.Row="2" ItemsSource="{Binding ProjectProgress}" Margin="0,10,0,0">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Rows="1"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type models:ChartPointModel}">
+                                <TextBlock Text="{Binding Label}" Foreground="#8A93A0" FontSize="12" HorizontalAlignment="Center"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+            </ui:Card>
+
+            <!-- Recent activities -->
+            <ui:Card Grid.Column="2" Padding="20">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="Hoạt động gần đây" Foreground="White" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,16"/>
+
+                    <ItemsControl Grid.Row="1" ItemsSource="{Binding RecentActivities}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type models:ActivityItemModel}">
+                                <Border BorderBrush="#33FFFFFF" BorderThickness="0,0,0,1" Padding="0,12">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <Border Width="8" Height="8" CornerRadius="4"
+                                                Background="{Binding Priority, Converter={StaticResource PriorityBrush}}"
+                                                VerticalAlignment="Top" Margin="0,6,10,0"/>
+
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="{Binding Title}" Foreground="White" FontSize="14" FontWeight="SemiBold"/>
+                                            <TextBlock Text="{Binding Description}" Foreground="#8A93A0" FontSize="12" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                            <TextBlock Text="{Binding Time, StringFormat='HH:mm dd/MM'}" Foreground="#5A6270" FontSize="11" Margin="0,4,0,0"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+            </ui:Card>
+        </Grid>
+
+        <!-- Overlay loading -->
+        <Border Grid.RowSpan="3" Background="#902B3036"
+                Visibility="{Binding IsBusy, Converter={StaticResource B2V}}">
+            <ui:ProgressRing IsIndeterminate="True" Width="42" Height="42"/>
+        </Border>
     </Grid>
 </UserControl>

@@ -17,6 +17,7 @@
                 <ResourceDictionary Source="/Utilities/DataTemplate.xaml"/>
                 <ResourceDictionary Source="/Modules/Auths/Utilities/AuthDataTemplate.xaml"/>
                 <ResourceDictionary Source="/Modules/Admins/Utilities/AdminDataTemplate.xaml"/>
+                <ResourceDictionary Source="/Modules/Companies/Utilities/CompanyDataTemplate.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
