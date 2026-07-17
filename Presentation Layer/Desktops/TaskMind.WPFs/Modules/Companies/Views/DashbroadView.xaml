@@ -99,16 +99,15 @@
 
                     <TextBlock Grid.Row="0" Text="Tiến độ dự án theo tháng" Foreground="White" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,16"/>
 
-                    <Grid Grid.Row="1" x:Name="ChartHost">
-                        <Polyline Stroke="#4C9AFF" StrokeThickness="2.5" StrokeLineJoin="Round">
-                            <Polyline.Points>
-                                <MultiBinding Converter="{StaticResource ChartPoints}">
-                                    <Binding Path="ProjectProgress"/>
-                                    <Binding ElementName="ChartHost" Path="ActualWidth"/>
-                                    <Binding ElementName="ChartHost" Path="ActualHeight"/>
-                                </MultiBinding>
-                            </Polyline.Points>
-                        </Polyline>
+                    <Grid Grid.Row="1" x:Name="ChartHost" SizeChanged="ChartHost_SizeChanged">
+                        <Polyline x:Name="ProgressLine"
+                                  Stroke="#4C9AFF"
+                                  StrokeThickness="2.5"
+                                  StrokeLineJoin="Round"/>  
+
+                        <!-- Điểm tròn tại từng mốc, giúp thấy rõ chart có dữ liệu -->
+                        <ItemsControl x:Name="ProgressDots" ItemsSource="{Binding ProjectProgress}"
+                  Visibility="Collapsed"/>
                     </Grid>
 
                     <ItemsControl Grid.Row="2" ItemsSource="{Binding ProjectProgress}" Margin="0,10,0,0">
