@@ -6,9 +6,11 @@
     <DataTemplate DataType="{x:Type companyVM:DashbroadVM}">
         <companyView:DashbroadView/>
     </DataTemplate>
+    
     <DataTemplate DataType="{x:Type companyVM:CompanyNavigationVM}">
         <companyView:CompanyPage/>
     </DataTemplate>
+    
     <DataTemplate DataType="{x:Type companyVM:ProjectVM}">
         <companyView:ProjectView/>
     </DataTemplate>
@@ -16,10 +18,17 @@
     <DataTemplate DataType="{x:Type companyVM:SupportVM}">
         <companyView:SupportView/>
     </DataTemplate>
+    
     <DataTemplate DataType="{x:Type companyVM:StoreVM}">
         <companyView:StoreView/>
     </DataTemplate>
+    
     <DataTemplate DataType="{x:Type companyVM:RecruitmentVM}">
         <companyView:RecruitmentView/>
     </DataTemplate>
+    
+    <DataTemplate DataType="{x:Type companyVM:ChatVM}">
+        <companyView:ChatView/>
+    </DataTemplate>
+    
 </ResourceDictionary>

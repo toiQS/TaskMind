@@ -351,8 +351,9 @@
             </Border>
 
             <!-- Trạng thái rỗng khi chưa chọn tin -->
+            <!-- Trạng thái rỗng khi chưa chọn tin -->
             <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center"
-                        Visibility="{Binding HasSelectedJob, Converter={StaticResource B2V}}">
+            Visibility="{Binding HasNoSelectedJob, Converter={StaticResource B2V}}">
                 <ui:SymbolIcon Symbol="Board24" FontSize="42" Foreground="#3A4149" HorizontalAlignment="Center"/>
                 <TextBlock Text="Chọn một tin tuyển dụng để xem chi tiết" Foreground="#8A93A0" FontSize="14" Margin="0,12,0,0"/>
             </StackPanel>
