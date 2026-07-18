@@ -19,4 +19,7 @@
     <DataTemplate DataType="{x:Type companyVM:StoreVM}">
         <companyView:StoreView/>
     </DataTemplate>
+    <DataTemplate DataType="{x:Type companyVM:RecruitmentVM}">
+        <companyView:RecruitmentView/>
+    </DataTemplate>
 </ResourceDictionary>
