@@ -16,4 +16,7 @@
     <DataTemplate DataType="{x:Type companyVM:SupportVM}">
         <companyView:SupportView/>
     </DataTemplate>
+    <DataTemplate DataType="{x:Type companyVM:StoreVM}">
+        <companyView:StoreView/>
+    </DataTemplate>
 </ResourceDictionary>
