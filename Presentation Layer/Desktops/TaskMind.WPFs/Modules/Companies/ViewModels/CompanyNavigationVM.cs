@@ -47,8 +47,8 @@ namespace TaskMind.WPFs.Modules.Companies.ViewModels
             CandidateCommand = new RelayCommand(Candidate);
             FindCommand = new RelayCommand(Find);
             StaffCommand = new RelayCommand(Staff);
-            //CompanyCurrentView = new DashbroadVM();
-            CompanyCurrentView = new StaffVM();
+            CompanyCurrentView = new DashbroadVM();
+            //CompanyCurrentView = new StaffVM();
         }
     }
 }
