@@ -35,4 +35,8 @@
         <companyView:CandidateView/>
     </DataTemplate>
     
+    <DataTemplate DataType="{x:Type companyVM:FindVM}">
+        <companyView:FindView/>
+    </DataTemplate>
+    
 </ResourceDictionary>
