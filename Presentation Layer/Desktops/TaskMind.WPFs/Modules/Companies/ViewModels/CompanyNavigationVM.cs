@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Text;
+using System.Windows.Controls;
 using System.Windows.Input;
 using TaskMind.WPFs.Utilities;
 
@@ -26,6 +27,7 @@ namespace TaskMind.WPFs.Modules.Companies.ViewModels
         public ICommand FindCommand { get; set; }
         public ICommand StaffCommand { get; set; }
         public ICommand InformationCommand { get; set; }
+        public ICommand NotificationCommand { get; set; }
 
         private void Dashbroad(object obj) => CompanyCurrentView = new DashbroadVM();
         private void Project(object obj) => CompanyCurrentView = new ProjectVM();
@@ -37,6 +39,7 @@ namespace TaskMind.WPFs.Modules.Companies.ViewModels
         private void Find(object obj) => CompanyCurrentView = new FindVM();
         private void Staff(object obj) => CompanyCurrentView = new StaffVM();
         private void Information(object obj) => CompanyCurrentView = new InformationVM();
+        private void Notification(object obj) => CompanyCurrentView = new NotificationVM();
 
         public CompanyNavigationVM()
         {
@@ -50,9 +53,10 @@ namespace TaskMind.WPFs.Modules.Companies.ViewModels
             FindCommand = new RelayCommand(Find);
             StaffCommand = new RelayCommand(Staff);
             InformationCommand = new RelayCommand(Information);
+            NotificationCommand = new RelayCommand(Notification);
 
-            //CompanyCurrentView = new DashbroadVM();
-            CompanyCurrentView = new InformationVM();
+            CompanyCurrentView = new DashbroadVM();
+            //CompanyCurrentView = new InformationVM();
         }
     }
 }

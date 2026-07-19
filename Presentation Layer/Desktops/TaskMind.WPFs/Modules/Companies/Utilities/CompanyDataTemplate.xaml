@@ -47,4 +47,8 @@
         <companyView:InformationView/>
     </DataTemplate>
     
+    <DataTemplate DataType="{x:Type companyVM:NotificationVM}">
+        <companyView:NotificationView/>
+    </DataTemplate>
+    
 </ResourceDictionary>
