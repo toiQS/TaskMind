@@ -5,33 +5,160 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       xmlns:local="clr-namespace:TaskMind.WPFs.Modules.Companies.Views"
+      xmlns:vm="clr-namespace:TaskMind.WPFs.Modules.Companies.ViewModels"
+      xmlns:util="clr-namespace:TaskMind.WPFs.Utilities"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
       Title="CompanyPage">
 
-    <Grid>
+    <Page.Resources>
+        <util:EnumToBooleanConverter x:Key="MenuActive"/>
+
+        <!-- Style cho nội dung bên trong mỗi RadioButton menu (icon + chữ) -->
+        <Style x:Key="MenuItemContentStyle" TargetType="StackPanel">
+            <Setter Property="Orientation" Value="Horizontal"/>
+            <Setter Property="Margin" Value="24,0,0,0"/>
+        </Style>
+    </Page.Resources>
+
+    <Grid Background="#282D33">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="260"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <StackPanel Grid.Column="0">
-            <!-- Logo + tên hệ thống -->
-            <Grid DockPanel.Dock="Top" Height="76" Margin="16,10">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <Image Source="/Images/logo.png" Width="36" Height="36"/>
-                    <TextBlock Text="TaskMind" FontSize="20" FontWeight="SemiBold"
-                    VerticalAlignment="Center" Margin="10,0,0,0" Foreground="White"/>
+
+        <!-- ===================== CỘT TRÁI: SIDEBAR ===================== -->
+        <Border Grid.Column="0" Background="#20242A">
+            <DockPanel LastChildFill="False">
+
+                <!-- Logo + tên hệ thống -->
+                <Grid DockPanel.Dock="Top" Height="76" Margin="16,10">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Image Source="/Images/logo.png" Width="36" Height="36"/>
+                        <TextBlock Text="TaskMind" FontSize="20" FontWeight="SemiBold"
+                                   VerticalAlignment="Center" Margin="10,0,0,0" Foreground="White"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- ===== Thanh menu ===== -->
+                <StackPanel DockPanel.Dock="Top" Margin="0,10,0,0">
+
+                    <RadioButton Style="{StaticResource BtnStyle}" GroupName="CompanyMenu"
+                                 Command="{Binding DashbroadCommand}"
+                                 IsChecked="{Binding ActiveMenu, Mode=OneWay,
+                                             Converter={StaticResource MenuActive}, ConverterParameter=Dashboard}">
+                        <StackPanel Style="{StaticResource MenuItemContentStyle}">
+                            <ui:SymbolIcon Symbol="Home24" FontSize="18" Foreground="#DBDBDB"/>
+                            <TextBlock Text="Tổng quan" FontSize="14" Foreground="#DBDBDB"
+                                       Margin="14,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+
+                    <RadioButton Style="{StaticResource BtnStyle}" GroupName="CompanyMenu"
+                                 Command="{Binding ProjectCommand}"
+                                 IsChecked="{Binding ActiveMenu, Mode=OneWay,
+                                             Converter={StaticResource MenuActive}, ConverterParameter=Project}">
+                        <StackPanel Style="{StaticResource MenuItemContentStyle}">
+                            <ui:SymbolIcon Symbol="Board24" FontSize="18" Foreground="#DBDBDB"/>
+                            <TextBlock Text="Dự án" FontSize="14" Foreground="#DBDBDB"
+                                       Margin="14,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+
+                    <RadioButton Style="{StaticResource BtnStyle}" GroupName="CompanyMenu"
+                                 Command="{Binding RecruitmentCommand}"
+                                 IsChecked="{Binding ActiveMenu, Mode=OneWay,
+                                             Converter={StaticResource MenuActive}, ConverterParameter=Recruitment}">
+                        <StackPanel Style="{StaticResource MenuItemContentStyle}">
+                            <ui:SymbolIcon Symbol="PersonAdd24" FontSize="18" Foreground="#DBDBDB"/>
+                            <TextBlock Text="Tuyển dụng" FontSize="14" Foreground="#DBDBDB"
+                                       Margin="14,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+
+                    <RadioButton Style="{StaticResource BtnStyle}" GroupName="CompanyMenu"
+                                 Command="{Binding CandidateCommand}"
+                                 IsChecked="{Binding ActiveMenu, Mode=OneWay,
+                                             Converter={StaticResource MenuActive}, ConverterParameter=Candidate}">
+                        <StackPanel Style="{StaticResource MenuItemContentStyle}">
+                            <ui:SymbolIcon Symbol="PeopleStar24" FontSize="18" Foreground="#DBDBDB"/>
+                            <TextBlock Text="Ứng viên" FontSize="14" Foreground="#DBDBDB"
+                                       Margin="14,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+
+                    <RadioButton Style="{StaticResource BtnStyle}" GroupName="CompanyMenu"
+                                 Command="{Binding StaffCommand}"
+                                 IsChecked="{Binding ActiveMenu, Mode=OneWay,
+                                             Converter={StaticResource MenuActive}, ConverterParameter=Staff}">
+                        <StackPanel Style="{StaticResource MenuItemContentStyle}">
+                            <ui:SymbolIcon Symbol="People24" FontSize="18" Foreground="#DBDBDB"/>
+                            <TextBlock Text="Nhân sự" FontSize="14" Foreground="#DBDBDB"
+                                       Margin="14,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+
+                    <RadioButton Style="{StaticResource BtnStyle}" GroupName="CompanyMenu"
+                                 Command="{Binding FindCommand}"
+                                 IsChecked="{Binding ActiveMenu, Mode=OneWay,
+                                             Converter={StaticResource MenuActive}, ConverterParameter=Find}">
+                        <StackPanel Style="{StaticResource MenuItemContentStyle}">
+                            <ui:SymbolIcon Symbol="Search24" FontSize="18" Foreground="#DBDBDB"/>
+                            <TextBlock Text="Tìm ứng viên" FontSize="14" Foreground="#DBDBDB"
+                                       Margin="14,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+
+                    <RadioButton Style="{StaticResource BtnStyle}" GroupName="CompanyMenu"
+                                 Command="{Binding StoreCommand}"
+                                 IsChecked="{Binding ActiveMenu, Mode=OneWay,
+                                             Converter={StaticResource MenuActive}, ConverterParameter=Store}">
+                        <StackPanel Style="{StaticResource MenuItemContentStyle}">
+                            <ui:SymbolIcon Symbol="" FontSize="18" Foreground="#DBDBDB"/>
+                            <TextBlock Text="Chợ dự án" FontSize="14" Foreground="#DBDBDB"
+                                       Margin="14,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+
+                    <RadioButton Style="{StaticResource BtnStyle}" GroupName="CompanyMenu"
+                                 Command="{Binding ChatCommand}"
+                                 IsChecked="{Binding ActiveMenu, Mode=OneWay,
+                                             Converter={StaticResource MenuActive}, ConverterParameter=Chat}">
+                        <StackPanel Style="{StaticResource MenuItemContentStyle}">
+                            <ui:SymbolIcon Symbol="ChatMultiple24" FontSize="18" Foreground="#DBDBDB"/>
+                            <TextBlock Text="Trò chuyện" FontSize="14" Foreground="#DBDBDB"
+                                       Margin="14,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+
+                    <RadioButton Style="{StaticResource BtnStyle}" GroupName="CompanyMenu"
+                                 Command="{Binding SupportCommand}"
+                                 IsChecked="{Binding ActiveMenu, Mode=OneWay,
+                                             Converter={StaticResource MenuActive}, ConverterParameter=Support}">
+                        <StackPanel Style="{StaticResource MenuItemContentStyle}">
+                            <ui:SymbolIcon Symbol="Wrench24" FontSize="18" Foreground="#DBDBDB"/>
+                            <TextBlock Text="Yêu cầu hỗ trợ" FontSize="14" Foreground="#DBDBDB"
+                                       Margin="14,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+
                 </StackPanel>
-            </Grid>
-            <!--thanh menu-->
-        </StackPanel>
+
+                <!-- ===== Chân sidebar: tên công ty rút gọn (tuỳ chọn mở rộng sau) ===== -->
+                <Border DockPanel.Dock="Bottom" Height="1" Background="#3A4149" Margin="20,0,20,16"/>
+
+            </DockPanel>
+        </Border>
+
+        <!-- ===================== CỘT PHẢI: NỘI DUNG ===================== -->
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="50"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
+
             <Grid Grid.Row="0">
-                <!-- nút thông báo + nút thoát -->
+                <!-- nút thông báo + nút thông tin công ty -->
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0">
                     <ui:Button Icon="{ui:SymbolIcon Alert24}" Appearance="Transparent" Height="36" Width="36"
                                Margin="0,0,6,0" ToolTip="Thông báo"
@@ -41,10 +168,11 @@
                                Command="{Binding InformationCommand}"/>
                 </StackPanel>
             </Grid>
+
             <ContentControl Grid.Row="1"
-         Content="{Binding CompanyCurrentView}"
-         x:Name="CompanyPages"/>
+                             Content="{Binding CompanyCurrentView}"
+                             x:Name="CompanyPages"/>
         </Grid>
-        
+
     </Grid>
 </Page>
