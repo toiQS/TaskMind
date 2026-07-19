@@ -25,7 +25,7 @@ namespace TaskMind.WPFs.Modules.Companies.Models
         public string Email { get; set; }
         public string Phone { get; set; }
 
-        public string Position { get; set; }     // Chức danh, vd: "Backend Developer"
+        public string Position { get; set; }
         public string Department { get; set; }
 
         public StaffStatus Status { get; set; } = StaffStatus.Active;
@@ -34,18 +34,17 @@ namespace TaskMind.WPFs.Modules.Companies.Models
         public DateTime? LeftDate { get; set; }
 
         public List<string> Skills { get; set; } = new();
-
-        /// <summary>Tên các dự án công ty đang phân bổ nhân sự này tham gia (liên kết mục 4.7).</summary>
         public List<string> ProjectNames { get; set; } = new();
 
-        /// <summary>Nếu nhân sự này được tuyển từ luồng ứng tuyển (mục 5.1), lưu lại tên ứng viên gốc để truy vết.</summary>
         public string SourceCandidateName { get; set; }
-
         public string Note { get; set; }
 
         public string Initial => string.IsNullOrWhiteSpace(FullName) ? "?" : FullName.Trim()[0].ToString().ToUpper();
         public string SkillsDisplay => Skills is { Count: > 0 } ? string.Join(" · ", Skills) : "Chưa cập nhật kỹ năng";
         public string ProjectsDisplay => ProjectNames is { Count: > 0 } ? string.Join(" · ", ProjectNames) : "Chưa phân bổ dự án";
         public int ProjectCount => ProjectNames?.Count ?? 0;
+
+        /// <summary>Chỉ hiện nút "Cho nghỉ việc" khi chưa Resigned.</summary>
+        public bool CanResign => Status != StaffStatus.Resigned;
     }
 }

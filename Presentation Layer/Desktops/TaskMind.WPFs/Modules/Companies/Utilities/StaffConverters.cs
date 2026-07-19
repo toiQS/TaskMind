@@ -36,7 +36,6 @@ namespace TaskMind.WPFs.Modules.Companies.Utilities
             => throw new NotSupportedException();
     }
 
-    /// <summary>So khớp bộ lọc hiện tại (enum? hoặc null) với ConverterParameter — dùng cho chip lọc và ẩn/hiện nút hành động.</summary>
     public class StaffFilterActiveConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)

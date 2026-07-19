@@ -284,10 +284,10 @@
                                                  RelativeSource={RelativeSource AncestorType=UserControl}}"
                                        CommandParameter="{Binding}"/>
                             <ui:Button Content="Cho nghỉ việc" Appearance="Danger" Height="42"
-                                       Visibility="{Binding Status, Converter={StaticResource FilterActive}, ConverterParameter=Resigned, ConverterParameterOperator=NotEqual}"
-                                       Command="{Binding DataContext.ResignCommand,
-                                                 RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                       CommandParameter="{Binding}"/>
+                                               Visibility="{Binding CanResign, Converter={StaticResource B2V}}"
+                                               Command="{Binding DataContext.ResignCommand,
+                                                         RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                               CommandParameter="{Binding}"/>   
                         </StackPanel>
 
                     </StackPanel>
