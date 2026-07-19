@@ -123,8 +123,8 @@
                             <StackPanel>
                                 <TextBlock Text="{Binding ProjectName}" Foreground="White" FontSize="13.5" FontWeight="SemiBold"/>
                                 <TextBlock Foreground="#8A93A0" FontSize="11.5" Margin="0,4,0,0" TextWrapping="Wrap" MaxWidth="220">
-                                    <Run Text="{Binding SkillsDisplay}"/>
-                                </TextBlock>
+                                    <Run Text="{Binding SkillsDisplay, Mode=OneWay}"/>
+                                </TextBlock> 
                                 <TextBlock Foreground="#4C9AFF" FontSize="11.5" FontWeight="SemiBold" Margin="0,4,0,0">
                                     <Run Text="Cần "/><Run Text="{Binding OpenSlots, Mode=OneWay}"/><Run Text=" người"/>
                                 </TextBlock>

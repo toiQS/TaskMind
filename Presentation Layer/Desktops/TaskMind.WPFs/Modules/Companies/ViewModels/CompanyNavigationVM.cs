@@ -24,6 +24,7 @@ namespace TaskMind.WPFs.Modules.Companies.ViewModels
         public ICommand ChatCommand { get; set; }
         public ICommand CandidateCommand { get; set; }
         public ICommand FindCommand { get; set; }
+        public ICommand StaffCommand { get; set; }
 
         private void Dashbroad(object obj) => CompanyCurrentView = new DashbroadVM();
         private void Project(object obj) => CompanyCurrentView = new ProjectVM();
@@ -33,6 +34,7 @@ namespace TaskMind.WPFs.Modules.Companies.ViewModels
         private void Chat(object obj) => CompanyCurrentView = new ChatVM();
         private void Candidate(object obj) => CompanyCurrentView = new CandidateVM();
         private void Find(object obj) => CompanyCurrentView = new FindVM();
+        private void Staff(object obj) => CompanyCurrentView = new StaffVM();
 
         public CompanyNavigationVM()
         {
@@ -44,6 +46,7 @@ namespace TaskMind.WPFs.Modules.Companies.ViewModels
             ChatCommand = new RelayCommand(Chat);
             CandidateCommand = new RelayCommand(Candidate);
             FindCommand = new RelayCommand(Find);
+            StaffCommand = new RelayCommand(Staff);
             //CompanyCurrentView = new DashbroadVM();
             CompanyCurrentView = new FindVM();
         }
