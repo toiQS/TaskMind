@@ -298,7 +298,7 @@
                             <Run Text="Còn "/><Run Text="{Binding DaysRemaining, Mode=OneWay}"/><Run Text=" ngày"/>
                         </TextBlock>
 
-                        <ui:Button Content="Gia hạn ngay" Icon="{ui:SymbolIcon ArrowRenew24}" Appearance="Primary"
+                        <ui:Button Content="Gia hạn ngay" Icon="{ui:SymbolIcon ArrowClockwise24}" Appearance="Primary"
                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
                                    Height="42" FontWeight="SemiBold"
                                    Command="{Binding DataContext.RenewMembershipCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
