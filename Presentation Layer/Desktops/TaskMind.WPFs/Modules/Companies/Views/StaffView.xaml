@@ -1,0 +1,298 @@
+﻿<UserControl x:Class="TaskMind.WPFs.Modules.Companies.Views.StaffView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:local="clr-namespace:TaskMind.WPFs.Modules.Companies.Views"
+             xmlns:util="clr-namespace:TaskMind.WPFs.Modules.Companies.Utilities"
+             xmlns:models="clr-namespace:TaskMind.WPFs.Modules.Companies.Models"
+             mc:Ignorable="d"
+             d:DesignHeight="780" d:DesignWidth="1200"
+             Style="{StaticResource Page_Style}">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="B2V"/>
+        <util:StaffStatusToTextConverter x:Key="StatusText"/>
+        <util:StaffStatusToBrushConverter x:Key="StatusBrush"/>
+        <util:StaffFilterActiveConverter x:Key="FilterActive"/>
+
+        <Style x:Key="StatCardStyle" TargetType="ui:Card">
+            <Setter Property="Padding" Value="18,16"/>
+            <Setter Property="Margin" Value="0,0,16,0"/>
+        </Style>
+
+        <Style x:Key="FilterChipStyle" TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Setter Property="Appearance" Value="Secondary"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- ===== Header ===== -->
+        <Grid Grid.Row="0" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0">
+                <TextBlock Text="Nhân sự công ty" Foreground="White" FontSize="24" FontWeight="SemiBold"/>
+                <TextBlock Foreground="#8A93A0" FontSize="13" Margin="0,4,0,0">
+                    <Run Text="Danh sách, trạng thái và phân bổ nhân sự theo dự án (mục 4.5)"/>
+                </TextBlock>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <ui:Button Margin="0,0,10,0"
+                           Icon="{ui:SymbolIcon ArrowSync24}"
+                           Appearance="Secondary"
+                           Command="{Binding RefreshCommand}"
+                           ToolTip="Làm mới"/>
+                <ui:Button Content="Thêm nhân sự"
+                           Icon="{ui:SymbolIcon PersonAdd24}"
+                           Appearance="Primary"
+                           FontWeight="SemiBold"
+                           Command="{Binding AddStaffCommand}"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- ===== Thẻ thống kê ===== -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,20">
+            <ui:Card Style="{StaticResource StatCardStyle}" Width="200">
+                <StackPanel>
+                    <TextBlock Text="Đang hoạt động" Foreground="#8A93A0" FontSize="12"/>
+                    <TextBlock Text="{Binding ActiveCount, Mode=OneWay}" Foreground="#3FD07A" FontSize="26" FontWeight="Bold"/>
+                </StackPanel>
+            </ui:Card>
+            <ui:Card Style="{StaticResource StatCardStyle}" Width="200">
+                <StackPanel>
+                    <TextBlock Text="Tạm ngưng" Foreground="#8A93A0" FontSize="12"/>
+                    <TextBlock Text="{Binding SuspendedCount, Mode=OneWay}" Foreground="#FFC14C" FontSize="26" FontWeight="Bold"/>
+                </StackPanel>
+            </ui:Card>
+            <ui:Card Style="{StaticResource StatCardStyle}" Width="200">
+                <StackPanel>
+                    <TextBlock Text="Đã rời công ty" Foreground="#8A93A0" FontSize="12"/>
+                    <TextBlock Text="{Binding ResignedCount, Mode=OneWay}" Foreground="#8A93A0" FontSize="26" FontWeight="Bold"/>
+                </StackPanel>
+            </ui:Card>
+        </StackPanel>
+
+        <!-- ===== Tìm kiếm + bộ lọc trạng thái ===== -->
+        <Grid Grid.Row="2" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="320"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <ui:TextBox Grid.Column="0"
+                        Icon="{ui:SymbolIcon Search24}"
+                        PlaceholderText="Tìm theo tên, chức danh hoặc kỹ năng..."
+                        Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                        Height="40"/>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                <ui:Button Style="{StaticResource FilterChipStyle}" Content="Tất cả"
+                           Command="{Binding SetStatusFilterCommand}"/>
+                <ui:Button Style="{StaticResource FilterChipStyle}" Content="Đang hoạt động"
+                           Command="{Binding SetStatusFilterCommand}" CommandParameter="{x:Static models:StaffStatus.Active}"/>
+                <ui:Button Style="{StaticResource FilterChipStyle}" Content="Tạm ngưng"
+                           Command="{Binding SetStatusFilterCommand}" CommandParameter="{x:Static models:StaffStatus.Suspended}"/>
+                <ui:Button Style="{StaticResource FilterChipStyle}" Content="Đã rời công ty"
+                           Command="{Binding SetStatusFilterCommand}" CommandParameter="{x:Static models:StaffStatus.Resigned}"/>
+                <ui:Button Content="Xoá lọc" Appearance="Transparent" Height="36"
+                           Command="{Binding ClearFilterCommand}"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- ===== Danh sách nhân sự ===== -->
+        <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding FilteredStaffs}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type models:StaffModel}">
+                        <ui:Card Margin="0,0,0,12" Padding="18" Cursor="Hand">
+                            <ui:Card.InputBindings>
+                                <MouseBinding MouseAction="LeftClick"
+                                              Command="{Binding DataContext.OpenDetailCommand,
+                                                        RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                              CommandParameter="{Binding}"/>
+                            </ui:Card.InputBindings>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.Column="0" Width="44" Height="44" CornerRadius="22"
+                                        Background="#3E434A" Margin="0,0,16,0" VerticalAlignment="Top">
+                                    <TextBlock Text="{Binding Initial}" Foreground="White" FontWeight="Bold"
+                                               FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+
+                                <StackPanel Grid.Column="1">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding FullName}" Foreground="White"
+                                                   FontSize="15" FontWeight="SemiBold"/>
+                                        <Border Grid.Column="1" CornerRadius="10" Padding="8,3"
+                                                Background="{Binding Status, Converter={StaticResource StatusBrush}}">
+                                            <TextBlock Text="{Binding Status, Converter={StaticResource StatusText}}"
+                                                       Foreground="White" FontSize="10.5" FontWeight="SemiBold"/>
+                                        </Border>
+                                    </Grid>
+
+                                    <TextBlock Foreground="#8A93A0" FontSize="12.5" Margin="0,4,0,10">
+                                        <Run Text="{Binding Position, Mode=OneWay}"/>
+                                        <Run Text=" · "/>
+                                        <Run Text="{Binding Department, Mode=OneWay}"/>
+                                    </TextBlock>
+
+                                    <TextBlock Text="{Binding SkillsDisplay}" Foreground="#4C9AFF" FontSize="12" Margin="0,0,0,8"/>
+
+                                    <StackPanel Orientation="Horizontal">
+                                        <ui:SymbolIcon Symbol="FolderPeople24" FontSize="13" Foreground="#8A93A0" Margin="0,0,4,0"/>
+                                        <TextBlock Foreground="#8A93A0" FontSize="12" Margin="0,0,14,0">
+                                            <Run Text="{Binding ProjectCount, Mode=OneWay}"/><Run Text=" dự án đang tham gia"/>
+                                        </TextBlock>
+                                        <TextBlock Foreground="#8A93A0" FontSize="12">
+                                            <Run Text="Gia nhập "/><Run Text="{Binding JoinDate, StringFormat='dd/MM/yyyy'}"/>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <!-- Hành động nhanh -->
+                                <StackPanel Grid.Column="2" VerticalAlignment="Center" Orientation="Horizontal">
+                                    <ui:Button Content="Tạm ngưng" Appearance="Secondary" Height="30" FontSize="11.5" Margin="0,0,6,0"
+                                               Visibility="{Binding Status, Converter={StaticResource FilterActive}, ConverterParameter=Active}"
+                                               Command="{Binding DataContext.SuspendCommand,
+                                                         RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                               CommandParameter="{Binding}"/>
+                                    <ui:Button Content="Kích hoạt lại" Appearance="Success" Height="30" FontSize="11.5" Margin="0,0,6,0"
+                                               Visibility="{Binding Status, Converter={StaticResource FilterActive}, ConverterParameter=Suspended}"
+                                               Command="{Binding DataContext.ActivateCommand,
+                                                         RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                               CommandParameter="{Binding}"/>
+                                </StackPanel>
+                            </Grid>
+                        </ui:Card>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <!-- ===== Overlay: loading ===== -->
+        <Border Grid.RowSpan="4" Background="#902B3036"
+                Visibility="{Binding IsBusy, Converter={StaticResource B2V}}">
+            <ui:ProgressRing IsIndeterminate="True" Width="42" Height="42"/>
+        </Border>
+
+        <!-- ===== Overlay: chi tiết nhân sự ===== -->
+        <Border Grid.RowSpan="4" Background="#B0181B20"
+                Visibility="{Binding HasSelectedStaff, Converter={StaticResource B2V}}">
+
+            <Border Width="460" HorizontalAlignment="Right" Background="#282D33"
+                    BorderBrush="#3A4149" BorderThickness="1,0,0,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="26">
+                    <StackPanel DataContext="{Binding SelectedStaff}">
+
+                        <Grid Margin="0,0,0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                <Border Width="52" Height="52" CornerRadius="26" Background="#3E434A" Margin="0,0,16,0">
+                                    <TextBlock Text="{Binding Initial}" Foreground="White" FontWeight="Bold"
+                                               FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding FullName}" Foreground="White" FontSize="20" FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding Position}" Foreground="#8A93A0" FontSize="13"/>
+                                </StackPanel>
+                            </StackPanel>
+                            <ui:Button Grid.Column="1" Icon="{ui:SymbolIcon Dismiss24}"
+                                       Appearance="Transparent" VerticalAlignment="Top"
+                                       Command="{Binding DataContext.CloseDetailCommand,
+                                                 RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                        </Grid>
+
+                        <Border CornerRadius="10" Padding="9,4" HorizontalAlignment="Left"
+                                Background="{Binding Status, Converter={StaticResource StatusBrush}}" Margin="0,16,0,20">
+                            <TextBlock Text="{Binding Status, Converter={StaticResource StatusText}}"
+                                       Foreground="White" FontSize="12" FontWeight="SemiBold"/>
+                        </Border>
+
+                        <TextBlock Text="Thông tin liên hệ" Foreground="#8A93A0" FontSize="12" Margin="0,0,0,6"/>
+                        <TextBlock Foreground="#DBDBDB" FontSize="13.5" Margin="0,0,0,20">
+                            <Run Text="{Binding Email}"/>
+                            <LineBreak/>
+                            <Run Text="{Binding Phone}"/>
+                        </TextBlock>
+
+                        <TextBlock Text="Phòng ban" Foreground="#8A93A0" FontSize="12" Margin="0,0,0,6"/>
+                        <TextBlock Text="{Binding Department}" Foreground="#DBDBDB" FontSize="13.5" Margin="0,0,0,20"/>
+
+                        <TextBlock Text="Kỹ năng" Foreground="#8A93A0" FontSize="12" Margin="0,0,0,6"/>
+                        <TextBlock Text="{Binding SkillsDisplay}" Foreground="#4C9AFF" FontSize="13.5"
+                                   TextWrapping="Wrap" Margin="0,0,0,20"/>
+
+                        <TextBlock Text="Dự án đang tham gia" Foreground="#8A93A0" FontSize="12" Margin="0,0,0,6"/>
+                        <TextBlock Text="{Binding ProjectsDisplay}" Foreground="#DBDBDB" FontSize="13.5"
+                                   TextWrapping="Wrap" Margin="0,0,0,20"/>
+
+                        <TextBlock Text="Thời gian" Foreground="#8A93A0" FontSize="12" Margin="0,0,0,6"/>
+                        <TextBlock Foreground="#DBDBDB" FontSize="13" Margin="0,0,0,20">
+                            <Run Text="Gia nhập: "/><Run Text="{Binding JoinDate, StringFormat='dd/MM/yyyy'}"/>
+                            <LineBreak/>
+                            <Run Text="Rời công ty: "/><Run Text="{Binding LeftDate, StringFormat='dd/MM/yyyy', TargetNullValue='Chưa rời công ty'}"/>
+                        </TextBlock>
+
+                        <StackPanel Visibility="{Binding SourceCandidateName, Converter={StaticResource B2V}}" Margin="0,0,0,20">
+                            <TextBlock Text="Nguồn tuyển dụng" Foreground="#8A93A0" FontSize="12" Margin="0,0,0,6"/>
+                            <TextBlock Text="{Binding SourceCandidateName}" Foreground="#8A93A0" FontSize="12.5" TextWrapping="Wrap"/>
+                        </StackPanel>
+
+                        <StackPanel Visibility="{Binding Note, Converter={StaticResource B2V}}" Margin="0,0,0,26">
+                            <TextBlock Text="Ghi chú" Foreground="#8A93A0" FontSize="12" Margin="0,0,0,6"/>
+                            <TextBlock Text="{Binding Note}" Foreground="#DBDBDB" FontSize="13.5" TextWrapping="Wrap"/>
+                        </StackPanel>
+
+                        <!-- Hành động theo trạng thái -->
+                        <StackPanel Orientation="Horizontal">
+                            <ui:Button Content="Tạm ngưng" Appearance="Secondary" Height="42" Width="120" Margin="0,0,10,0"
+                                       Visibility="{Binding Status, Converter={StaticResource FilterActive}, ConverterParameter=Active}"
+                                       Command="{Binding DataContext.SuspendCommand,
+                                                 RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                       CommandParameter="{Binding}"/>
+                            <ui:Button Content="Kích hoạt lại" Appearance="Success" Height="42" Width="130" Margin="0,0,10,0"
+                                       Visibility="{Binding Status, Converter={StaticResource FilterActive}, ConverterParameter=Suspended}"
+                                       Command="{Binding DataContext.ActivateCommand,
+                                                 RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                       CommandParameter="{Binding}"/>
+                            <ui:Button Content="Cho nghỉ việc" Appearance="Danger" Height="42"
+                                       Visibility="{Binding Status, Converter={StaticResource FilterActive}, ConverterParameter=Resigned, ConverterParameterOperator=NotEqual}"
+                                       Command="{Binding DataContext.ResignCommand,
+                                                 RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                       CommandParameter="{Binding}"/>
+                        </StackPanel>
+
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Border>
+    </Grid>
+</UserControl>
