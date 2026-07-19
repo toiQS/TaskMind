@@ -38,7 +38,7 @@
 
         <!-- Card ứng viên: viền xanh khi đang được chọn -->
         <Style x:Key="CandidateCardStyle" TargetType="ui:Card">
-            <Setter Property="Margin" Value="0,0,0,12"/>
+            <Setter Property="Margin" Value="0,0,14,12"/>
             <Setter Property="Padding" Value="16"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="BorderThickness" Value="1"/>
