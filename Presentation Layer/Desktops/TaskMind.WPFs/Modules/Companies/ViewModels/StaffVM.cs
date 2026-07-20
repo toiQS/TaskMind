@@ -22,6 +22,12 @@ namespace TaskMind.WPFs.Modules.Companies.ViewModels
         private string _departmentFilter;
         public string DepartmentFilter { get => _departmentFilter; set { _departmentFilter = value; OnPropertyChanged(); ApplyFilter(); } }
 
+        private bool _isAddingStaff;
+        public bool IsAddingStaff { get => _isAddingStaff; set { _isAddingStaff = value; OnPropertyChanged(); } }
+
+        private AddStaffVM _addStaffVM;
+        public AddStaffVM AddStaffVM { get => _addStaffVM; set { _addStaffVM = value; OnPropertyChanged(); } }
+
         private StaffModel _selectedStaff;
         public StaffModel SelectedStaff
         {
@@ -176,9 +182,27 @@ namespace TaskMind.WPFs.Modules.Companies.ViewModels
 
         private void AddStaff()
         {
-            // TODO: mở dialog "Thêm nhân sự mới" — cho phép chọn từ danh sách ứng viên đã Hired (RecruitmentVM)
-            // để kế thừa họ tên/email/kỹ năng, sau đó bổ sung chức danh/phòng ban/ngày gia nhập.
-            // Gọi service POST /staffs khi xác nhận.
+            SelectedStaff = null; // đóng panel chi tiết nếu đang mở, tránh chồng 2 overlay
+
+            var vm = new AddStaffVM();
+            vm.OnSaved = staff =>
+            {
+                // TODO: khi có service thật, có thể gọi lại LoadAsync() thay vì chèn trực tiếp vào danh sách cục bộ
+                Staffs.Add(staff);
+                ApplyFilter();
+                RaiseCounters();
+
+                IsAddingStaff = false;
+                AddStaffVM = null;
+            };
+            vm.OnCancelled = () =>
+            {
+                IsAddingStaff = false;
+                AddStaffVM = null;
+            };
+
+            AddStaffVM = vm;
+            IsAddingStaff = true;
         }
 
         /// <summary>Ép làm mới UI vì StaffModel không implement INotifyPropertyChanged.</summary>

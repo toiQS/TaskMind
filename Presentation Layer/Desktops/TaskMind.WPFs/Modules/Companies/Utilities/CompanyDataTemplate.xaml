@@ -55,4 +55,8 @@
         <companyView:AddRecruitmentView/>
     </DataTemplate>
 
+    <DataTemplate DataType="{x:Type companyVM:AddStaffVM}">
+        <companyView:AddStaffView/>
+    </DataTemplate>
+    
 </ResourceDictionary>

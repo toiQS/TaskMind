@@ -29,12 +29,16 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Margin="24">
+    <!-- Grid gốc: chỉ chứa ScrollViewer (toàn trang) + overlay (loading / chi tiết / thêm nhân sự) nằm ngoài
+         để luôn phủ kín màn hình bất kể đang cuộn tới đâu. -->
+    <Grid>
+      <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <Grid Margin="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!-- ===== Header ===== -->
@@ -115,8 +119,7 @@
         </Grid>
 
         <!-- ===== Danh sách nhân sự ===== -->
-        <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
-            <ItemsControl ItemsSource="{Binding FilteredStaffs}">
+            <ItemsControl Grid.Row="3" ItemsSource="{Binding FilteredStaffs}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="{x:Type models:StaffModel}">
                         <ui:Card Margin="0,0,0,12" Padding="18" Cursor="Hand">
@@ -192,16 +195,17 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-        </ScrollViewer>
+        </Grid>
+      </ScrollViewer>
 
         <!-- ===== Overlay: loading ===== -->
-        <Border Grid.RowSpan="4" Background="#902B3036"
+        <Border Background="#902B3036"
                 Visibility="{Binding IsBusy, Converter={StaticResource B2V}}">
             <ui:ProgressRing IsIndeterminate="True" Width="42" Height="42"/>
         </Border>
 
         <!-- ===== Overlay: chi tiết nhân sự ===== -->
-        <Border Grid.RowSpan="4" Background="#B0181B20"
+        <Border Background="#B0181B20"
                 Visibility="{Binding HasSelectedStaff, Converter={StaticResource B2V}}">
 
             <Border Width="460" HorizontalAlignment="Right" Background="#282D33"
@@ -293,6 +297,11 @@
                     </StackPanel>
                 </ScrollViewer>
             </Border>
+        </Border>
+        <Border Background="#B0181B20"
+        Visibility="{Binding IsAddingStaff, Converter={StaticResource B2V}}">
+            <local:AddStaffView DataContext="{Binding AddStaffVM}"
+                         HorizontalAlignment="Center" VerticalAlignment="Center"/>
         </Border>
     </Grid>
 </UserControl>
