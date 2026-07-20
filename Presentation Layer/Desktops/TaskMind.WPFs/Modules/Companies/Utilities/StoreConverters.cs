@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
 using TaskMind.WPFs.Modules.Companies.Models;
@@ -74,6 +75,40 @@ namespace TaskMind.WPFs.Modules.Companies.Utilities
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
+    }
+
+    /// <summary>
+    /// Quyết định hiển thị từng loại hành động/badge trên card tin đăng, dựa trên tổ hợp:
+    /// values[0] = CurrentScope (StoreScope), values[1] = IsMine (bool), values[2] = Status (ListingStatus).
+    /// ConverterParameter là "khoá" hành động: MineBadge | Interest | CloseListing | MarkSold | PendingNote | RejectedNote.
+    /// </summary>
+    public class StoreActionVisibilityConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (values.Length < 3 || values[0] is not StoreScope scope
+                || values[1] is not bool isMine || values[2] is not ListingStatus status)
+                return Visibility.Collapsed;
+
+            var key = parameter as string ?? string.Empty;
+
+            bool show = key switch
+            {
+                "MineBadge" => scope == StoreScope.System && isMine,
+                "Interest" => scope == StoreScope.System && !isMine
+                              && (status == ListingStatus.Published || status == ListingStatus.Negotiating),
+                "CloseListing" => scope == StoreScope.Company && status == ListingStatus.Published,
+                "MarkSold" => scope == StoreScope.Company && status == ListingStatus.Negotiating,
+                "PendingNote" => scope == StoreScope.Company && status == ListingStatus.PendingApproval,
+                "RejectedNote" => scope == StoreScope.Company && status == ListingStatus.Rejected,
+                _ => false
+            };
+
+            return show ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
             => throw new NotSupportedException();
     }
 }

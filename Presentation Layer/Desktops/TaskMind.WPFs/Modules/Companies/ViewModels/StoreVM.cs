@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,6 +13,14 @@ namespace TaskMind.WPFs.Modules.Companies.ViewModels
     {
         private bool _isBusy;
         public bool IsBusy { get => _isBusy; set { _isBusy = value; OnPropertyChanged(); } }
+
+        private StoreScope _currentScope = StoreScope.System;
+        /// <summary>Thẻ đang xem: Toàn hệ thống hay Dự án của công ty.</summary>
+        public StoreScope CurrentScope
+        {
+            get => _currentScope;
+            set { _currentScope = value; OnPropertyChanged(); ApplyFilter(); RaiseCounters(); }
+        }
 
         private string _searchText;
         public string SearchText { get => _searchText; set { _searchText = value; OnPropertyChanged(); ApplyFilter(); } }
@@ -30,23 +39,44 @@ namespace TaskMind.WPFs.Modules.Companies.ViewModels
         }
         public bool HasSelectedListing => SelectedListing != null;
 
+        /// <summary>Toàn bộ tin đăng tải từ service (cả của công ty mình lẫn công ty/cá nhân khác).</summary>
         public ObservableCollection<StoreListingModel> Listings { get; } = new();
+
+        /// <summary>Danh sách sau khi áp dụng phạm vi thẻ (System/Company) + tìm kiếm/lọc.</summary>
         public ObservableCollection<StoreListingModel> FilteredListings { get; } = new();
 
-        public int PendingCount => Listings.Count(l => l.Status == ListingStatus.PendingApproval);
-        public int PublishedCount => Listings.Count(l => l.Status == ListingStatus.Published);
-        public int SoldCount => Listings.Count(l => l.Status == ListingStatus.Sold);
+        /// <summary>
+        /// Tập tin đăng theo phạm vi thẻ hiện tại:
+        /// - System: tin đã duyệt (Published/Negotiating/Sold) của mọi công ty, cộng tin của chính mình dù đang chờ duyệt.
+        /// - Company: chỉ tin của chính công ty mình, mọi trạng thái, để tự quản lý.
+        /// </summary>
+        private IEnumerable<StoreListingModel> ScopedListings =>
+            CurrentScope == StoreScope.Company
+                ? Listings.Where(l => l.IsMine)
+                : Listings.Where(l => l.IsMine || IsPublicStatus(l.Status));
+
+        private static bool IsPublicStatus(ListingStatus s)
+            => s is ListingStatus.Published or ListingStatus.Negotiating or ListingStatus.Sold;
+
+        public int PendingCount => ScopedListings.Count(l => l.Status == ListingStatus.PendingApproval);
+        public int PublishedCount => ScopedListings.Count(l => l.Status == ListingStatus.Published);
+        public int SoldCount => ScopedListings.Count(l => l.Status == ListingStatus.Sold);
+
+        /// <summary>Tổng số tin hiển thị ở mỗi thẻ — dùng cho badge trên nút chuyển thẻ.</summary>
+        public int SystemCount => Listings.Count(l => l.IsMine || IsPublicStatus(l.Status));
+        public int CompanyCount => Listings.Count(l => l.IsMine);
 
         public ICommand RefreshCommand { get; }
         public ICommand CreateListingCommand { get; }
         public ICommand OpenDetailCommand { get; }
         public ICommand CloseDetailCommand { get; }
         public ICommand ClearFilterCommand { get; }
+        public ICommand SetScopeCommand { get; }
         public ICommand SetTypeFilterCommand { get; }
         public ICommand SetStatusFilterCommand { get; }
-        public ICommand ApproveCommand { get; }
-        public ICommand RejectCommand { get; }
         public ICommand CloseListingCommand { get; }
+        public ICommand MarkSoldCommand { get; }
+        public ICommand ExpressInterestCommand { get; }
 
         public StoreVM()
         {
@@ -55,11 +85,12 @@ namespace TaskMind.WPFs.Modules.Companies.ViewModels
             OpenDetailCommand = new RelayCommand(p => SelectedListing = p as StoreListingModel);
             CloseDetailCommand = new RelayCommand(_ => SelectedListing = null);
             ClearFilterCommand = new RelayCommand(_ => { SearchText = string.Empty; TypeFilter = null; StatusFilter = null; });
+            SetScopeCommand = new RelayCommand(p => CurrentScope = p is StoreScope sc ? sc : StoreScope.System);
             SetTypeFilterCommand = new RelayCommand(p => TypeFilter = p is ListingType t ? t : (ListingType?)null);
             SetStatusFilterCommand = new RelayCommand(p => StatusFilter = p is ListingStatus s ? s : (ListingStatus?)null);
-            ApproveCommand = new RelayCommand(p => UpdateStatus(p as StoreListingModel, ListingStatus.Published));
-            RejectCommand = new RelayCommand(p => UpdateStatus(p as StoreListingModel, ListingStatus.Rejected));
             CloseListingCommand = new RelayCommand(p => UpdateStatus(p as StoreListingModel, ListingStatus.Closed));
+            MarkSoldCommand = new RelayCommand(p => UpdateStatus(p as StoreListingModel, ListingStatus.Sold));
+            ExpressInterestCommand = new RelayCommand(p => ExpressInterest(p as StoreListingModel));
 
             _ = LoadAsync();
         }
@@ -68,17 +99,19 @@ namespace TaskMind.WPFs.Modules.Companies.ViewModels
         {
             IsBusy = true;
 
-            // TODO: gọi service GET /store/listings thay cho dữ liệu mẫu bên dưới
+            // TODO: gọi service GET /store/listings (toàn hệ thống) — backend nên trả kèm field IsMine
+            // dựa trên companyId hiện tại, thay cho dữ liệu mẫu bên dưới.
             await Task.Delay(400);
 
             Listings.Clear();
 
+            // ===== Tin đăng của công ty/cá nhân khác trên toàn hệ thống =====
             Listings.Add(new StoreListingModel
             {
                 Title = "Hệ thống quản lý kho (đã ngừng phát triển)",
                 Description = "Dự án ASP.NET Core + Angular quản lý xuất nhập kho, dùng nội bộ 2 năm, nay công ty đổi hướng nên muốn trao đổi/bán lại toàn bộ mã nguồn.",
                 Type = ListingType.Project,
-                Status = ListingStatus.PendingApproval,
+                Status = ListingStatus.Published,
                 TechStack = new() { "ASP.NET Core", "Angular", "SQL Server" },
                 Price = 45_000_000m,
                 IsNegotiable = true,
@@ -86,7 +119,8 @@ namespace TaskMind.WPFs.Modules.Companies.ViewModels
                 SellerName = "Ngô Quốc Huy",
                 SellerCompany = "Kho Vận Miền Nam",
                 RepoUrl = "https://github.com/example/warehouse-system",
-                CreatedDate = DateTime.Now.AddDays(-1)
+                CreatedDate = DateTime.Now.AddDays(-1),
+                IsMine = false
             });
 
             Listings.Add(new StoreListingModel
@@ -102,7 +136,8 @@ namespace TaskMind.WPFs.Modules.Companies.ViewModels
                 DemoUrl = "https://example-imagetoolkit.dev",
                 CreatedDate = DateTime.Now.AddDays(-6),
                 ViewCount = 128,
-                InterestCount = 14
+                InterestCount = 14,
+                IsMine = false
             });
 
             Listings.Add(new StoreListingModel
@@ -118,7 +153,8 @@ namespace TaskMind.WPFs.Modules.Companies.ViewModels
                 SellerCompany = "HealthTech Startup",
                 CreatedDate = DateTime.Now.AddDays(-14),
                 ViewCount = 340,
-                InterestCount = 22
+                InterestCount = 22,
+                IsMine = false
             });
 
             Listings.Add(new StoreListingModel
@@ -133,7 +169,58 @@ namespace TaskMind.WPFs.Modules.Companies.ViewModels
                 RepoUrl = "https://github.com/example/react-boilerplate-cli",
                 CreatedDate = DateTime.Now.AddMonths(-1),
                 ViewCount = 560,
-                InterestCount = 47
+                InterestCount = 47,
+                IsMine = false
+            });
+
+            // ===== Tin đăng của chính công ty mình (TaskMind Software JSC) =====
+            Listings.Add(new StoreListingModel
+            {
+                Title = "Module chấm công (ERP bản cũ)",
+                Description = "Module chấm công tách rời từ hệ thống ERP nội bộ phiên bản 1, không còn dùng sau khi nâng cấp, có thể tái sử dụng cho công ty quy mô nhỏ.",
+                Type = ListingType.Project,
+                Status = ListingStatus.Published,
+                TechStack = new() { "ASP.NET Core", "SQL Server" },
+                Price = 18_000_000m,
+                IsNegotiable = true,
+                SellerName = "Trần Văn Bình",
+                SellerCompany = "TaskMind Software JSC",
+                RepoUrl = "https://github.com/taskmind/erp-timesheet-legacy",
+                CreatedDate = DateTime.Now.AddDays(-3),
+                ViewCount = 42,
+                InterestCount = 3,
+                IsMine = true
+            });
+
+            Listings.Add(new StoreListingModel
+            {
+                Title = "Nền tảng CRM nội bộ (đang tìm đối tác)",
+                Description = "CRM quản lý khách hàng dùng nội bộ, đang trao đổi với 1 đối tác quan tâm để chuyển nhượng toàn bộ.",
+                Type = ListingType.Project,
+                Status = ListingStatus.Negotiating,
+                TechStack = new() { "C#", "Blazor", "PostgreSQL" },
+                Price = 60_000_000m,
+                IsNegotiable = true,
+                SellerName = "Lê Thị Hoa",
+                SellerCompany = "TaskMind Software JSC",
+                CreatedDate = DateTime.Now.AddDays(-9),
+                ViewCount = 76,
+                InterestCount = 5,
+                IsMine = true
+            });
+
+            Listings.Add(new StoreListingModel
+            {
+                Title = "Bộ SDK tích hợp thanh toán nội bộ",
+                Description = "SDK gọi cổng thanh toán VNPay/Momo dùng chung cho các dự án nội bộ, muốn chia sẻ có thu phí nhỏ để bảo trì.",
+                Type = ListingType.Project,
+                Status = ListingStatus.PendingApproval,
+                TechStack = new() { "C#", ".NET 10" },
+                Price = 8_000_000m,
+                SellerName = "Đỗ Thu Trang",
+                SellerCompany = "TaskMind Software JSC",
+                CreatedDate = DateTime.Now.AddHours(-20),
+                IsMine = true
             });
 
             Listings.Add(new StoreListingModel
@@ -145,8 +232,10 @@ namespace TaskMind.WPFs.Modules.Companies.ViewModels
                 TechStack = new() { "HTML", "CSS" },
                 Price = 2_000_000m,
                 SellerName = "Phạm Minh Tuấn",
+                SellerCompany = "TaskMind Software JSC",
                 CreatedDate = DateTime.Now.AddDays(-20),
-                AdminNote = "Từ chối do không chứng minh được quyền sở hữu mã nguồn."
+                AdminNote = "Từ chối do không chứng minh được quyền sở hữu mã nguồn.",
+                IsMine = true
             });
 
             ApplyFilter();
@@ -156,7 +245,7 @@ namespace TaskMind.WPFs.Modules.Companies.ViewModels
 
         private void ApplyFilter()
         {
-            var query = Listings.AsEnumerable();
+            var query = ScopedListings;
 
             if (!string.IsNullOrWhiteSpace(SearchText))
                 query = query.Where(l =>
@@ -180,9 +269,20 @@ namespace TaskMind.WPFs.Modules.Companies.ViewModels
             Touch();
         }
 
+        private void ExpressInterest(StoreListingModel listing)
+        {
+            if (listing == null || listing.IsMine) return;
+
+            // TODO: gọi service POST /store/listings/{id}/interest, bắn Notification cho người đăng (mục 5.3)
+            listing.InterestCount++;
+            Touch();
+        }
+
         private void CreateListing()
         {
-            // TODO: mở dialog/điều hướng "Đăng tin bán/trao đổi", gọi service POST /store/listings
+            // TODO: mở dialog/điều hướng "Đăng tin bán/trao đổi", gọi service POST /store/listings.
+            // Tin mới cần gán IsMine = true, Status = ListingStatus.PendingApproval,
+            // có thể tự chuyển CurrentScope = StoreScope.Company để công ty thấy ngay tin vừa đăng.
         }
 
         private void Touch()
@@ -202,6 +302,8 @@ namespace TaskMind.WPFs.Modules.Companies.ViewModels
             OnPropertyChanged(nameof(PendingCount));
             OnPropertyChanged(nameof(PublishedCount));
             OnPropertyChanged(nameof(SoldCount));
+            OnPropertyChanged(nameof(SystemCount));
+            OnPropertyChanged(nameof(CompanyCount));
         }
     }
 }

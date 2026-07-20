@@ -15,10 +15,20 @@ namespace TaskMind.WPFs.Modules.Companies.Models
     {
         PendingApproval, // Chờ duyệt
         Published,       // Đã duyệt, hiển thị công khai
-        Negotiating,      // Đang có bên trao đổi/thương lượng
-        Sold,             // Đã bán/trao đổi thành công
-        Rejected,         // Bị từ chối
-        Closed            // Đã gỡ khỏi chợ
+        Negotiating,     // Đang có bên trao đổi/thương lượng
+        Sold,            // Đã bán/trao đổi thành công
+        Rejected,        // Bị từ chối
+        Closed           // Đã gỡ khỏi chợ
+    }
+
+    /// <summary>
+    /// Phạm vi hiển thị của Chợ dự án — dùng cho 2 thẻ trên StoreView:
+    /// System = toàn hệ thống (tin đã duyệt của mọi công ty), Company = chỉ tin của chính công ty mình.
+    /// </summary>
+    public enum StoreScope
+    {
+        System,
+        Company
     }
 
     /// <summary>
@@ -34,6 +44,9 @@ namespace TaskMind.WPFs.Modules.Companies.Models
 
         public ListingType Type { get; set; } = ListingType.Project;
         public ListingStatus Status { get; set; } = ListingStatus.PendingApproval;
+
+        /// <summary>True nếu tin đăng thuộc về chính công ty đang đăng nhập — dùng để phân biệt 2 thẻ System/Company.</summary>
+        public bool IsMine { get; set; }
 
         /// <summary>Danh sách công nghệ/kỹ năng liên quan, tham chiếu danh mục kỹ năng chuẩn hoá (mục 4.15).</summary>
         public List<string> TechStack { get; set; } = new();
