@@ -96,15 +96,14 @@
                 <!-- ===== Thẻ: Toàn hệ thống / Dự án của công ty ===== -->
                 <!-- NOTE: kiểm tra lại tên icon Globe24 / Building24 qua IntelliSense (Ctrl+Space sau Symbol=") trước khi build -->
                 <Border Grid.Row="1" Background="#20242A" CornerRadius="10" Padding="4"
-                        HorizontalAlignment="Left" Margin="0,0,0,20">
+        HorizontalAlignment="Left" Margin="0,0,0,20">
                     <StackPanel Orientation="Horizontal">
-                        <ui:Button Style="{StaticResource ScopeTabButtonStyle}"
-                                   Icon="{ui:SymbolIcon Globe24}"
-                                   Command="{Binding SetScopeCommand}"
-                                   CommandParameter="{x:Static models:StoreScope.System}">
+                        <ui:Button Icon="{ui:SymbolIcon Globe24}"
+                   Command="{Binding SetScopeCommand}"
+                   CommandParameter="{x:Static models:StoreScope.System}">
                             <ui:Button.Content>
                                 <TextBlock>
-                                    <Run Text="Toàn hệ thống ("/><Run Text="{Binding SystemCount, Mode=OneWay}"/><Run Text=")"/>
+                    <Run Text="Toàn hệ thống ("/><Run Text="{Binding SystemCount, Mode=OneWay}"/><Run Text=")"/>
                                 </TextBlock>
                             </ui:Button.Content>
                             <ui:Button.Style>
@@ -119,14 +118,13 @@
                             </ui:Button.Style>
                         </ui:Button>
 
-                        <ui:Button Style="{StaticResource ScopeTabButtonStyle}"
-                                   Icon="{ui:SymbolIcon Building24}"
-                                   Margin="4,0,0,0"
-                                   Command="{Binding SetScopeCommand}"
-                                   CommandParameter="{x:Static models:StoreScope.Company}">
+                        <ui:Button Icon="{ui:SymbolIcon Building24}"
+                   Margin="4,0,0,0"
+                   Command="{Binding SetScopeCommand}"
+                   CommandParameter="{x:Static models:StoreScope.Company}">
                             <ui:Button.Content>
                                 <TextBlock>
-                                    <Run Text="Dự án của công ty ("/><Run Text="{Binding CompanyCount, Mode=OneWay}"/><Run Text=")"/>
+                    <Run Text="Dự án của công ty ("/><Run Text="{Binding CompanyCount, Mode=OneWay}"/><Run Text=")"/>
                                 </TextBlock>
                             </ui:Button.Content>
                             <ui:Button.Style>
