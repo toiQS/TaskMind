@@ -15,6 +15,8 @@
         <BooleanToVisibilityConverter x:Key="B2V"/>
         <util:ConversationTypeToTextConverter x:Key="TypeText"/>
         <util:ConversationTypeToBrushConverter x:Key="TypeBrush"/>
+        <util:ConversationStatusToTextConverter x:Key="ConnStatusText"/>
+        <util:ConversationStatusToBrushConverter x:Key="ConnStatusBrush"/>
         <util:IsMineToAlignmentConverter x:Key="MineAlign"/>
         <util:IsMineToBrushConverter x:Key="MineBrush"/>
         <util:IsMineToCornerRadiusConverter x:Key="MineCorner"/>
@@ -29,7 +31,7 @@
             <Setter Property="Appearance" Value="Secondary"/>
         </Style>
 
-        <!-- Card hội thoại: nền nổi bật khi đang được chọn -->
+        <!-- Card hội thoại (tab Đang trao đổi): nền nổi bật khi đang được chọn -->
         <Style x:Key="ConversationCardStyle" TargetType="Border">
             <Setter Property="CornerRadius" Value="10"/>
             <Setter Property="Padding" Value="14,12"/>
@@ -41,6 +43,31 @@
                     <Setter Property="Background" Value="#2A2F36"/>
                 </DataTrigger>
             </Style.Triggers>
+        </Style>
+
+        <!-- Card yêu cầu (tab Chờ xác nhận): viền vàng khi đang được chọn -->
+        <Style x:Key="PendingCardStyle" TargetType="Border">
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="14,12"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Background" Value="#20242A"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                    <Setter Property="BorderBrush" Value="#FFC14C"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Nút pill cho 2 tab: đổi màu khi đang được chọn -->
+        <Style x:Key="TabPillButtonStyle" TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+            <Setter Property="Appearance" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#8A93A0"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="Padding" Value="16,0"/>
         </Style>
     </UserControl.Resources>
 
@@ -83,7 +110,7 @@
             </StackPanel>
         </Grid>
 
-        <!-- ===== Nội dung: danh sách (trái) + khung chat (phải) ===== -->
+        <!-- ===== Nội dung: danh sách (trái) + khung chat/yêu cầu (phải) ===== -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="360" MinWidth="280"/>
@@ -91,22 +118,81 @@
                 <ColumnDefinition Width="*" MinWidth="320"/>
             </Grid.ColumnDefinitions>
 
-            <!-- ================= CỘT TRÁI: danh sách hội thoại ================= -->
+            <!-- ================= CỘT TRÁI: 2 tab + danh sách ================= -->
             <Border Grid.Column="0" Background="#20242A" CornerRadius="10" Padding="14">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <ui:TextBox Grid.Row="0"
+                    <!-- ===== Thẻ (pill tab): Đang trao đổi / Chờ xác nhận ===== -->
+                    <!-- NOTE: kiểm tra lại tên icon PersonQuestionMark24 qua IntelliSense (Ctrl+Space sau Symbol=")
+                         trước khi build, tương tự cách đã làm ở StoreView.xaml. -->
+                    <Border Grid.Row="0" Background="#282D33" CornerRadius="10" Padding="4"
+                            HorizontalAlignment="Stretch" Margin="0,0,0,12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <ui:Button Grid.Column="0"
+                                       Icon="{ui:SymbolIcon ChatMultiple24}"
+                                       HorizontalContentAlignment="Center"
+                                       Command="{Binding SetTabCommand}"
+                                       CommandParameter="{x:Static models:ChatTab.Active}">
+                                <ui:Button.Content>
+                                    <TextBlock>
+                                        <Run Text="Đang trao đổi ("/><Run Text="{Binding ActiveTabCount, Mode=OneWay}"/><Run Text=")"/>
+                                    </TextBlock>
+                                </ui:Button.Content>
+                                <ui:Button.Style>
+                                    <Style TargetType="ui:Button" BasedOn="{StaticResource TabPillButtonStyle}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding CurrentTab}" Value="{x:Static models:ChatTab.Active}">
+                                                <Setter Property="Background" Value="#4C9AFF"/>
+                                                <Setter Property="Foreground" Value="White"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ui:Button.Style>
+                            </ui:Button>
+
+                            <ui:Button Grid.Column="1"
+                                       Icon="{ui:SymbolIcon PersonQuestionMark24}"
+                                       HorizontalContentAlignment="Center"
+                                       Margin="4,0,0,0"
+                                       Command="{Binding SetTabCommand}"
+                                       CommandParameter="{x:Static models:ChatTab.Pending}">
+                                <ui:Button.Content>
+                                    <TextBlock>
+                                        <Run Text="Chờ xác nhận ("/><Run Text="{Binding PendingTabCount, Mode=OneWay}"/><Run Text=")"/>
+                                    </TextBlock>
+                                </ui:Button.Content>
+                                <ui:Button.Style>
+                                    <Style TargetType="ui:Button" BasedOn="{StaticResource TabPillButtonStyle}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding CurrentTab}" Value="{x:Static models:ChatTab.Pending}">
+                                                <Setter Property="Background" Value="#FFC14C"/>
+                                                <Setter Property="Foreground" Value="#20242A"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ui:Button.Style>
+                            </ui:Button>
+                        </Grid>
+                    </Border>
+
+                    <ui:TextBox Grid.Row="1"
                                 Icon="{ui:SymbolIcon Search24}"
                                 PlaceholderText="Tìm hội thoại..."
                                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                                 Height="40" Margin="0,0,0,12"/>
 
-                    <WrapPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
+                    <WrapPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,10">
                         <ui:Button Style="{StaticResource FilterChipStyle}" Content="Tất cả"
                                    Command="{Binding SetTypeFilterCommand}"/>
                         <ui:Button Style="{StaticResource FilterChipStyle}" Content="Cá nhân"
@@ -119,84 +205,152 @@
                                    Command="{Binding SetTypeFilterCommand}" CommandParameter="{x:Static models:ConversationType.Admin}"/>
                     </WrapPanel>
 
-                    <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
-                        <ItemsControl ItemsSource="{Binding FilteredConversations}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="{x:Type models:ConversationModel}">
-                                    <Border Style="{StaticResource ConversationCardStyle}">
-                                        <Border.InputBindings>
-                                            <MouseBinding MouseAction="LeftClick"
-                                                          Command="{Binding DataContext.OpenConversationCommand,
-                                                                    RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                          CommandParameter="{Binding}"/>
-                                        </Border.InputBindings>
-
+                    <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
+                        <Grid>
+                            <ItemsControl ItemsSource="{Binding FilteredConversations}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type models:ConversationModel}">
                                         <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
 
-                                            <!-- Avatar + chấm online -->
-                                            <Grid Grid.Column="0" Margin="0,0,12,0" VerticalAlignment="Top">
-                                                <Border Width="42" Height="42" CornerRadius="21" Background="#3E434A">
-                                                    <TextBlock Text="{Binding Initial}" Foreground="White" FontWeight="Bold"
-                                                               FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                </Border>
-                                                <Ellipse Width="11" Height="11" Fill="#3FD07A" Stroke="#20242A" StrokeThickness="2"
-                                                         HorizontalAlignment="Right" VerticalAlignment="Bottom"
-                                                         Visibility="{Binding IsOnline, Converter={StaticResource B2V}}"/>
-                                            </Grid>
-
-                                            <StackPanel Grid.Column="1">
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                    </Grid.ColumnDefinitions>
-                                                    <TextBlock Grid.Column="0" Text="{Binding Name}" Foreground="White"
-                                                               FontSize="14" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
-                                                    <TextBlock Grid.Column="1" Text="{Binding LastMessageTime, StringFormat='HH:mm'}"
-                                                               Foreground="#8A93A0" FontSize="11"/>
-                                                </Grid>
-
-                                                <TextBlock Text="{Binding Subtitle}" Foreground="#8A93A0" FontSize="11.5"
-                                                           Margin="0,1,0,4" TextTrimming="CharacterEllipsis"/>
+                                            <!-- ========== Giao diện card khi Status = Active (tab Đang trao đổi) ========== -->
+                                            <Border Style="{StaticResource ConversationCardStyle}"
+                                                    Visibility="{Binding IsActive, Converter={StaticResource B2V}}">
+                                                <Border.InputBindings>
+                                                    <MouseBinding MouseAction="LeftClick"
+                                                                  Command="{Binding DataContext.OpenConversationCommand,
+                                                                            RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                  CommandParameter="{Binding}"/>
+                                                </Border.InputBindings>
 
                                                 <Grid>
                                                     <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="*"/>
                                                         <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
                                                     </Grid.ColumnDefinitions>
-                                                    <TextBlock Grid.Column="0" Text="{Binding LastMessage}" Foreground="#C7CDD6"
-                                                               FontSize="12.5" TextTrimming="CharacterEllipsis"/>
 
-                                                    <Border Grid.Column="1" CornerRadius="9" MinWidth="18" Height="18" Padding="4,0"
-                                                            Background="#FF4C5C" Margin="8,0,0,0"
-                                                            Visibility="{Binding UnreadCount, Converter={StaticResource CountVisible}}">
-                                                        <TextBlock Text="{Binding UnreadCount}" Foreground="White" FontSize="10.5"
-                                                                   FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                    </Border>
+                                                    <!-- Avatar + chấm online -->
+                                                    <Grid Grid.Column="0" Margin="0,0,12,0" VerticalAlignment="Top">
+                                                        <Border Width="42" Height="42" CornerRadius="21" Background="#3E434A">
+                                                            <TextBlock Text="{Binding Initial}" Foreground="White" FontWeight="Bold"
+                                                                       FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        <Ellipse Width="11" Height="11" Fill="#3FD07A" Stroke="#20242A" StrokeThickness="2"
+                                                                 HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                                                                 Visibility="{Binding IsOnline, Converter={StaticResource B2V}}"/>
+                                                    </Grid>
+
+                                                    <StackPanel Grid.Column="1">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <TextBlock Grid.Column="0" Text="{Binding Name}" Foreground="White"
+                                                                       FontSize="14" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                                                            <TextBlock Grid.Column="1" Text="{Binding LastMessageTime, StringFormat='HH:mm'}"
+                                                                       Foreground="#8A93A0" FontSize="11"/>
+                                                        </Grid>
+
+                                                        <TextBlock Text="{Binding Subtitle}" Foreground="#8A93A0" FontSize="11.5"
+                                                                   Margin="0,1,0,4" TextTrimming="CharacterEllipsis"/>
+
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <TextBlock Grid.Column="0" Text="{Binding LastMessage}" Foreground="#C7CDD6"
+                                                                       FontSize="12.5" TextTrimming="CharacterEllipsis"/>
+
+                                                            <Border Grid.Column="1" CornerRadius="9" MinWidth="18" Height="18" Padding="4,0"
+                                                                    Background="#FF4C5C" Margin="8,0,0,0"
+                                                                    Visibility="{Binding UnreadCount, Converter={StaticResource CountVisible}}">
+                                                                <TextBlock Text="{Binding UnreadCount}" Foreground="White" FontSize="10.5"
+                                                                           FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                            </Border>
+                                                        </Grid>
+
+                                                        <Border CornerRadius="8" Padding="6,2" Margin="0,6,0,0" HorizontalAlignment="Left"
+                                                                Background="{Binding Type, Converter={StaticResource TypeBrush}}" Opacity="0.85">
+                                                            <TextBlock Text="{Binding Type, Converter={StaticResource TypeText}}"
+                                                                       Foreground="White" FontSize="10"/>
+                                                        </Border>
+                                                    </StackPanel>
                                                 </Grid>
+                                            </Border>
 
-                                                <Border CornerRadius="8" Padding="6,2" Margin="0,6,0,0" HorizontalAlignment="Left"
-                                                        Background="{Binding Type, Converter={StaticResource TypeBrush}}" Opacity="0.85">
-                                                    <TextBlock Text="{Binding Type, Converter={StaticResource TypeText}}"
-                                                               Foreground="White" FontSize="10"/>
-                                                </Border>
-                                            </StackPanel>
+                                            <!-- ========== Giao diện card khi Status = PendingConfirmation (tab Chờ xác nhận) ========== -->
+                                            <Border Style="{StaticResource PendingCardStyle}"
+                                                    Visibility="{Binding IsPending, Converter={StaticResource B2V}}">
+                                                <Border.InputBindings>
+                                                    <MouseBinding MouseAction="LeftClick"
+                                                                  Command="{Binding DataContext.OpenConversationCommand,
+                                                                            RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                  CommandParameter="{Binding}"/>
+                                                </Border.InputBindings>
+
+                                                <StackPanel>
+                                                    <Grid Margin="0,0,0,6">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <Border Grid.Column="0" Width="38" Height="38" CornerRadius="19"
+                                                                Background="#3E434A" Margin="0,0,10,0">
+                                                            <TextBlock Text="{Binding Initial}" Foreground="White" FontWeight="Bold"
+                                                                       FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+
+                                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding Name}" Foreground="White" FontSize="13.5" FontWeight="SemiBold"
+                                                                       TextTrimming="CharacterEllipsis"/>
+                                                            <TextBlock Text="{Binding Subtitle}" Foreground="#8A93A0" FontSize="11.5"
+                                                                       TextTrimming="CharacterEllipsis"/>
+                                                        </StackPanel>
+
+                                                        <Border Grid.Column="2" CornerRadius="8" Padding="6,2" VerticalAlignment="Top"
+                                                                Background="{Binding Status, Converter={StaticResource ConnStatusBrush}}" Opacity="0.9">
+                                                            <TextBlock Text="{Binding Status, Converter={StaticResource ConnStatusText}}"
+                                                                       Foreground="#20242A" FontSize="9.5" FontWeight="Bold"/>
+                                                        </Border>
+                                                    </Grid>
+
+                                                    <TextBlock Text="{Binding RequestNote}" Foreground="#C7CDD6" FontSize="12"
+                                                               TextWrapping="Wrap" MaxHeight="36" TextTrimming="CharacterEllipsis"
+                                                               Margin="0,0,0,10"/>
+
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="8"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <ui:Button Grid.Column="0" Content="Chấp nhận" Appearance="Success" Height="30" FontSize="11.5"
+                                                                   Command="{Binding DataContext.AcceptRequestCommand,
+                                                                             RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                   CommandParameter="{Binding}"/>
+                                                        <ui:Button Grid.Column="2" Content="Từ chối" Appearance="Secondary" Height="30" FontSize="11.5"
+                                                                   Command="{Binding DataContext.DeclineRequestCommand,
+                                                                             RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                   CommandParameter="{Binding}"/>
+                                                    </Grid>
+                                                </StackPanel>
+                                            </Border>
                                         </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Grid>
                     </ScrollViewer>
                 </Grid>
             </Border>
 
-            <!-- ================= CỘT PHẢI: khung chat ================= -->
+            <!-- ================= CỘT PHẢI: khung chat (Active) ================= -->
             <Border Grid.Column="2" Background="#20242A" CornerRadius="10"
-                    Visibility="{Binding HasSelectedConversation, Converter={StaticResource B2V}}">
+                    Visibility="{Binding IsSelectedConversationActive, Converter={StaticResource B2V}}">
                 <Grid DataContext="{Binding SelectedConversation}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -285,11 +439,91 @@
                 </Grid>
             </Border>
 
+            <!-- ================= CỘT PHẢI: chi tiết yêu cầu (Pending) ================= -->
+            <Border Grid.Column="2" Background="#20242A" CornerRadius="10"
+                    Visibility="{Binding IsSelectedConversationPending, Converter={StaticResource B2V}}">
+                <Grid DataContext="{Binding SelectedConversation}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Header -->
+                    <Border Grid.Row="0" BorderBrush="#3A4149" BorderThickness="0,0,0,1" Padding="20,16">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0" Width="40" Height="40" CornerRadius="20"
+                                    Background="#3E434A" Margin="0,0,12,0">
+                                <TextBlock Text="{Binding Initial}" Foreground="White" FontWeight="Bold"
+                                           FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Name}" Foreground="White" FontSize="15.5" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding Subtitle}" Foreground="#8A93A0" FontSize="12"/>
+                            </StackPanel>
+
+                            <ui:Button Grid.Column="2" Icon="{ui:SymbolIcon Dismiss24}" Appearance="Transparent"
+                                       Command="{Binding DataContext.CloseConversationCommand,
+                                                 RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Nội dung yêu cầu trao đổi -->
+                    <StackPanel Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="440">
+                        <Border Width="64" Height="64" CornerRadius="32" Background="#3A2E12" Margin="0,0,0,20"
+                                HorizontalAlignment="Center">
+                            <ui:SymbolIcon Symbol="PersonQuestionMark24" FontSize="30" Foreground="#FFC14C"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+
+                        <TextBlock Text="Yêu cầu trao đổi đang chờ xác nhận" Foreground="White" FontSize="17"
+                                   FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+
+                        <TextBlock Foreground="#8A93A0" FontSize="12.5" HorizontalAlignment="Center" Margin="0,0,0,18">
+                            <Run Text="Gửi lúc "/><Run Text="{Binding RequestDate, StringFormat='HH:mm dd/MM/yyyy'}"/>
+                        </TextBlock>
+
+                        <Border Background="#282D33" CornerRadius="10" Padding="16" Margin="0,0,0,26">
+                            <TextBlock Text="{Binding RequestNote}" Foreground="#DBDBDB" FontSize="13.5"
+                                       TextWrapping="Wrap" TextAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Hành động Chấp nhận / Từ chối -->
+                    <Grid Grid.Row="2" Margin="20,0,20,20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="12"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <ui:Button Grid.Column="0" Content="Từ chối" Appearance="Secondary"
+                                   HorizontalContentAlignment="Center" Height="46" FontSize="15" FontWeight="SemiBold"
+                                   Command="{Binding DataContext.DeclineRequestCommand,
+                                             RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                   CommandParameter="{Binding}"/>
+
+                        <ui:Button Grid.Column="2" Content="Chấp nhận trao đổi" Appearance="Success"
+                                   HorizontalContentAlignment="Center" Height="46" FontSize="15" FontWeight="SemiBold"
+                                   Command="{Binding DataContext.AcceptRequestCommand,
+                                             RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                   CommandParameter="{Binding}"/>
+                    </Grid>
+                </Grid>
+            </Border>
+
             <!-- Trạng thái rỗng khi chưa chọn hội thoại -->
             <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center"
                         Visibility="{Binding HasNoSelectedConversation, Converter={StaticResource B2V}}">
                 <ui:SymbolIcon Symbol="ChatMultiple24" FontSize="42" Foreground="#3A4149" HorizontalAlignment="Center"/>
-                <TextBlock Text="Chọn một hội thoại để bắt đầu trò chuyện" Foreground="#8A93A0" FontSize="14" Margin="0,12,0,0"/>
+                <TextBlock Text="Chọn một hội thoại để xem chi tiết" Foreground="#8A93A0" FontSize="14" Margin="0,12,0,0"/>
             </StackPanel>
         </Grid>
 

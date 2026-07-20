@@ -25,6 +25,25 @@ namespace TaskMind.WPFs.Modules.Companies.Models
     }
 
     /// <summary>
+    /// Trạng thái kết nối của hội thoại:
+    /// - Active: hai bên đã xác nhận, có thể nhắn tin qua lại bình thường.
+    /// - PendingConfirmation: một bên muốn bắt đầu trao đổi (VD: đối tác ngỏ ý hợp tác dự án,
+    ///   freelancer chủ động liên hệ ứng tuyển...) nhưng bên còn lại chưa xác nhận, chưa thể chat.
+    /// </summary>
+    public enum ConversationStatus
+    {
+        Active,
+        PendingConfirmation
+    }
+
+    /// <summary>Tab hiển thị trên màn Trò chuyện: hội thoại đang trao đổi hay đang chờ xác nhận.</summary>
+    public enum ChatTab
+    {
+        Active,
+        Pending
+    }
+
+    /// <summary>
     /// trao đổi giữa nhân sự, các cuộc hội thoại riêng trong dự án,
     /// với công ty khác và admin hệ thống khi cần thiết.
     /// </summary>
@@ -39,6 +58,15 @@ namespace TaskMind.WPFs.Modules.Companies.Models
         public string Subtitle { get; set; }
 
         public ConversationType Type { get; set; } = ConversationType.Direct;
+
+        /// <summary>Trạng thái kết nối — quyết định hội thoại thuộc tab "Đang trao đổi" hay "Chờ xác nhận".</summary>
+        public ConversationStatus Status { get; set; } = ConversationStatus.Active;
+
+        /// <summary>Lời nhắn kèm theo khi gửi yêu cầu trao đổi (chỉ có ý nghĩa khi Status = PendingConfirmation).</summary>
+        public string RequestNote { get; set; }
+
+        /// <summary>Thời điểm gửi yêu cầu trao đổi.</summary>
+        public DateTime RequestDate { get; set; } = DateTime.Now;
 
         public bool IsOnline { get; set; }
         public bool IsPinned { get; set; }
@@ -56,6 +84,9 @@ namespace TaskMind.WPFs.Modules.Companies.Models
         public string Initial => string.IsNullOrWhiteSpace(Name) ? "?" : Name.Trim()[0].ToString().ToUpper();
 
         public bool HasUnread => UnreadCount > 0;
+
+        public bool IsPending => Status == ConversationStatus.PendingConfirmation;
+        public bool IsActive => Status == ConversationStatus.Active;
     }
 
     public class ChatMessageModel

@@ -39,6 +39,36 @@ namespace TaskMind.WPFs.Modules.Companies.Utilities
             => throw new NotSupportedException();
     }
 
+    /// <summary>Nhãn trạng thái kết nối hội thoại: Đang trao đổi / Chờ xác nhận.</summary>
+    public class ConversationStatusToTextConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+            => value is ConversationStatus s ? s switch
+            {
+                ConversationStatus.Active => "Đang trao đổi",
+                ConversationStatus.PendingConfirmation => "Chờ xác nhận",
+                _ => value.ToString()
+            } : string.Empty;
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
+    }
+
+    /// <summary>Màu badge trạng thái kết nối: xanh lá cho Active, vàng cho PendingConfirmation.</summary>
+    public class ConversationStatusToBrushConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+            => value is ConversationStatus s ? s switch
+            {
+                ConversationStatus.Active => new SolidColorBrush(Color.FromRgb(0x3F, 0xD0, 0x7A)),
+                ConversationStatus.PendingConfirmation => new SolidColorBrush(Color.FromRgb(0xFF, 0xC1, 0x4C)),
+                _ => Brushes.Gray
+            } : Brushes.Gray;
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
+    }
+
     /// <summary>Căn bong bóng tin nhắn: phải nếu IsMine = true, trái nếu ngược lại.</summary>
     public class IsMineToAlignmentConverter : IValueConverter
     {
@@ -109,7 +139,7 @@ namespace TaskMind.WPFs.Modules.Companies.Utilities
             => throw new NotSupportedException();
     }
 
-    /// <summary>So khớp bộ lọc hiện tại (enum? hoặc null) với ConverterParameter để tô sáng chip đang chọn.</summary>
+    /// <summary>So khớp bộ lọc/tab hiện tại (enum? hoặc null) với ConverterParameter để tô sáng chip/pill đang chọn.</summary>
     public class ChatFilterActiveConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
