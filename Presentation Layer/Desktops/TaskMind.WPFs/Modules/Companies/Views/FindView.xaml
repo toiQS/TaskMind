@@ -239,6 +239,7 @@
                                     </StackPanel>
 
                                     <ui:Button Grid.Column="2" Content="Mời tham gia" Appearance="Primary" Height="34"
+                                               Foreground="White"
                                                VerticalAlignment="Center" Margin="12,0,0,0"
                                                Command="{Binding DataContext.InviteCommand,
                                                          RelativeSource={RelativeSource AncestorType=ItemsControl}}"
