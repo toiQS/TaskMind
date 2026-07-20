@@ -42,213 +42,223 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Margin="24">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+    <!-- Grid gốc: chỉ chứa ScrollViewer (toàn trang) + overlay loading/chi tiết, để overlay luôn phủ kín
+         toàn bộ vùng hiển thị bất kể đang cuộn tới đâu. -->
+    <Grid>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <Grid Margin="24">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <!-- Trước là "*": chuyển sang Auto vì toàn trang đã nằm trong ScrollViewer, tránh bị
+                         cắt khi cửa sổ nhỏ hơn dự kiến ban đầu. -->
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-        <!-- ===== Header ===== -->
-        <Grid Grid.Row="0" Margin="0,0,0,20">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <StackPanel Grid.Column="0">
-                <TextBlock Text="Tìm kiếm &amp; gợi ý ứng viên" Foreground="White" FontSize="24" FontWeight="SemiBold"/>
-                <TextBlock Foreground="#8A93A0" FontSize="13" Margin="0,4,0,0">
-                    <Run Text="Xu hướng kỹ năng, chọn dự án cần người và tìm ứng viên tự do phù hợp (mục 5.6)"/>
-                </TextBlock>
-            </StackPanel>
-            <ui:Button Grid.Column="1" Icon="{ui:SymbolIcon ArrowSync24}" Appearance="Secondary"
-                       Command="{Binding RefreshCommand}" ToolTip="Làm mới"/>
-        </Grid>
+                <!-- ===== Header ===== -->
+                <Grid Grid.Row="0" Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Tìm kiếm &amp; gợi ý ứng viên" Foreground="White" FontSize="24" FontWeight="SemiBold"/>
+                        <TextBlock Foreground="#8A93A0" FontSize="13" Margin="0,4,0,0">
+                            <Run Text="Xu hướng kỹ năng, chọn dự án cần người và tìm ứng viên tự do phù hợp (mục 5.6)"/>
+                        </TextBlock>
+                    </StackPanel>
+                    <ui:Button Grid.Column="1" Icon="{ui:SymbolIcon ArrowSync24}" Appearance="Secondary"
+                               Command="{Binding RefreshCommand}" ToolTip="Làm mới"/>
+                </Grid>
 
-        <!-- ===== Xu hướng kỹ năng ===== -->
-        <StackPanel Grid.Row="1" Margin="0,0,0,20">
-            <TextBlock Text="Xu hướng nhu cầu kỹ năng" Foreground="#C7CDD6" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,10"/>
-            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-                <ItemsControl ItemsSource="{Binding SkillTrends}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="{x:Type models:SkillTrendModel}">
-                            <ui:Card Width="190" Margin="0,0,14,0" Padding="16,12">
-                                <StackPanel>
-                                    <TextBlock Text="{Binding SkillName}" Foreground="White" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,6"/>
-                                    <TextBlock Foreground="#8A93A0" FontSize="12" Margin="0,0,0,4">
-                                        <Run Text="{Binding DemandCount, Mode=OneWay}"/><Run Text=" lượt tìm/tuần"/>
-                                    </TextBlock>
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{Binding Direction, Converter={StaticResource TrendText}}"
-                                                   Foreground="{Binding Direction, Converter={StaticResource TrendBrush}}"
-                                                   FontSize="12" Margin="0,0,4,0"/>
-                                        <TextBlock Foreground="{Binding Direction, Converter={StaticResource TrendBrush}}" FontSize="12" FontWeight="SemiBold">
-                                            <Run Text="{Binding ChangePercent, StringFormat='{}{0:0.#}%'}"/>
+                <!-- ===== Xu hướng kỹ năng ===== -->
+                <!-- Giữ nguyên ScrollViewer cuộn ngang riêng: đây là dải thẻ trượt ngang có chủ đích
+                     (không liên quan tới việc cuộn dọc toàn trang), nên không đổi. -->
+                <StackPanel Grid.Row="1" Margin="0,0,0,20">
+                    <TextBlock Text="Xu hướng nhu cầu kỹ năng" Foreground="#C7CDD6" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                        <ItemsControl ItemsSource="{Binding SkillTrends}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type models:SkillTrendModel}">
+                                    <ui:Card Width="190" Margin="0,0,14,0" Padding="16,12">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding SkillName}" Foreground="White" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                                            <TextBlock Foreground="#8A93A0" FontSize="12" Margin="0,0,0,4">
+                                                <Run Text="{Binding DemandCount, Mode=OneWay}"/><Run Text=" lượt tìm/tuần"/>
+                                            </TextBlock>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="{Binding Direction, Converter={StaticResource TrendText}}"
+                                                           Foreground="{Binding Direction, Converter={StaticResource TrendBrush}}"
+                                                           FontSize="12" Margin="0,0,4,0"/>
+                                                <TextBlock Foreground="{Binding Direction, Converter={StaticResource TrendBrush}}" FontSize="12" FontWeight="SemiBold">
+                                                    <Run Text="{Binding ChangePercent, StringFormat='{}{0:0.#}%'}"/>
+                                                </TextBlock>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </ui:Card>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </StackPanel>
+
+                <!-- ===== Chọn dự án cần tìm ứng viên ===== -->
+                <StackPanel Grid.Row="2" Margin="0,0,0,20">
+                    <TextBlock Text="Chọn dự án cần tìm ứng viên" Foreground="#C7CDD6" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                    <ItemsControl ItemsSource="{Binding ProjectNeeds}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type models:ProjectNeedModel}">
+                                <ui:Card Style="{StaticResource ProjectChipStyle}" Margin="0,0,12,12">
+                                    <ui:Card.InputBindings>
+                                        <MouseBinding MouseAction="LeftClick"
+                                                      Command="{Binding DataContext.SelectProjectCommand,
+                                                                RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                      CommandParameter="{Binding}"/>
+                                    </ui:Card.InputBindings>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding ProjectName}" Foreground="White" FontSize="13.5" FontWeight="SemiBold"/>
+                                        <TextBlock Foreground="#8A93A0" FontSize="11.5" Margin="0,4,0,0" TextWrapping="Wrap" MaxWidth="220">
+                                            <Run Text="{Binding SkillsDisplay, Mode=OneWay}"/>
+                                        </TextBlock>
+                                        <TextBlock Foreground="#4C9AFF" FontSize="11.5" FontWeight="SemiBold" Margin="0,4,0,0">
+                                            <Run Text="Cần "/><Run Text="{Binding OpenSlots, Mode=OneWay}"/><Run Text=" người"/>
                                         </TextBlock>
                                     </StackPanel>
-                                </StackPanel>
+                                </ui:Card>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <!-- ===== Tìm kiếm ===== -->
+                <ui:TextBox Grid.Row="3" Width="320" HorizontalAlignment="Left"
+                            Icon="{ui:SymbolIcon Search24}"
+                            PlaceholderText="Tìm theo tên hoặc kỹ năng..."
+                            Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                            Height="40" Margin="0,0,0,14"/>
+
+                <!-- ===== Bộ lọc trạng thái sẵn sàng ===== -->
+                <WrapPanel Grid.Row="4" Orientation="Horizontal" Margin="0,0,0,20">
+                    <ui:Button Style="{StaticResource FilterChipStyle}" Content="Tất cả"
+                               Command="{Binding SetAvailabilityFilterCommand}"/>
+                    <ui:Button Style="{StaticResource FilterChipStyle}" Content="Sẵn sàng"
+                               Command="{Binding SetAvailabilityFilterCommand}" CommandParameter="{x:Static models:FreelancerAvailability.Available}"/>
+                    <ui:Button Style="{StaticResource FilterChipStyle}" Content="Đang bận"
+                               Command="{Binding SetAvailabilityFilterCommand}" CommandParameter="{x:Static models:FreelancerAvailability.Busy}"/>
+                    <ui:Button Style="{StaticResource FilterChipStyle}" Content="Không nhận việc"
+                               Command="{Binding SetAvailabilityFilterCommand}" CommandParameter="{x:Static models:FreelancerAvailability.Unavailable}"/>
+                    <ui:Button Content="Xoá lọc" Appearance="Transparent" Height="34" Command="{Binding ClearFilterCommand}"/>
+                </WrapPanel>
+
+                <!-- ===== Danh sách ứng viên, sắp theo mức độ khớp ===== -->
+                <!-- Bỏ ScrollViewer riêng bọc danh sách (trước lồng trong hàng "*"): giờ danh sách nằm trực
+                     tiếp trong ScrollViewer toàn trang, tránh cuộn lồng cuộn. -->
+                <ItemsControl Grid.Row="5" ItemsSource="{Binding FilteredCandidates}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type models:FreelanceCandidateModel}">
+                            <ui:Card Margin="0,0,0,12" Padding="18" Cursor="Hand">
+                                <ui:Card.InputBindings>
+                                    <MouseBinding MouseAction="LeftClick"
+                                                  Command="{Binding DataContext.OpenCandidateDetailCommand,
+                                                            RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                  CommandParameter="{Binding}"/>
+                                </ui:Card.InputBindings>
+
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border Grid.Column="0" Width="44" Height="44" CornerRadius="22"
+                                            Background="#3E434A" Margin="0,0,16,0" VerticalAlignment="Top">
+                                        <TextBlock Text="{Binding Initial}" Foreground="White" FontWeight="Bold"
+                                                   FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+
+                                    <StackPanel Grid.Column="1">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{Binding FullName}" Foreground="White"
+                                                       FontSize="15" FontWeight="SemiBold"/>
+                                            <Border Grid.Column="1" CornerRadius="10" Padding="8,3"
+                                                    Background="{Binding Availability, Converter={StaticResource AvailBrush}}">
+                                                <TextBlock Text="{Binding Availability, Converter={StaticResource AvailText}}"
+                                                           Foreground="White" FontSize="10.5" FontWeight="SemiBold"/>
+                                            </Border>
+                                        </Grid>
+
+                                        <TextBlock Text="{Binding Headline}" Foreground="#8A93A0" FontSize="12.5" Margin="0,4,0,10"/>
+
+                                        <TextBlock Text="{Binding SkillsDisplay}" Foreground="#4C9AFF" FontSize="12" Margin="0,0,0,10"/>
+
+                                        <WrapPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                            <ui:SymbolIcon Symbol="Star24" FontSize="13" Foreground="#FFC14C" Margin="0,0,4,0"/>
+                                            <TextBlock Foreground="#C7CDD6" FontSize="12" Margin="0,0,14,0">
+                                                <Run Text="{Binding Rating, StringFormat='{}{0:0.0}'}"/>
+                                            </TextBlock>
+                                            <TextBlock Foreground="#8A93A0" FontSize="12" Margin="0,0,14,0">
+                                                <Run Text="{Binding CompletedProjects, Mode=OneWay}"/><Run Text=" dự án hoàn thành"/>
+                                            </TextBlock>
+                                            <TextBlock Foreground="#8A93A0" FontSize="12">
+                                                <Run Text="{Binding ExperienceYears, Mode=OneWay}"/><Run Text=" năm kinh nghiệm · "/><Run Text="{Binding Location}"/>
+                                            </TextBlock>
+                                        </WrapPanel>
+
+                                        <!-- Thanh mức độ khớp với dự án đang chọn -->
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <ProgressBar Grid.Column="0" Value="{Binding MatchScore, Mode=OneWay}"
+                                                         Minimum="0" Maximum="100" Height="6"
+                                                         Foreground="{Binding MatchScore, Converter={StaticResource MatchBrush}}"
+                                                         VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding MatchScore, Converter={StaticResource MatchText}}"
+                                                       Foreground="{Binding MatchScore, Converter={StaticResource MatchBrush}}"
+                                                       FontSize="11.5" FontWeight="SemiBold"/>
+                                        </Grid>
+                                    </StackPanel>
+
+                                    <ui:Button Grid.Column="2" Content="Mời tham gia" Appearance="Primary" Height="34"
+                                               VerticalAlignment="Center" Margin="12,0,0,0"
+                                               Command="{Binding DataContext.InviteCommand,
+                                                         RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                               CommandParameter="{Binding}"/>
+                                </Grid>
                             </ui:Card>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-            </ScrollViewer>
-        </StackPanel>
-
-        <!-- ===== Chọn dự án cần tìm ứng viên ===== -->
-        <StackPanel Grid.Row="2" Margin="0,0,0,20">
-            <TextBlock Text="Chọn dự án cần tìm ứng viên" Foreground="#C7CDD6" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,10"/>
-            <ItemsControl ItemsSource="{Binding ProjectNeeds}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <WrapPanel Orientation="Horizontal"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate DataType="{x:Type models:ProjectNeedModel}">
-                        <ui:Card Style="{StaticResource ProjectChipStyle}">
-                            <ui:Card.InputBindings>
-                                <MouseBinding MouseAction="LeftClick"
-                                              Command="{Binding DataContext.SelectProjectCommand,
-                                                        RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                              CommandParameter="{Binding}"/>
-                            </ui:Card.InputBindings>
-                            <StackPanel>
-                                <TextBlock Text="{Binding ProjectName}" Foreground="White" FontSize="13.5" FontWeight="SemiBold"/>
-                                <TextBlock Foreground="#8A93A0" FontSize="11.5" Margin="0,4,0,0" TextWrapping="Wrap" MaxWidth="220">
-                                    <Run Text="{Binding SkillsDisplay, Mode=OneWay}"/>
-                                </TextBlock> 
-                                <TextBlock Foreground="#4C9AFF" FontSize="11.5" FontWeight="SemiBold" Margin="0,4,0,0">
-                                    <Run Text="Cần "/><Run Text="{Binding OpenSlots, Mode=OneWay}"/><Run Text=" người"/>
-                                </TextBlock>
-                            </StackPanel>
-                        </ui:Card>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </StackPanel>
-
-        <!-- ===== Tìm kiếm ===== -->
-        <ui:TextBox Grid.Row="3" Width="320" HorizontalAlignment="Left"
-                    Icon="{ui:SymbolIcon Search24}"
-                    PlaceholderText="Tìm theo tên hoặc kỹ năng..."
-                    Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                    Height="40" Margin="0,0,0,14"/>
-
-        <!-- ===== Bộ lọc trạng thái sẵn sàng ===== -->
-        <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="0,0,0,20">
-            <ui:Button Style="{StaticResource FilterChipStyle}" Content="Tất cả"
-                       Command="{Binding SetAvailabilityFilterCommand}"/>
-            <ui:Button Style="{StaticResource FilterChipStyle}" Content="Sẵn sàng"
-                       Command="{Binding SetAvailabilityFilterCommand}" CommandParameter="{x:Static models:FreelancerAvailability.Available}"/>
-            <ui:Button Style="{StaticResource FilterChipStyle}" Content="Đang bận"
-                       Command="{Binding SetAvailabilityFilterCommand}" CommandParameter="{x:Static models:FreelancerAvailability.Busy}"/>
-            <ui:Button Style="{StaticResource FilterChipStyle}" Content="Không nhận việc"
-                       Command="{Binding SetAvailabilityFilterCommand}" CommandParameter="{x:Static models:FreelancerAvailability.Unavailable}"/>
-            <ui:Button Content="Xoá lọc" Appearance="Transparent" Height="34" Command="{Binding ClearFilterCommand}"/>
-        </StackPanel>
-
-        <!-- ===== Danh sách ứng viên, sắp theo mức độ khớp ===== -->
-        <ScrollViewer Grid.Row="5" VerticalScrollBarVisibility="Auto">
-            <ItemsControl ItemsSource="{Binding FilteredCandidates}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate DataType="{x:Type models:FreelanceCandidateModel}">
-                        <ui:Card Margin="0,0,0,12" Padding="18" Cursor="Hand">
-                            <ui:Card.InputBindings>
-                                <MouseBinding MouseAction="LeftClick"
-                                              Command="{Binding DataContext.OpenCandidateDetailCommand,
-                                                        RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                              CommandParameter="{Binding}"/>
-                            </ui:Card.InputBindings>
-
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-
-                                <Border Grid.Column="0" Width="44" Height="44" CornerRadius="22"
-                                        Background="#3E434A" Margin="0,0,16,0" VerticalAlignment="Top">
-                                    <TextBlock Text="{Binding Initial}" Foreground="White" FontWeight="Bold"
-                                               FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
-
-                                <StackPanel Grid.Column="1">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="{Binding FullName}" Foreground="White"
-                                                   FontSize="15" FontWeight="SemiBold"/>
-                                        <Border Grid.Column="1" CornerRadius="10" Padding="8,3"
-                                                Background="{Binding Availability, Converter={StaticResource AvailBrush}}">
-                                            <TextBlock Text="{Binding Availability, Converter={StaticResource AvailText}}"
-                                                       Foreground="White" FontSize="10.5" FontWeight="SemiBold"/>
-                                        </Border>
-                                    </Grid>
-
-                                    <TextBlock Text="{Binding Headline}" Foreground="#8A93A0" FontSize="12.5" Margin="0,4,0,10"/>
-
-                                    <TextBlock Text="{Binding SkillsDisplay}" Foreground="#4C9AFF" FontSize="12" Margin="0,0,0,10"/>
-
-                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                        <ui:SymbolIcon Symbol="Star24" FontSize="13" Foreground="#FFC14C" Margin="0,0,4,0"/>
-                                        <TextBlock Foreground="#C7CDD6" FontSize="12" Margin="0,0,14,0">
-                                            <Run Text="{Binding Rating, StringFormat='{}{0:0.0}'}"/>
-                                        </TextBlock>
-                                        <TextBlock Foreground="#8A93A0" FontSize="12" Margin="0,0,14,0">
-                                            <Run Text="{Binding CompletedProjects, Mode=OneWay}"/><Run Text=" dự án hoàn thành"/>
-                                        </TextBlock>
-                                        <TextBlock Foreground="#8A93A0" FontSize="12">
-                                            <Run Text="{Binding ExperienceYears, Mode=OneWay}"/><Run Text=" năm kinh nghiệm · "/><Run Text="{Binding Location}"/>
-                                        </TextBlock>
-                                    </StackPanel>
-
-                                    <!-- Thanh mức độ khớp với dự án đang chọn -->
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <ProgressBar Grid.Column="0" Value="{Binding MatchScore, Mode=OneWay}"
-                                                     Minimum="0" Maximum="100" Height="6"
-                                                     Foreground="{Binding MatchScore, Converter={StaticResource MatchBrush}}"
-                                                     VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                        <TextBlock Grid.Column="1" Text="{Binding MatchScore, Converter={StaticResource MatchText}}"
-                                                   Foreground="{Binding MatchScore, Converter={StaticResource MatchBrush}}"
-                                                   FontSize="11.5" FontWeight="SemiBold"/>
-                                    </Grid>
-                                </StackPanel>
-
-                                <ui:Button Grid.Column="2" Content="Mời tham gia" Appearance="Primary" Height="34"
-                                           VerticalAlignment="Center" Margin="12,0,0,0"
-                                           Command="{Binding DataContext.InviteCommand,
-                                                     RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                           CommandParameter="{Binding}"/>
-                            </Grid>
-                        </ui:Card>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+            </Grid>
         </ScrollViewer>
 
         <!-- ===== Overlay: loading ===== -->
-        <Border Grid.RowSpan="6" Background="#902B3036"
+        <Border Background="#902B3036"
                 Visibility="{Binding IsBusy, Converter={StaticResource B2V}}">
             <ui:ProgressRing IsIndeterminate="True" Width="42" Height="42"/>
         </Border>
 
         <!-- ===== Overlay: chi tiết ứng viên ===== -->
-        <Border Grid.RowSpan="6" Background="#B0181B20"
+        <Border Background="#B0181B20"
                 Visibility="{Binding HasSelectedCandidate, Converter={StaticResource B2V}}">
             <Border Width="440" HorizontalAlignment="Right" Background="#282D33"
                     BorderBrush="#3A4149" BorderThickness="1,0,0,0">

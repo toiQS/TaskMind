@@ -32,203 +32,205 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Margin="24">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+    <Grid>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <Grid Margin="24">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-        <!-- ===== Header ===== -->
-        <Grid Grid.Row="0" Margin="0,0,0,20">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
+                <!-- ===== Header ===== -->
+                <Grid Grid.Row="0" Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="0">
-                <TextBlock Text="Yêu cầu hỗ trợ" Foreground="White" FontSize="24" FontWeight="SemiBold"/>
-                <TextBlock Foreground="#8A93A0" FontSize="13" Margin="0,4,0,0">
-                    <Run Text="Nâng cấp thiết bị, tuyển nhân sự, cập nhật môi trường, mua bản quyền,..."/>
-                </TextBlock>
-            </StackPanel>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Yêu cầu hỗ trợ" Foreground="White" FontSize="24" FontWeight="SemiBold"/>
+                        <TextBlock Foreground="#8A93A0" FontSize="13" Margin="0,4,0,0">
+                            <Run Text="Nâng cấp thiết bị, tuyển nhân sự, cập nhật môi trường, mua bản quyền,..."/>
+                        </TextBlock>
+                    </StackPanel>
 
-            <StackPanel Grid.Column="1" Orientation="Horizontal">
-                <ui:Button Margin="0,0,10,0"
-                           Icon="{ui:SymbolIcon ArrowSync24}"
-                           Appearance="Secondary"
-                           Command="{Binding RefreshCommand}"
-                           ToolTip="Làm mới"/>
-                <ui:Button Content="Tạo yêu cầu"
-                           Icon="{ui:SymbolIcon Add24}"
-                           Appearance="Primary"
-                           FontWeight="SemiBold"
-                           Command="{Binding CreateRequestCommand}"/>
-            </StackPanel>
-        </Grid>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <ui:Button Margin="0,0,10,0"
+                                   Icon="{ui:SymbolIcon ArrowSync24}"
+                                   Appearance="Secondary"
+                                   Command="{Binding RefreshCommand}"
+                                   ToolTip="Làm mới"/>
+                        <ui:Button Content="Tạo yêu cầu"
+                                   Icon="{ui:SymbolIcon Add24}"
+                                   Appearance="Primary"
+                                   FontWeight="SemiBold"
+                                   Command="{Binding CreateRequestCommand}"/>
+                    </StackPanel>
+                </Grid>
 
-        <!-- ===== Thẻ thống kê nhanh ===== -->
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,20">
-            <ui:Card Style="{StaticResource StatCardStyle}" Width="200">
-                <StackPanel>
-                    <TextBlock Text="Chờ duyệt" Foreground="#8A93A0" FontSize="12"/>
-                    <TextBlock Text="{Binding PendingCount, Mode=OneWay}" Foreground="#FFC14C" FontSize="26" FontWeight="Bold"/>
+                <!-- ===== Thẻ thống kê nhanh ===== -->
+                <WrapPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,20">
+                    <ui:Card Style="{StaticResource StatCardStyle}" Width="200">
+                        <StackPanel>
+                            <TextBlock Text="Chờ duyệt" Foreground="#8A93A0" FontSize="12"/>
+                            <TextBlock Text="{Binding PendingCount, Mode=OneWay}" Foreground="#FFC14C" FontSize="26" FontWeight="Bold"/>
+                        </StackPanel>
+                    </ui:Card>
+                    <ui:Card Style="{StaticResource StatCardStyle}" Width="200">
+                        <StackPanel>
+                            <TextBlock Text="Đang xử lý" Foreground="#8A93A0" FontSize="12"/>
+                            <TextBlock Text="{Binding InProgressCount, Mode=OneWay}" Foreground="#9A7BFF" FontSize="26" FontWeight="Bold"/>
+                        </StackPanel>
+                    </ui:Card>
+                    <ui:Card Style="{StaticResource StatCardStyle}" Width="200">
+                        <StackPanel>
+                            <TextBlock Text="Hoàn tất" Foreground="#8A93A0" FontSize="12"/>
+                            <TextBlock Text="{Binding CompletedCount, Mode=OneWay}" Foreground="#3FD07A" FontSize="26" FontWeight="Bold"/>
+                        </StackPanel>
+                    </ui:Card>
+                </WrapPanel>
+
+                <!-- ===== Tìm kiếm ===== -->
+                <ui:TextBox Grid.Row="2" Width="320" HorizontalAlignment="Left"
+                            Icon="{ui:SymbolIcon Search24}"
+                            PlaceholderText="Tìm theo tiêu đề hoặc người gửi..."
+                            Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                            Height="40" Margin="0,0,0,14"/>
+
+                <!-- ===== Bộ lọc kép: trạng thái + loại ===== -->
+                <StackPanel Grid.Row="3" Margin="0,0,0,20">
+
+                    <WrapPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <ui:Button Style="{StaticResource FilterChipStyle}" Content="Tất cả trạng thái"
+                                   Command="{Binding SetStatusFilterCommand}"/>
+                        <ui:Button Style="{StaticResource FilterChipStyle}" Content="Chờ duyệt"
+                                   Command="{Binding SetStatusFilterCommand}" CommandParameter="{x:Static models:SupportStatus.Pending}"/>
+                        <ui:Button Style="{StaticResource FilterChipStyle}" Content="Đã duyệt"
+                                   Command="{Binding SetStatusFilterCommand}" CommandParameter="{x:Static models:SupportStatus.Approved}"/>
+                        <ui:Button Style="{StaticResource FilterChipStyle}" Content="Đang xử lý"
+                                   Command="{Binding SetStatusFilterCommand}" CommandParameter="{x:Static models:SupportStatus.InProgress}"/>
+                        <ui:Button Style="{StaticResource FilterChipStyle}" Content="Hoàn tất"
+                                   Command="{Binding SetStatusFilterCommand}" CommandParameter="{x:Static models:SupportStatus.Completed}"/>
+                        <ui:Button Style="{StaticResource FilterChipStyle}" Content="Từ chối"
+                                   Command="{Binding SetStatusFilterCommand}" CommandParameter="{x:Static models:SupportStatus.Rejected}"/>
+                    </WrapPanel>
+
+                    <WrapPanel Orientation="Horizontal">
+                        <ui:Button Style="{StaticResource FilterChipStyle}" Content="Tất cả loại"
+                                   Command="{Binding SetTypeFilterCommand}"/>
+                        <ui:Button Style="{StaticResource FilterChipStyle}" Content="Nâng cấp thiết bị"
+                                   Command="{Binding SetTypeFilterCommand}" CommandParameter="{x:Static models:SupportType.DeviceUpgrade}"/>
+                        <ui:Button Style="{StaticResource FilterChipStyle}" Content="Tuyển nhân sự"
+                                   Command="{Binding SetTypeFilterCommand}" CommandParameter="{x:Static models:SupportType.Hiring}"/>
+                        <ui:Button Style="{StaticResource FilterChipStyle}" Content="Cập nhật môi trường"
+                                   Command="{Binding SetTypeFilterCommand}" CommandParameter="{x:Static models:SupportType.EnvironmentUpdate}"/>
+                        <ui:Button Style="{StaticResource FilterChipStyle}" Content="Mua bản quyền"
+                                   Command="{Binding SetTypeFilterCommand}" CommandParameter="{x:Static models:SupportType.LicensePurchase}"/>
+                        <ui:Button Style="{StaticResource FilterChipStyle}" Content="Khác"
+                                   Command="{Binding SetTypeFilterCommand}" CommandParameter="{x:Static models:SupportType.Other}"/>
+                        <ui:Button Content="Xoá lọc" Appearance="Transparent" Height="36"
+                                   Command="{Binding ClearFilterCommand}"/>
+                    </WrapPanel>
                 </StackPanel>
-            </ui:Card>
-            <ui:Card Style="{StaticResource StatCardStyle}" Width="200">
-                <StackPanel>
-                    <TextBlock Text="Đang xử lý" Foreground="#8A93A0" FontSize="12"/>
-                    <TextBlock Text="{Binding InProgressCount, Mode=OneWay}" Foreground="#9A7BFF" FontSize="26" FontWeight="Bold"/>
-                </StackPanel>
-            </ui:Card>
-            <ui:Card Style="{StaticResource StatCardStyle}" Width="200">
-                <StackPanel>
-                    <TextBlock Text="Hoàn tất" Foreground="#8A93A0" FontSize="12"/>
-                    <TextBlock Text="{Binding CompletedCount, Mode=OneWay}" Foreground="#3FD07A" FontSize="26" FontWeight="Bold"/>
-                </StackPanel>
-            </ui:Card>
-        </StackPanel>
 
-        <!-- ===== Tìm kiếm ===== -->
-        <ui:TextBox Grid.Row="2" Width="320" HorizontalAlignment="Left"
-                    Icon="{ui:SymbolIcon Search24}"
-                    PlaceholderText="Tìm theo tiêu đề hoặc người gửi..."
-                    Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                    Height="40" Margin="0,0,0,14"/>
+                <!-- ===== Danh sách yêu cầu ===== -->
+                <ItemsControl Grid.Row="4" ItemsSource="{Binding FilteredRequests}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type models:SupportRequestModel}">
+                            <ui:Card Margin="0,0,0,12" Padding="20" Cursor="Hand">
+                                <ui:Card.InputBindings>
+                                    <MouseBinding MouseAction="LeftClick"
+                                                  Command="{Binding DataContext.OpenDetailCommand,
+                                                            RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                  CommandParameter="{Binding}"/>
+                                </ui:Card.InputBindings>
 
-        <!-- ===== Bộ lọc kép: trạng thái + loại ===== -->
-        <StackPanel Grid.Row="3" Margin="0,0,0,20">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
 
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                <ui:Button Style="{StaticResource FilterChipStyle}" Content="Tất cả trạng thái"
-                           Command="{Binding SetStatusFilterCommand}"/>
-                <ui:Button Style="{StaticResource FilterChipStyle}" Content="Chờ duyệt"
-                           Command="{Binding SetStatusFilterCommand}" CommandParameter="{x:Static models:SupportStatus.Pending}"/>
-                <ui:Button Style="{StaticResource FilterChipStyle}" Content="Đã duyệt"
-                           Command="{Binding SetStatusFilterCommand}" CommandParameter="{x:Static models:SupportStatus.Approved}"/>
-                <ui:Button Style="{StaticResource FilterChipStyle}" Content="Đang xử lý"
-                           Command="{Binding SetStatusFilterCommand}" CommandParameter="{x:Static models:SupportStatus.InProgress}"/>
-                <ui:Button Style="{StaticResource FilterChipStyle}" Content="Hoàn tất"
-                           Command="{Binding SetStatusFilterCommand}" CommandParameter="{x:Static models:SupportStatus.Completed}"/>
-                <ui:Button Style="{StaticResource FilterChipStyle}" Content="Từ chối"
-                           Command="{Binding SetStatusFilterCommand}" CommandParameter="{x:Static models:SupportStatus.Rejected}"/>
-            </StackPanel>
+                                    <!-- Avatar người gửi -->
+                                    <Border Grid.Column="0" Width="42" Height="42" CornerRadius="21"
+                                            Background="#3E434A" Margin="0,0,16,0" VerticalAlignment="Top">
+                                        <TextBlock Text="{Binding Initial}" Foreground="White" FontWeight="Bold"
+                                                   FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
 
-            <StackPanel Orientation="Horizontal">
-                <ui:Button Style="{StaticResource FilterChipStyle}" Content="Tất cả loại"
-                           Command="{Binding SetTypeFilterCommand}"/>
-                <ui:Button Style="{StaticResource FilterChipStyle}" Content="Nâng cấp thiết bị"
-                           Command="{Binding SetTypeFilterCommand}" CommandParameter="{x:Static models:SupportType.DeviceUpgrade}"/>
-                <ui:Button Style="{StaticResource FilterChipStyle}" Content="Tuyển nhân sự"
-                           Command="{Binding SetTypeFilterCommand}" CommandParameter="{x:Static models:SupportType.Hiring}"/>
-                <ui:Button Style="{StaticResource FilterChipStyle}" Content="Cập nhật môi trường"
-                           Command="{Binding SetTypeFilterCommand}" CommandParameter="{x:Static models:SupportType.EnvironmentUpdate}"/>
-                <ui:Button Style="{StaticResource FilterChipStyle}" Content="Mua bản quyền"
-                           Command="{Binding SetTypeFilterCommand}" CommandParameter="{x:Static models:SupportType.LicensePurchase}"/>
-                <ui:Button Style="{StaticResource FilterChipStyle}" Content="Khác"
-                           Command="{Binding SetTypeFilterCommand}" CommandParameter="{x:Static models:SupportType.Other}"/>
-                <ui:Button Content="Xoá lọc" Appearance="Transparent" Height="36"
-                           Command="{Binding ClearFilterCommand}"/>
-            </StackPanel>
-        </StackPanel>
+                                    <!-- Nội dung -->
+                                    <StackPanel Grid.Column="1">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{Binding Title}" Foreground="White"
+                                                       FontSize="15.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                                            <Border Grid.Column="1" CornerRadius="10" Padding="8,3"
+                                                    Background="{Binding Priority, Converter={StaticResource PriorityBrush}}"
+                                                    Opacity="0.9" Margin="8,0,0,0">
+                                                <TextBlock Text="{Binding Priority, Converter={StaticResource PriorityText}}"
+                                                           Foreground="White" FontSize="10.5" FontWeight="SemiBold"/>
+                                            </Border>
+                                        </Grid>
 
-        <!-- ===== Danh sách yêu cầu ===== -->
-        <ScrollViewer Grid.Row="4" VerticalScrollBarVisibility="Auto">
-            <ItemsControl ItemsSource="{Binding FilteredRequests}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate DataType="{x:Type models:SupportRequestModel}">
-                        <ui:Card Margin="0,0,0,12" Padding="20" Cursor="Hand">
-                            <ui:Card.InputBindings>
-                                <MouseBinding MouseAction="LeftClick"
-                                              Command="{Binding DataContext.OpenDetailCommand,
-                                                        RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                              CommandParameter="{Binding}"/>
-                            </ui:Card.InputBindings>
+                                        <TextBlock Text="{Binding Description}" Foreground="#8A93A0" FontSize="12.5"
+                                                   TextWrapping="Wrap" MaxHeight="34" TextTrimming="CharacterEllipsis"
+                                                   Margin="0,6,0,10"/>
 
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-
-                                <!-- Avatar người gửi -->
-                                <Border Grid.Column="0" Width="42" Height="42" CornerRadius="21"
-                                        Background="#3E434A" Margin="0,0,16,0" VerticalAlignment="Top">
-                                    <TextBlock Text="{Binding Initial}" Foreground="White" FontWeight="Bold"
-                                               FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
-
-                                <!-- Nội dung -->
-                                <StackPanel Grid.Column="1">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="{Binding Title}" Foreground="White"
-                                                   FontSize="15.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
-                                        <Border Grid.Column="1" CornerRadius="10" Padding="8,3"
-                                                Background="{Binding Priority, Converter={StaticResource PriorityBrush}}"
-                                                Opacity="0.9" Margin="8,0,0,0">
-                                            <TextBlock Text="{Binding Priority, Converter={StaticResource PriorityText}}"
-                                                       Foreground="White" FontSize="10.5" FontWeight="SemiBold"/>
-                                        </Border>
-                                    </Grid>
-
-                                    <TextBlock Text="{Binding Description}" Foreground="#8A93A0" FontSize="12.5"
-                                               TextWrapping="Wrap" MaxHeight="34" TextTrimming="CharacterEllipsis"
-                                               Margin="0,6,0,10"/>
-
-                                    <StackPanel Orientation="Horizontal">
-                                        <Border CornerRadius="10" Padding="8,3" Background="#3A4149" Margin="0,0,8,0">
-                                            <TextBlock Text="{Binding Type, Converter={StaticResource TypeText}}"
-                                                       Foreground="#C7CDD6" FontSize="11"/>
-                                        </Border>
-                                        <Border CornerRadius="10" Padding="8,3"
-                                                Background="{Binding Status, Converter={StaticResource StatusBrush}}" Margin="0,0,8,0">
-                                            <TextBlock Text="{Binding Status, Converter={StaticResource StatusText}}"
-                                                       Foreground="White" FontSize="11" FontWeight="SemiBold"/>
-                                        </Border>
-                                        <TextBlock Foreground="#8A93A0" FontSize="12" VerticalAlignment="Center">
-                                            <Run Text="{Binding RequestedBy, Mode=OneWay}"/>
-                                            <Run Text=" · "/>
-                                            <Run Text="{Binding CreatedDate, StringFormat='dd/MM/yyyy'}"/>
-                                        </TextBlock>
+                                        <WrapPanel Orientation="Horizontal">
+                                            <Border CornerRadius="10" Padding="8,3" Background="#3A4149" Margin="0,0,8,0">
+                                                <TextBlock Text="{Binding Type, Converter={StaticResource TypeText}}"
+                                                           Foreground="#C7CDD6" FontSize="11"/>
+                                            </Border>
+                                            <Border CornerRadius="10" Padding="8,3"
+                                                    Background="{Binding Status, Converter={StaticResource StatusBrush}}" Margin="0,0,8,0">
+                                                <TextBlock Text="{Binding Status, Converter={StaticResource StatusText}}"
+                                                           Foreground="White" FontSize="11" FontWeight="SemiBold"/>
+                                            </Border>
+                                            <TextBlock Foreground="#8A93A0" FontSize="12" VerticalAlignment="Center">
+                                                <Run Text="{Binding RequestedBy, Mode=OneWay}"/>
+                                                <Run Text=" · "/>
+                                                <Run Text="{Binding CreatedDate, StringFormat='dd/MM/yyyy'}"/>
+                                            </TextBlock>
+                                        </WrapPanel>
                                     </StackPanel>
-                                </StackPanel>
 
-                                <!-- Hành động nhanh (chỉ hiện khi đang chờ duyệt) -->
-                                <StackPanel Grid.Column="2" VerticalAlignment="Center" Orientation="Horizontal"
-                                            Visibility="{Binding Status, Converter={StaticResource FilterActive}, ConverterParameter=Pending}">
-                                    <ui:Button Icon="{ui:SymbolIcon Checkmark24}" Appearance="Success" Height="34" Width="34"
-                                               Margin="0,0,6,0" ToolTip="Duyệt"
-                                               Command="{Binding DataContext.ApproveCommand,
-                                                         RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                               CommandParameter="{Binding}"/>
-                                    <ui:Button Icon="{ui:SymbolIcon Dismiss24}" Appearance="Danger" Height="34" Width="34"
-                                               ToolTip="Từ chối"
-                                               Command="{Binding DataContext.RejectCommand,
-                                                         RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                               CommandParameter="{Binding}"/>
-                                </StackPanel>
-                            </Grid>
-                        </ui:Card>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+                                    <!-- Hành động nhanh (chỉ hiện khi đang chờ duyệt) -->
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Orientation="Horizontal"
+                                                Visibility="{Binding Status, Converter={StaticResource FilterActive}, ConverterParameter=Pending}">
+                                        <ui:Button Icon="{ui:SymbolIcon Checkmark24}" Appearance="Success" Height="34" Width="34"
+                                                   Margin="0,0,6,0" ToolTip="Duyệt"
+                                                   Command="{Binding DataContext.ApproveCommand,
+                                                             RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                   CommandParameter="{Binding}"/>
+                                        <ui:Button Icon="{ui:SymbolIcon Dismiss24}" Appearance="Danger" Height="34" Width="34"
+                                                   ToolTip="Từ chối"
+                                                   Command="{Binding DataContext.RejectCommand,
+                                                             RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                   CommandParameter="{Binding}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </ui:Card>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Grid>
         </ScrollViewer>
 
         <!-- ===== Overlay: loading ===== -->
-        <Border Grid.RowSpan="5" Background="#902B3036"
+        <Border Background="#902B3036"
                 Visibility="{Binding IsBusy, Converter={StaticResource B2V}}">
             <ui:ProgressRing IsIndeterminate="True" Width="42" Height="42"/>
         </Border>
 
         <!-- ===== Overlay: chi tiết yêu cầu ===== -->
-        <Border Grid.RowSpan="5" Background="#B0181B20"
+        <Border Background="#B0181B20"
                 Visibility="{Binding HasSelectedRequest, Converter={StaticResource B2V}}">
 
             <Border Width="460" HorizontalAlignment="Right" Background="#282D33"
@@ -296,23 +298,23 @@
                         </StackPanel>
 
                         <!-- Hành động duyệt/từ chối/hoàn tất -->
-                        <StackPanel Orientation="Horizontal">
-                            <ui:Button Content="Duyệt" Appearance="Success" Height="42" Width="110" Margin="0,0,10,0"
+                        <WrapPanel Orientation="Horizontal">
+                            <ui:Button Content="Duyệt" Appearance="Success" Height="42" Width="110" Margin="0,0,10,10"
                                        Visibility="{Binding Status, Converter={StaticResource FilterActive}, ConverterParameter=Pending}"
                                        Command="{Binding DataContext.ApproveCommand,
                                                  RelativeSource={RelativeSource AncestorType=UserControl}}"
                                        CommandParameter="{Binding}"/>
-                            <ui:Button Content="Từ chối" Appearance="Danger" Height="42" Width="110" Margin="0,0,10,0"
+                            <ui:Button Content="Từ chối" Appearance="Danger" Height="42" Width="110" Margin="0,0,10,10"
                                        Visibility="{Binding Status, Converter={StaticResource FilterActive}, ConverterParameter=Pending}"
                                        Command="{Binding DataContext.RejectCommand,
                                                  RelativeSource={RelativeSource AncestorType=UserControl}}"
                                        CommandParameter="{Binding}"/>
-                            <ui:Button Content="Đánh dấu hoàn tất" Appearance="Primary" Height="42"
+                            <ui:Button Content="Đánh dấu hoàn tất" Appearance="Primary" Height="42" Margin="0,0,0,10"
                                        Visibility="{Binding Status, Converter={StaticResource FilterActive}, ConverterParameter=InProgress}"
                                        Command="{Binding DataContext.CompleteCommand,
                                                  RelativeSource={RelativeSource AncestorType=UserControl}}"
                                        CommandParameter="{Binding}"/>
-                        </StackPanel>
+                        </WrapPanel>
 
                     </StackPanel>
                 </ScrollViewer>

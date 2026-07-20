@@ -44,10 +44,15 @@
         </Style>
     </UserControl.Resources>
 
+    <!-- Bố cục "trò chuyện" giữ nguyên dạng bảng điều khiển cố định (danh sách hội thoại + khung chat) vì đây
+         là màn hình dạng ứng dụng chat thực thụ: mỗi cột đã tự cuộn nội bộ (danh sách bên trái, tin nhắn bên
+         phải) nên khi cửa sổ nhỏ hơn dự kiến, nội dung vẫn xem được đầy đủ qua thanh cuộn riêng của từng cột
+         thay vì cuộn cả trang (giữ trải nghiệm chat quen thuộc). Chỉ bổ sung MinWidth/MinHeight hợp lý để
+         layout không bị co bóp quá mức. -->
     <Grid Margin="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="*" MinHeight="360"/>
         </Grid.RowDefinitions>
 
         <!-- ===== Header ===== -->
@@ -81,9 +86,9 @@
         <!-- ===== Nội dung: danh sách (trái) + khung chat (phải) ===== -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="360"/>
+                <ColumnDefinition Width="360" MinWidth="280"/>
                 <ColumnDefinition Width="16"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*" MinWidth="320"/>
             </Grid.ColumnDefinitions>
 
             <!-- ================= CỘT TRÁI: danh sách hội thoại ================= -->
@@ -101,7 +106,7 @@
                                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                                 Height="40" Margin="0,0,0,12"/>
 
-                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
+                    <WrapPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
                         <ui:Button Style="{StaticResource FilterChipStyle}" Content="Tất cả"
                                    Command="{Binding SetTypeFilterCommand}"/>
                         <ui:Button Style="{StaticResource FilterChipStyle}" Content="Cá nhân"
@@ -112,7 +117,7 @@
                                    Command="{Binding SetTypeFilterCommand}" CommandParameter="{x:Static models:ConversationType.Partner}"/>
                         <ui:Button Style="{StaticResource FilterChipStyle}" Content="Admin"
                                    Command="{Binding SetTypeFilterCommand}" CommandParameter="{x:Static models:ConversationType.Admin}"/>
-                    </StackPanel>
+                    </WrapPanel>
 
                     <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
                         <ItemsControl ItemsSource="{Binding FilteredConversations}">

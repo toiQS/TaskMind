@@ -34,168 +34,178 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Margin="24">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+    <!-- Grid gốc: ScrollViewer toàn trang + overlay (loading / chi tiết) nằm ngoài để luôn phủ kín màn hình
+         dù đang cuộn tới đâu. -->
+    <Grid>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <Grid Margin="24">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <!-- Trước là "*" (co giãn theo cửa sổ): giờ để Auto vì đã nằm trong ScrollViewer toàn trang,
+                         danh sách sẽ co theo nội dung và có thể cuộn cùng cả trang thay vì bị cắt. -->
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-        <!-- ===== Header: tiêu đề + hành động ===== -->
-        <Grid Grid.Row="0" Margin="0,0,0,16">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
+                <!-- ===== Header: tiêu đề + hành động ===== -->
+                <Grid Grid.Row="0" Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="0">
-                <TextBlock Text="Quản lý dự án" Foreground="White" FontSize="24" FontWeight="SemiBold"/>
-                <TextBlock Foreground="#8A93A0" FontSize="13" Margin="0,4,0,0">
-                    <Run Text="Tổng cộng "/><Run Text="{Binding Projects.Count, Mode=OneWay}"/><Run Text=" dự án"/>
-                </TextBlock>
-            </StackPanel>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Quản lý dự án" Foreground="White" FontSize="24" FontWeight="SemiBold"/>
+                        <TextBlock Foreground="#8A93A0" FontSize="13" Margin="0,4,0,0">
+                            <Run Text="Tổng cộng "/><Run Text="{Binding Projects.Count, Mode=OneWay}"/><Run Text=" dự án"/>
+                        </TextBlock>
+                    </StackPanel>
 
-            <StackPanel Grid.Column="1" Orientation="Horizontal">
-                <ui:Button Margin="0,0,10,0"
-                           Icon="{ui:SymbolIcon ArrowSync24}"
-                           Appearance="Secondary"
-                           Command="{Binding RefreshCommand}"
-                           ToolTip="Làm mới"/>
-                <ui:Button Content="Tạo dự án"
-                           Icon="{ui:SymbolIcon Add24}"
-                           Appearance="Primary"
-                           FontWeight="SemiBold"
-                           Command="{Binding CreateProjectCommand}"/>
-            </StackPanel>
-        </Grid>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <ui:Button Margin="0,0,10,0"
+                                   Icon="{ui:SymbolIcon ArrowSync24}"
+                                   Appearance="Secondary"
+                                   Command="{Binding RefreshCommand}"
+                                   ToolTip="Làm mới"/>
+                        <ui:Button Content="Tạo dự án"
+                                   Icon="{ui:SymbolIcon Add24}"
+                                   Appearance="Primary"
+                                   FontWeight="SemiBold"
+                                   Command="{Binding CreateProjectCommand}"/>
+                    </StackPanel>
+                </Grid>
 
-        <!-- ===== Thanh tìm kiếm + bộ lọc trạng thái ===== -->
-        <Grid Grid.Row="1" Margin="0,0,0,20">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="320"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+                <!-- ===== Thanh tìm kiếm + bộ lọc trạng thái ===== -->
+                <!-- Đổi sang WrapPanel cho vùng lọc để các chip tự xuống dòng khi cửa sổ hẹp thay vì bị dồn/cắt. -->
+                <Grid Grid.Row="1" Margin="0,0,0,20">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-            <ui:TextBox Grid.Column="0"
-                        Icon="{ui:SymbolIcon Search24}"
-                        PlaceholderText="Tìm theo tên dự án..."
-                        Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                        Height="40"/>
+                    <ui:TextBox Grid.Row="0"
+                                Icon="{ui:SymbolIcon Search24}"
+                                PlaceholderText="Tìm theo tên dự án..."
+                                Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                Width="320" HorizontalAlignment="Left"
+                                Height="40" Margin="0,0,0,10"/>
 
-            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
-                <ui:Button Content="Tất cả" Appearance="Secondary" Margin="0,0,8,0" Height="36"
-                           Command="{Binding SetStatusFilterCommand}"/>
-                <ui:Button Content="Đang thực hiện" Appearance="Secondary" Margin="0,0,8,0" Height="36"
-                           Command="{Binding SetStatusFilterCommand}"
-                           CommandParameter="{x:Static models:ProjectStatus.InProgress}"/>
-                <ui:Button Content="Tạm dừng" Appearance="Secondary" Margin="0,0,8,0" Height="36"
-                           Command="{Binding SetStatusFilterCommand}"
-                           CommandParameter="{x:Static models:ProjectStatus.Paused}"/>
-                <ui:Button Content="Hoàn thành" Appearance="Secondary" Height="36"
-                           Command="{Binding SetStatusFilterCommand}"
-                           CommandParameter="{x:Static models:ProjectStatus.Completed}"/>
-            </StackPanel>
-        </Grid>
+                    <WrapPanel Grid.Row="1" Orientation="Horizontal">
+                        <ui:Button Content="Tất cả" Appearance="Secondary" Margin="0,0,8,8" Height="36"
+                                   Command="{Binding SetStatusFilterCommand}"/>
+                        <ui:Button Content="Đang thực hiện" Appearance="Secondary" Margin="0,0,8,8" Height="36"
+                                   Command="{Binding SetStatusFilterCommand}"
+                                   CommandParameter="{x:Static models:ProjectStatus.InProgress}"/>
+                        <ui:Button Content="Tạm dừng" Appearance="Secondary" Margin="0,0,8,8" Height="36"
+                                   Command="{Binding SetStatusFilterCommand}"
+                                   CommandParameter="{x:Static models:ProjectStatus.Paused}"/>
+                        <ui:Button Content="Hoàn thành" Appearance="Secondary" Margin="0,0,8,8" Height="36"
+                                   Command="{Binding SetStatusFilterCommand}"
+                                   CommandParameter="{x:Static models:ProjectStatus.Completed}"/>
+                    </WrapPanel>
+                </Grid>
 
-        <!-- ===== Danh sách dự án dạng card ===== -->
-        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
-            <ItemsControl ItemsSource="{Binding FilteredProjects}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <WrapPanel Orientation="Horizontal"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
+                <!-- ===== Danh sách dự án dạng card ===== -->
+                <!-- Bỏ ScrollViewer riêng của danh sách (trước lồng trong hàng "*"): giờ danh sách nằm trực
+                     tiếp trong ScrollViewer toàn trang, tránh cuộn lồng cuộn. -->
+                <ItemsControl Grid.Row="2" ItemsSource="{Binding FilteredProjects}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
 
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate DataType="{x:Type models:ProjectModel}">
-                        <ui:Card Width="340" Margin="0,0,16,16" Padding="18" Cursor="Hand">
-                            <ui:Card.InputBindings>
-                                <MouseBinding MouseAction="LeftClick"
-                                              Command="{Binding DataContext.OpenDetailCommand,
-                                                        RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                              CommandParameter="{Binding}"/>
-                            </ui:Card.InputBindings>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type models:ProjectModel}">
+                            <ui:Card Width="340" Margin="0,0,16,16" Padding="18" Cursor="Hand">
+                                <ui:Card.InputBindings>
+                                    <MouseBinding MouseAction="LeftClick"
+                                                  Command="{Binding DataContext.OpenDetailCommand,
+                                                            RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                  CommandParameter="{Binding}"/>
+                                </ui:Card.InputBindings>
 
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
 
-                                <!-- Tên dự án + badge loại -->
-                                <Grid Grid.Row="0" Margin="0,0,0,8">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="{Binding Name}" Foreground="White"
-                                               FontSize="16" FontWeight="SemiBold"
-                                               TextTrimming="CharacterEllipsis"/>
-                                    <Border Grid.Column="1" Style="{StaticResource KindBadgeStyle}" Margin="8,0,0,0">
-                                        <TextBlock Text="{Binding Kind, Converter={StaticResource KindText}}"
-                                                   Foreground="#C7CDD6" FontSize="11"/>
-                                    </Border>
+                                    <!-- Tên dự án + badge loại -->
+                                    <Grid Grid.Row="0" Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding Name}" Foreground="White"
+                                                   FontSize="16" FontWeight="SemiBold"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                        <Border Grid.Column="1" Style="{StaticResource KindBadgeStyle}" Margin="8,0,0,0">
+                                            <TextBlock Text="{Binding Kind, Converter={StaticResource KindText}}"
+                                                       Foreground="#C7CDD6" FontSize="11"/>
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- Mô tả -->
+                                    <TextBlock Grid.Row="1" Text="{Binding Description}" Foreground="#8A93A0"
+                                               FontSize="12.5" TextWrapping="Wrap" MaxHeight="34"
+                                               TextTrimming="CharacterEllipsis" Margin="0,0,0,14"/>
+
+                                    <!-- Tiến độ -->
+                                    <Grid Grid.Row="2" Margin="0,0,0,10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <ProgressBar Grid.Column="0" Value="{Binding Progress, Mode=OneWay}"
+                                                     Minimum="0" Maximum="100" Height="6"
+                                                     VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding Progress, Converter={StaticResource ProgressPercent}}"
+                                                   Foreground="#C7CDD6" FontSize="12" FontWeight="SemiBold"/>
+                                    </Grid>
+
+                                    <!-- Số công việc -->
+                                    <TextBlock Grid.Row="3" Foreground="#8A93A0" FontSize="12" Margin="0,0,0,14">
+                                        <Run Text="{Binding TaskDone, Mode=OneWay}"/><Run Text="/"/><Run Text="{Binding TaskTotal, Mode=OneWay}"/><Run Text=" công việc hoàn thành"/>
+                                    </TextBlock>
+
+                                    <!-- Trạng thái + số thành viên -->
+                                    <Grid Grid.Row="4">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <Border Grid.Column="0" HorizontalAlignment="Left" CornerRadius="10" Padding="8,3"
+                                                Background="{Binding Status, Converter={StaticResource StatusBrush}}">
+                                            <TextBlock Text="{Binding Status, Converter={StaticResource StatusText}}"
+                                                       Foreground="White" FontSize="11" FontWeight="SemiBold"/>
+                                        </Border>
+
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                            <ui:SymbolIcon Symbol="People24" FontSize="14" Foreground="#8A93A0" Margin="0,0,4,0"/>
+                                            <TextBlock Text="{Binding Members.Count, Mode=OneWay}" Foreground="#8A93A0" FontSize="12"/>
+                                        </StackPanel>
+                                    </Grid>
                                 </Grid>
-
-                                <!-- Mô tả -->
-                                <TextBlock Grid.Row="1" Text="{Binding Description}" Foreground="#8A93A0"
-                                           FontSize="12.5" TextWrapping="Wrap" MaxHeight="34"
-                                           TextTrimming="CharacterEllipsis" Margin="0,0,0,14"/>
-
-                                <!-- Tiến độ -->
-                                <Grid Grid.Row="2" Margin="0,0,0,10">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <ProgressBar Grid.Column="0" Value="{Binding Progress, Mode=OneWay}"
-                                                 Minimum="0" Maximum="100" Height="6"
-                                                 VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                    <TextBlock Grid.Column="1" Text="{Binding Progress, Converter={StaticResource ProgressPercent}}"
-                                               Foreground="#C7CDD6" FontSize="12" FontWeight="SemiBold"/>
-                                </Grid>
-
-                                <!-- Số công việc -->
-                                <TextBlock Grid.Row="3" Foreground="#8A93A0" FontSize="12" Margin="0,0,0,14">
-                                    <Run Text="{Binding TaskDone, Mode=OneWay}"/><Run Text="/"/><Run Text="{Binding TaskTotal, Mode=OneWay}"/><Run Text=" công việc hoàn thành"/>
-                                </TextBlock>
-
-                                <!-- Trạng thái + số thành viên -->
-                                <Grid Grid.Row="4">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-
-                                    <Border Grid.Column="0" HorizontalAlignment="Left" CornerRadius="10" Padding="8,3"
-                                            Background="{Binding Status, Converter={StaticResource StatusBrush}}">
-                                        <TextBlock Text="{Binding Status, Converter={StaticResource StatusText}}"
-                                                   Foreground="White" FontSize="11" FontWeight="SemiBold"/>
-                                    </Border>
-
-                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                        <ui:SymbolIcon Symbol="People24" FontSize="14" Foreground="#8A93A0" Margin="0,0,4,0"/>
-                                        <TextBlock Text="{Binding Members.Count, Mode=OneWay}" Foreground="#8A93A0" FontSize="12"/>
-                                    </StackPanel>
-                                </Grid>
-                            </Grid>
-                        </ui:Card>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+                            </ui:Card>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Grid>
         </ScrollViewer>
 
         <!-- ===== Overlay: loading ===== -->
-        <Border Grid.RowSpan="3" Background="#902B3036"
+        <Border Background="#902B3036"
                 Visibility="{Binding IsBusy, Converter={StaticResource B2V}}">
             <ui:ProgressRing IsIndeterminate="True" Width="42" Height="42"/>
         </Border>
 
         <!-- ===== Overlay: chi tiết dự án ===== -->
-        <Border Grid.RowSpan="3" Background="#B0181B20"
+        <Border Background="#B0181B20"
                 Visibility="{Binding HasSelectedProject, Converter={StaticResource B2V}}">
 
             <Border Width="460" HorizontalAlignment="Right" Background="#282D33"
