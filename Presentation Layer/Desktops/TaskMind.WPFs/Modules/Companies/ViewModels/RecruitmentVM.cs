@@ -31,6 +31,14 @@ namespace TaskMind.WPFs.Modules.Companies.ViewModels
         public bool HasSelectedJob => SelectedJob != null;
         public bool HasNoSelectedJob => SelectedJob == null;
 
+        /// <summary>True khi panel "Đăng tin tuyển dụng mới" đang mở (overlay ở RecruitmentView).</summary>
+        private bool _isAddingJob;
+        public bool IsAddingJob { get => _isAddingJob; set { _isAddingJob = value; OnPropertyChanged(); } }
+
+        /// <summary>ViewModel của form thêm tin, được tạo mới mỗi lần mở panel.</summary>
+        private AddRecruitmentVM _addJobVM;
+        public AddRecruitmentVM AddJobVM { get => _addJobVM; set { _addJobVM = value; OnPropertyChanged(); } }
+
         public ObservableCollection<JobPostingModel> JobPostings { get; } = new();
         public ObservableCollection<JobPostingModel> FilteredJobPostings { get; } = new();
 
@@ -249,9 +257,34 @@ namespace TaskMind.WPFs.Modules.Companies.ViewModels
             Touch();
         }
 
+        /// <summary>Mở panel "Đăng tin tuyển dụng mới" (overlay), tạo AddRecruitmentVM mới mỗi lần mở
+        /// và gán callback để nhận JobPostingModel vừa tạo hoặc đóng panel khi huỷ.</summary>
         private void CreateJob()
         {
-            // TODO: mở dialog/điều hướng "Đăng tin tuyển dụng mới", gọi service POST /job-postings
+            // Đóng panel chi tiết nếu đang mở, tránh chồng 2 overlay cùng lúc
+            CloseJobDetail();
+
+            var vm = new AddRecruitmentVM();
+
+            vm.OnSaved = job =>
+            {
+                // TODO: khi có service thật, có thể gọi lại LoadAsync() thay vì chèn trực tiếp vào danh sách cục bộ
+                JobPostings.Insert(0, job);
+                ApplyFilter();
+                RaiseCounters();
+
+                IsAddingJob = false;
+                AddJobVM = null;
+            };
+
+            vm.OnCancelled = () =>
+            {
+                IsAddingJob = false;
+                AddJobVM = null;
+            };
+
+            AddJobVM = vm;
+            IsAddingJob = true;
         }
 
         /// <summary>Ép làm mới UI vì các model không implement INotifyPropertyChanged.</summary>

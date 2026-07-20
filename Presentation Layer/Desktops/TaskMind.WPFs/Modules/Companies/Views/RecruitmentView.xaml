@@ -370,5 +370,12 @@
                 Visibility="{Binding IsBusy, Converter={StaticResource B2V}}">
             <ui:ProgressRing IsIndeterminate="True" Width="42" Height="42"/>
         </Border>
+
+        <!-- ===== Overlay: đăng tin tuyển dụng mới ===== -->
+        <Border Background="#B0181B20"
+                Visibility="{Binding IsAddingJob, Converter={StaticResource B2V}}">
+            <local:AddRecruitmentView DataContext="{Binding AddJobVM}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Border>
     </Grid>
 </UserControl>

@@ -50,5 +50,9 @@
     <DataTemplate DataType="{x:Type companyVM:NotificationVM}">
         <companyView:NotificationView/>
     </DataTemplate>
-    
+
+    <DataTemplate DataType="{x:Type companyVM:AddRecruitmentVM}">
+        <companyView:AddRecruitmentView/>
+    </DataTemplate>
+
 </ResourceDictionary>
