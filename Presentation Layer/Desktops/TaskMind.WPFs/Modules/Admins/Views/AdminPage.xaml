@@ -209,8 +209,7 @@
         <!-- ===================== NỘI DUNG TRANG ===================== -->
         <ContentControl Grid.Column="1"
                          Content="{Binding AdminCurrentView}"
-                         x:Name="AdminPages"
-                         Margin="24"/>
+                         x:Name="AdminPages"/>
 
     </Grid>
 </Page>
