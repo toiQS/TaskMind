@@ -8,7 +8,7 @@
              xmlns:util="clr-namespace:TaskMind.WPFs.Modules.Companies.Utilities"
              xmlns:models="clr-namespace:TaskMind.WPFs.Modules.Companies.Models"
              mc:Ignorable="d"
-             d:DesignHeight="780" d:DesignWidth="1200"
+             d:DesignHeight="800" d:DesignWidth="1200"
              Style="{StaticResource Page_Style}">
 
     <UserControl.Resources>
@@ -18,6 +18,7 @@
         <util:ListingStatusToBrushConverter x:Key="StatusBrush"/>
         <util:PriceDisplayConverter x:Key="PriceDisplay"/>
         <util:StoreFilterActiveConverter x:Key="FilterActive"/>
+        <util:StoreActionVisibilityConverter x:Key="ActionVisible"/>
 
         <Style x:Key="StatCardStyle" TargetType="ui:Card">
             <Setter Property="Padding" Value="18,16"/>
@@ -41,6 +42,15 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
+
+        <!-- Nút pill cho thẻ System/Company: đổi màu khi đang được chọn -->
+        <Style x:Key="ScopeTabButtonStyle" TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+            <Setter Property="Appearance" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#8A93A0"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="Padding" Value="18,0"/>
+        </Style>
     </UserControl.Resources>
 
     <Grid>
@@ -52,10 +62,11 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <!-- ===== Header ===== -->
-                <Grid Grid.Row="0" Margin="0,0,0,20">
+                <Grid Grid.Row="0" Margin="0,0,0,18">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
@@ -82,8 +93,58 @@
                     </StackPanel>
                 </Grid>
 
-                <!-- ===== Thẻ thống kê ===== -->
-                <WrapPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,20">
+                <!-- ===== Thẻ: Toàn hệ thống / Dự án của công ty ===== -->
+                <!-- NOTE: kiểm tra lại tên icon Globe24 / Building24 qua IntelliSense (Ctrl+Space sau Symbol=") trước khi build -->
+                <Border Grid.Row="1" Background="#20242A" CornerRadius="10" Padding="4"
+                        HorizontalAlignment="Left" Margin="0,0,0,20">
+                    <StackPanel Orientation="Horizontal">
+                        <ui:Button Style="{StaticResource ScopeTabButtonStyle}"
+                                   Icon="{ui:SymbolIcon Globe24}"
+                                   Command="{Binding SetScopeCommand}"
+                                   CommandParameter="{x:Static models:StoreScope.System}">
+                            <ui:Button.Content>
+                                <TextBlock>
+                                    <Run Text="Toàn hệ thống ("/><Run Text="{Binding SystemCount, Mode=OneWay}"/><Run Text=")"/>
+                                </TextBlock>
+                            </ui:Button.Content>
+                            <ui:Button.Style>
+                                <Style TargetType="ui:Button" BasedOn="{StaticResource ScopeTabButtonStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CurrentScope}" Value="{x:Static models:StoreScope.System}">
+                                            <Setter Property="Background" Value="#4C9AFF"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ui:Button.Style>
+                        </ui:Button>
+
+                        <ui:Button Style="{StaticResource ScopeTabButtonStyle}"
+                                   Icon="{ui:SymbolIcon Building24}"
+                                   Margin="4,0,0,0"
+                                   Command="{Binding SetScopeCommand}"
+                                   CommandParameter="{x:Static models:StoreScope.Company}">
+                            <ui:Button.Content>
+                                <TextBlock>
+                                    <Run Text="Dự án của công ty ("/><Run Text="{Binding CompanyCount, Mode=OneWay}"/><Run Text=")"/>
+                                </TextBlock>
+                            </ui:Button.Content>
+                            <ui:Button.Style>
+                                <Style TargetType="ui:Button" BasedOn="{StaticResource ScopeTabButtonStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CurrentScope}" Value="{x:Static models:StoreScope.Company}">
+                                            <Setter Property="Background" Value="#4C9AFF"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ui:Button.Style>
+                        </ui:Button>
+                    </StackPanel>
+                </Border>
+
+                <!-- ===== Thẻ thống kê (theo phạm vi thẻ đang chọn) ===== -->
+                <WrapPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,20">
                     <ui:Card Style="{StaticResource StatCardStyle}" Width="200">
                         <StackPanel>
                             <TextBlock Text="Chờ duyệt" Foreground="#8A93A0" FontSize="12"/>
@@ -105,14 +166,14 @@
                 </WrapPanel>
 
                 <!-- ===== Tìm kiếm ===== -->
-                <ui:TextBox Grid.Row="2" Width="320" HorizontalAlignment="Left"
+                <ui:TextBox Grid.Row="3" Width="320" HorizontalAlignment="Left"
                             Icon="{ui:SymbolIcon Search24}"
                             PlaceholderText="Tìm theo tên hoặc công nghệ..."
                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                             Height="40" Margin="0,0,0,14"/>
 
                 <!-- ===== Bộ lọc kép: loại + trạng thái ===== -->
-                <StackPanel Grid.Row="3" Margin="0,0,0,20">
+                <StackPanel Grid.Row="4" Margin="0,0,0,20">
 
                     <WrapPanel Orientation="Horizontal" Margin="0,0,0,10">
                         <ui:Button Style="{StaticResource FilterChipStyle}" Content="Tất cả loại"
@@ -142,7 +203,7 @@
                 </StackPanel>
 
                 <!-- ===== Lưới tin đăng dạng card ===== -->
-                <ItemsControl Grid.Row="4" ItemsSource="{Binding FilteredListings}">
+                <ItemsControl Grid.Row="5" ItemsSource="{Binding FilteredListings}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <WrapPanel Orientation="Horizontal"/>
@@ -166,9 +227,10 @@
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
                                     </Grid.RowDefinitions>
 
-                                    <!-- Tên + badge loại -->
+                                    <!-- Tên + badge loại + badge "của bạn" -->
                                     <Grid Grid.Row="0" Margin="0,0,0,8">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
@@ -183,36 +245,103 @@
                                         </Border>
                                     </Grid>
 
+                                    <!-- Badge "Dự án của bạn" (chỉ hiện ở thẻ Toàn hệ thống) -->
+                                    <Border Grid.Row="1" CornerRadius="10" Padding="8,3" Background="#1E3A2A"
+                                            HorizontalAlignment="Left" Margin="0,0,0,10">
+                                        <Border.Visibility>
+                                            <MultiBinding Converter="{StaticResource ActionVisible}" ConverterParameter="MineBadge">
+                                                <Binding Path="DataContext.CurrentScope" RelativeSource="{RelativeSource AncestorType=ItemsControl}"/>
+                                                <Binding Path="IsMine"/>
+                                                <Binding Path="Status"/>
+                                            </MultiBinding>
+                                        </Border.Visibility>
+                                        <TextBlock Text="Dự án của bạn" Foreground="#3FD07A" FontSize="10.5" FontWeight="SemiBold"/>
+                                    </Border>
+
                                     <!-- Mô tả -->
-                                    <TextBlock Grid.Row="1" Text="{Binding Description}" Foreground="#8A93A0"
+                                    <TextBlock Grid.Row="2" Text="{Binding Description}" Foreground="#8A93A0"
                                                FontSize="12.5" TextWrapping="Wrap" MaxHeight="52"
                                                TextTrimming="CharacterEllipsis" Margin="0,0,0,10"/>
 
                                     <!-- Tech stack -->
-                                    <TextBlock Grid.Row="2" Text="{Binding TechStackDisplay}" Foreground="#4C9AFF"
+                                    <TextBlock Grid.Row="3" Text="{Binding TechStackDisplay}" Foreground="#4C9AFF"
                                                FontSize="11.5" TextWrapping="Wrap" Margin="0,0,0,14"/>
 
                                     <!-- Giá -->
-                                    <TextBlock Grid.Row="3" Text="{Binding Price, Converter={StaticResource PriceDisplay}}"
+                                    <TextBlock Grid.Row="4" Text="{Binding Price, Converter={StaticResource PriceDisplay}}"
                                                Foreground="White" FontSize="16" FontWeight="Bold" Margin="0,0,0,12"/>
 
-                                    <!-- Trạng thái + người đăng -->
-                                    <Grid Grid.Row="4">
+                                    <!-- Trạng thái + lượt xem + hành động theo thẻ -->
+                                    <Grid Grid.Row="5">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
 
-                                        <Border Grid.Column="0" HorizontalAlignment="Left" CornerRadius="10" Padding="8,3"
-                                                Background="{Binding Status, Converter={StaticResource StatusBrush}}">
-                                            <TextBlock Text="{Binding Status, Converter={StaticResource StatusText}}"
-                                                       Foreground="White" FontSize="11" FontWeight="SemiBold"/>
-                                        </Border>
-
-                                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                            <Border CornerRadius="10" Padding="8,3" Margin="0,0,8,0"
+                                                    Background="{Binding Status, Converter={StaticResource StatusBrush}}">
+                                                <TextBlock Text="{Binding Status, Converter={StaticResource StatusText}}"
+                                                           Foreground="White" FontSize="11" FontWeight="SemiBold"/>
+                                            </Border>
                                             <ui:SymbolIcon Symbol="Eye24" FontSize="13" Foreground="#8A93A0" Margin="0,0,4,0"/>
                                             <TextBlock Text="{Binding ViewCount, Mode=OneWay}" Foreground="#8A93A0" FontSize="12"/>
                                         </StackPanel>
+
+                                        <!-- Nút "Quan tâm" (thẻ Toàn hệ thống, tin không phải của mình) -->
+                                        <ui:Button Grid.Column="1" Content="{Binding InterestCount, StringFormat='Quan tâm ({0})'}"
+                                                   Icon="{ui:SymbolIcon Heart24}" Appearance="Secondary" Height="30" FontSize="11.5"
+                                                   Command="{Binding DataContext.ExpressInterestCommand,
+                                                             RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                   CommandParameter="{Binding}">
+                                            <ui:Button.Visibility>
+                                                <MultiBinding Converter="{StaticResource ActionVisible}" ConverterParameter="Interest">
+                                                    <Binding Path="DataContext.CurrentScope" RelativeSource="{RelativeSource AncestorType=ItemsControl}"/>
+                                                    <Binding Path="IsMine"/>
+                                                    <Binding Path="Status"/>
+                                                </MultiBinding>
+                                            </ui:Button.Visibility>
+                                        </ui:Button>
+
+                                        <!-- Nút "Gỡ tin" (thẻ Công ty, Published) -->
+                                        <ui:Button Grid.Column="1" Content="Gỡ tin" Appearance="Secondary" Height="30" FontSize="11.5"
+                                                   Command="{Binding DataContext.CloseListingCommand,
+                                                             RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                   CommandParameter="{Binding}">
+                                            <ui:Button.Visibility>
+                                                <MultiBinding Converter="{StaticResource ActionVisible}" ConverterParameter="CloseListing">
+                                                    <Binding Path="DataContext.CurrentScope" RelativeSource="{RelativeSource AncestorType=ItemsControl}"/>
+                                                    <Binding Path="IsMine"/>
+                                                    <Binding Path="Status"/>
+                                                </MultiBinding>
+                                            </ui:Button.Visibility>
+                                        </ui:Button>
+
+                                        <!-- Nút "Đánh dấu đã trao đổi" (thẻ Công ty, Negotiating) -->
+                                        <ui:Button Grid.Column="1" Content="Đã trao đổi" Appearance="Success" Height="30" FontSize="11.5"
+                                                   Command="{Binding DataContext.MarkSoldCommand,
+                                                             RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                   CommandParameter="{Binding}">
+                                            <ui:Button.Visibility>
+                                                <MultiBinding Converter="{StaticResource ActionVisible}" ConverterParameter="MarkSold">
+                                                    <Binding Path="DataContext.CurrentScope" RelativeSource="{RelativeSource AncestorType=ItemsControl}"/>
+                                                    <Binding Path="IsMine"/>
+                                                    <Binding Path="Status"/>
+                                                </MultiBinding>
+                                            </ui:Button.Visibility>
+                                        </ui:Button>
+
+                                        <!-- Nhãn "Đang chờ Admin duyệt" (thẻ Công ty, Pending) -->
+                                        <TextBlock Grid.Column="1" Text="Đang chờ Admin duyệt" Foreground="#FFC14C"
+                                                   FontSize="11.5" FontWeight="SemiBold" VerticalAlignment="Center">
+                                            <TextBlock.Visibility>
+                                                <MultiBinding Converter="{StaticResource ActionVisible}" ConverterParameter="PendingNote">
+                                                    <Binding Path="DataContext.CurrentScope" RelativeSource="{RelativeSource AncestorType=ItemsControl}"/>
+                                                    <Binding Path="IsMine"/>
+                                                    <Binding Path="Status"/>
+                                                </MultiBinding>
+                                            </TextBlock.Visibility>
+                                        </TextBlock>
                                     </Grid>
                                 </Grid>
                             </ui:Card>
@@ -286,29 +415,63 @@
                             <TextBlock Text="{Binding RepoUrl}" Foreground="#4C9AFF" FontSize="13" TextWrapping="Wrap"/>
                         </StackPanel>
 
-                        <StackPanel Visibility="{Binding AdminNote, Converter={StaticResource B2V}}" Margin="0,0,0,26">
-                            <TextBlock Text="Ghi chú kiểm duyệt" Foreground="#8A93A0" FontSize="12" Margin="0,0,0,6"/>
+                        <!-- Ghi chú Admin (chỉ có ý nghĩa khi đang ở thẻ Công ty, tin Rejected) -->
+                        <StackPanel Margin="0,0,0,26">
+                            <StackPanel.Visibility>
+                                <MultiBinding Converter="{StaticResource ActionVisible}" ConverterParameter="RejectedNote">
+                                    <Binding Path="DataContext.CurrentScope" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+                                    <Binding Path="IsMine"/>
+                                    <Binding Path="Status"/>
+                                </MultiBinding>
+                            </StackPanel.Visibility>
+                            <TextBlock Text="Ghi chú kiểm duyệt từ Admin" Foreground="#8A93A0" FontSize="12" Margin="0,0,0,6"/>
                             <TextBlock Text="{Binding AdminNote}" Foreground="#FF8A8A" FontSize="13" TextWrapping="Wrap"/>
                         </StackPanel>
 
-                        <!-- Hành động kiểm duyệt (chỉ hiện khi đang chờ duyệt) -->
-                        <StackPanel Orientation="Horizontal"
-                                    Visibility="{Binding Status, Converter={StaticResource FilterActive}, ConverterParameter=PendingApproval}">
-                            <ui:Button Content="Duyệt tin" Appearance="Success" Height="42" Width="130" Margin="0,0,10,0"
-                                       Command="{Binding DataContext.ApproveCommand,
-                                                 RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                       CommandParameter="{Binding}"/>
-                            <ui:Button Content="Từ chối" Appearance="Danger" Height="42" Width="110"
-                                       Command="{Binding DataContext.RejectCommand,
-                                                 RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                       CommandParameter="{Binding}"/>
-                        </StackPanel>
-
-                        <ui:Button Content="Gỡ tin đăng" Appearance="Secondary" Height="42"
-                                   Visibility="{Binding Status, Converter={StaticResource FilterActive}, ConverterParameter=Published}"
+                        <!-- Hành động: Gỡ tin (thẻ Công ty, Published) -->
+                        <ui:Button Content="Gỡ tin đăng" Appearance="Secondary" Height="42" Margin="0,0,0,10"
                                    Command="{Binding DataContext.CloseListingCommand,
                                              RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                   CommandParameter="{Binding}"/>
+                                   CommandParameter="{Binding}">
+                            <ui:Button.Visibility>
+                                <MultiBinding Converter="{StaticResource ActionVisible}" ConverterParameter="CloseListing">
+                                    <Binding Path="DataContext.CurrentScope" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+                                    <Binding Path="IsMine"/>
+                                    <Binding Path="Status"/>
+                                </MultiBinding>
+                            </ui:Button.Visibility>
+                        </ui:Button>
+
+                        <!-- Hành động: Đánh dấu đã trao đổi (thẻ Công ty, Negotiating) -->
+                        <ui:Button Content="Đánh dấu đã trao đổi" Appearance="Success" Height="42" Margin="0,0,0,10"
+                                   Command="{Binding DataContext.MarkSoldCommand,
+                                             RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                   CommandParameter="{Binding}">
+                            <ui:Button.Visibility>
+                                <MultiBinding Converter="{StaticResource ActionVisible}" ConverterParameter="MarkSold">
+                                    <Binding Path="DataContext.CurrentScope" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+                                    <Binding Path="IsMine"/>
+                                    <Binding Path="Status"/>
+                                </MultiBinding>
+                            </ui:Button.Visibility>
+                        </ui:Button>
+
+                        <!-- Hành động: Quan tâm (thẻ Toàn hệ thống, tin không phải của mình) -->
+                        <ui:Button Content="{Binding InterestCount, StringFormat='Quan tâm ({0})'}"
+                                   Icon="{ui:SymbolIcon Heart24}" Appearance="Primary"
+                                   HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                   Height="46" FontSize="15" FontWeight="SemiBold"
+                                   Command="{Binding DataContext.ExpressInterestCommand,
+                                             RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                   CommandParameter="{Binding}">
+                            <ui:Button.Visibility>
+                                <MultiBinding Converter="{StaticResource ActionVisible}" ConverterParameter="Interest">
+                                    <Binding Path="DataContext.CurrentScope" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+                                    <Binding Path="IsMine"/>
+                                    <Binding Path="Status"/>
+                                </MultiBinding>
+                            </ui:Button.Visibility>
+                        </ui:Button>
 
                     </StackPanel>
                 </ScrollViewer>
