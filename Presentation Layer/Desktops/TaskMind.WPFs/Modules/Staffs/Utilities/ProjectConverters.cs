@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
+using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
 using TaskMind.WPFs.Modules.Staffs.Models;
@@ -77,13 +76,34 @@ namespace TaskMind.WPFs.Modules.Staffs.Utilities
             => throw new NotSupportedException();
     }
 
+    /// <summary>Màu badge vai trò dự án (mục 3), dùng cho MyRole và vai trò từng thành viên.</summary>
+    public class RoleToBrushConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value is ProjectRole r ? r switch
+            {
+                ProjectRole.Owner => new SolidColorBrush(Color.FromRgb(0xFF, 0xC1, 0x4C)),
+                ProjectRole.TechnicalLeader => new SolidColorBrush(Color.FromRgb(0x9A, 0x7B, 0xFF)),
+                ProjectRole.ProjectManager => new SolidColorBrush(Color.FromRgb(0x4C, 0x9A, 0xFF)),
+                ProjectRole.QaQc => new SolidColorBrush(Color.FromRgb(0xFF, 0x8A, 0x65)),
+                ProjectRole.Developer => new SolidColorBrush(Color.FromRgb(0x3F, 0xD0, 0x7A)),
+                ProjectRole.Intern => new SolidColorBrush(Color.FromRgb(0x8A, 0x93, 0xA0)),
+                _ => Brushes.Gray
+            } : Brushes.Gray;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
+    }
+
     public class KindToExchangeVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             return value is ProjectKind k && k == ProjectKind.Exchange
-                ? System.Windows.Visibility.Visible
-                : System.Windows.Visibility.Collapsed;
+                ? Visibility.Visible
+                : Visibility.Collapsed;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -97,6 +117,45 @@ namespace TaskMind.WPFs.Modules.Staffs.Utilities
         {
             return value is double d ? $"{d:0}%" : "0%";
         }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
+    }
+
+    /// <summary>Đổi màu thanh tiến độ công việc cá nhân: đỏ &lt; 40, vàng &lt; 75, xanh &gt;= 75.</summary>
+    public class TaskProgressToBrushConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is not double d) return Brushes.Gray;
+            if (d >= 75) return new SolidColorBrush(Color.FromRgb(0x3F, 0xD0, 0x7A));
+            if (d >= 40) return new SolidColorBrush(Color.FromRgb(0xFF, 0xC1, 0x4C));
+            return new SolidColorBrush(Color.FromRgb(0xFF, 0x6B, 0x6B));
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
+    }
+
+    /// <summary>So khớp bộ lọc trạng thái hiện tại (enum? hoặc null) với ConverterParameter — dùng cho chip lọc.</summary>
+    public class ProjectFilterActiveConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value == null && parameter == null) return true;
+            if (value == null || parameter == null) return false;
+            return string.Equals(value.ToString(), parameter.ToString(), StringComparison.OrdinalIgnoreCase);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
+    }
+
+    /// <summary>Trả về Visible nếu count == 0 — dùng cho trạng thái rỗng của danh sách dự án.</summary>
+    public class ZeroCountToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+            => value is int i && i == 0 ? Visibility.Visible : Visibility.Collapsed;
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
             => throw new NotSupportedException();

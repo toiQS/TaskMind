@@ -1,12 +1,6 @@
 <Solution>
   <Folder Name="/Presentation Layer/" />
   <Folder Name="/Presentation Layer/Desktops/">
-    <Project Path="Presentation Layer/Desktops/TaskMind.WPFs.Admins/TaskMind.WPFs.Admins.csproj" />
-    <Project Path="Presentation Layer/Desktops/TaskMind.WPFs.Companies/TaskMind.WPFs.Companies.csproj" />
-    <Project Path="Presentation Layer/Desktops/TaskMind.WPFs.Schools/TaskMind.WPFs.Schools.csproj" />
-    <Project Path="Presentation Layer/Desktops/TaskMind.WPFs.Staffs/TaskMind.WPFs.Staffs.csproj" />
-    <Project Path="Presentation Layer/Desktops/TaskMind.WPFs.Teachers/TaskMind.WPFs.Teachers.csproj" />
-    <Project Path="Presentation Layer/Desktops/TaskMind.WPFs.Users/TaskMind.WPFs.Users.csproj" />
     <Project Path="Presentation Layer/Desktops/TaskMind.WPFs/TaskMind.WPFs.csproj" Id="c68c30a2-ef2c-4c5e-9404-2be19e863cc2" />
   </Folder>
   <Folder Name="/Presentation Layer/Websites/" />

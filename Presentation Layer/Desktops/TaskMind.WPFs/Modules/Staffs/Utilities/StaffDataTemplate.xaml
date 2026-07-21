@@ -11,5 +11,9 @@
         <staffView:ProfileView/>
     </DataTemplate>
     
+    <DataTemplate DataType="{x:Type staffVM:ProjectVM}">
+        <staffView:ProjectView/>
+    </DataTemplate>
+    
     
 </ResourceDictionary>
