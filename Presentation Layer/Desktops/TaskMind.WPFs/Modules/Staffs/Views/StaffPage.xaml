@@ -55,18 +55,7 @@
                 <Border Grid.Row="2" Height="1" Background="#3A4149" Margin="20,8,20,8"/>
 
                 <!-- ===== Nút thoát khỏi hệ thống ===== -->
-                <ui:Button Grid.Row="3"
-                    Content="Thoát hệ thống"
-                    Icon="{ui:SymbolIcon ArrowExit24}"
-                    Appearance="Transparent"
-                    HorizontalAlignment="Stretch"
-                    HorizontalContentAlignment="Left"
-                    FontSize="14"
-                    Height="46"
-                    Margin="12,0,12,16"
-                    Foreground="#FF6B6B"
-                    Click="ExitApp_Click"
-                    ToolTip="Thoát khỏi hệ thống"/>
+                
 
             </Grid>
         </Border>

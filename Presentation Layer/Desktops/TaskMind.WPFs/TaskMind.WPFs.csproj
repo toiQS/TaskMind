@@ -33,8 +33,6 @@
     <Folder Include="Modules\Schools\Models\" />
     <Folder Include="Modules\Schools\ViewModels\" />
     <Folder Include="Modules\Schools\Views\" />
-    <Folder Include="Modules\Staffs\Models\" />
-    <Folder Include="Modules\Staffs\Utilities\" />
     <Folder Include="Modules\Teachers\Models\" />
     <Folder Include="Modules\Teachers\ViewModels\" />
     <Folder Include="Modules\Teachers\Views\" />

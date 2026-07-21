@@ -7,4 +7,9 @@
         <staffView:StaffPage/>
     </DataTemplate>
     
+    <DataTemplate DataType="{x:Type staffVM:ProfileVM}">
+        <staffView:ProfileView/>
+    </DataTemplate>
+    
+    
 </ResourceDictionary>
