@@ -14,9 +14,6 @@
     <DataTemplate DataType="{x:Type staffVM:ProjectVM}">
         <staffView:ProjectView/>
     </DataTemplate>
-
-    <DataTemplate DataType="{x:Type staffVM:TodoVM}">
-        <staffView:TodoView/>
-    </DataTemplate>
+    
     
 </ResourceDictionary>
