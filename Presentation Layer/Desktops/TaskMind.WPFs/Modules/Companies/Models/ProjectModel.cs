@@ -30,11 +30,21 @@ namespace TaskMind.WPFs.Modules.Companies.Models
         Intern
     }
 
+    /// <summary>
+    /// Một thành viên trong phạm vi 1 dự án. StaffId luôn tham chiếu tới một nhân sự có thật
+    /// trực thuộc công ty (StaffModel, mục 4.5) — thành viên dự án không được nhập tay tự do,
+    /// phải chọn từ danh sách nhân sự đang hoạt động khi khởi tạo/quản lý dự án (mục 4.7).
+    /// </summary>
     public class ProjectMemberModel
     {
+        public Guid StaffId { get; set; }
+
         public string FullName { get; set; }
         public string AvatarUrl { get; set; }
         public ProjectRole Role { get; set; }
+
+        /// <summary>Dùng cho avatar tròn — tránh lỗi Name[0] binding trực tiếp trong XAML.</summary>
+        public string Initial => string.IsNullOrWhiteSpace(FullName) ? "?" : FullName.Trim()[0].ToString().ToUpper();
     }
 
     public class ProjectModel

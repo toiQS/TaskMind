@@ -150,14 +150,4 @@ namespace TaskMind.WPFs.Modules.Staffs.Utilities
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
             => throw new NotSupportedException();
     }
-
-    /// <summary>Trả về Visible nếu count == 0 — dùng cho trạng thái rỗng của danh sách dự án.</summary>
-    public class ZeroCountToVisibilityConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-            => value is int i && i == 0 ? Visibility.Visible : Visibility.Collapsed;
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-            => throw new NotSupportedException();
-    }
 }

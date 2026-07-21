@@ -40,6 +40,22 @@ namespace TaskMind.WPFs.Modules.Companies.ViewModels
 
         public bool HasSelectedProject => SelectedProject != null;
 
+        /// <summary>True khi panel "Tạo dự án mới" đang mở (overlay ở ProjectView).</summary>
+        private bool _isAddingProject;
+        public bool IsAddingProject
+        {
+            get => _isAddingProject;
+            set { _isAddingProject = value; OnPropertyChanged(); }
+        }
+
+        /// <summary>ViewModel của form tạo dự án, được tạo mới mỗi lần mở panel.</summary>
+        private AddProjectVM _addProjectVM;
+        public AddProjectVM AddProjectVM
+        {
+            get => _addProjectVM;
+            set { _addProjectVM = value; OnPropertyChanged(); }
+        }
+
         /// <summary>Toàn bộ dự án tải từ service.</summary>
         public ObservableCollection<ProjectModel> Projects { get; } = new();
 
@@ -166,9 +182,33 @@ namespace TaskMind.WPFs.Modules.Companies.ViewModels
                 FilteredProjects.Add(p);
         }
 
+        /// <summary>Mở panel "Tạo dự án mới" (overlay), tạo AddProjectVM mới mỗi lần mở
+        /// và gán callback để nhận ProjectModel vừa tạo hoặc đóng panel khi huỷ.</summary>
         private void CreateProject()
         {
-            // TODO: mở dialog/điều hướng sang màn "Tạo dự án mới", gọi service POST /company/{companyId}/projects
+            // Đóng panel chi tiết nếu đang mở, tránh chồng 2 overlay cùng lúc
+            SelectedProject = null;
+
+            var vm = new AddProjectVM();
+
+            vm.OnSaved = project =>
+            {
+                // TODO: khi có service thật, có thể gọi lại LoadAsync() thay vì chèn trực tiếp vào danh sách cục bộ
+                Projects.Insert(0, project);
+                ApplyFilter();
+
+                IsAddingProject = false;
+                AddProjectVM = null;
+            };
+
+            vm.OnCancelled = () =>
+            {
+                IsAddingProject = false;
+                AddProjectVM = null;
+            };
+
+            AddProjectVM = vm;
+            IsAddingProject = true;
         }
     }
 }

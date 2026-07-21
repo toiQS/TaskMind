@@ -58,5 +58,9 @@
     <DataTemplate DataType="{x:Type companyVM:AddStaffVM}">
         <companyView:AddStaffView/>
     </DataTemplate>
+
+    <DataTemplate DataType="{x:Type companyVM:AddProjectVM}">
+        <companyView:AddProjectView/>
+    </DataTemplate>
     
 </ResourceDictionary>

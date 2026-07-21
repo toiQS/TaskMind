@@ -34,7 +34,7 @@
         </Style>
     </UserControl.Resources>
 
-    <!-- Grid gốc: ScrollViewer toàn trang + overlay (loading / chi tiết) nằm ngoài để luôn phủ kín màn hình
+    <!-- Grid gốc: ScrollViewer toàn trang + overlay (loading / chi tiết / tạo dự án) nằm ngoài để luôn phủ kín màn hình
          dù đang cuộn tới đâu. -->
     <Grid>
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
@@ -305,6 +305,13 @@
                     </StackPanel>
                 </ScrollViewer>
             </Border>
+        </Border>
+
+        <!-- ===== Overlay: tạo dự án mới ===== -->
+        <Border Background="#B0181B20"
+                Visibility="{Binding IsAddingProject, Converter={StaticResource B2V}}">
+            <local:AddProjectView DataContext="{Binding AddProjectVM}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
         </Border>
     </Grid>
 </UserControl>
