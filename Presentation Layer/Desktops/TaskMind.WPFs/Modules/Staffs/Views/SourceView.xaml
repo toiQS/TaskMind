@@ -699,9 +699,15 @@
                         <Border Grid.Column="2" Background="#20242A" CornerRadius="10" Padding="18">
                             <Grid>
 
-                                <!-- ===== Chế độ: xem chi tiết commit (diff, kiểu GitHub Desktop) ===== -->
-                                <Grid Visibility="{Binding CurrentWorkspace.HasSelectedCommit, Converter={StaticResource B2V}}"
-                                      DataContext="{Binding CurrentWorkspace.SelectedCommit}">
+                                <!-- ===== Chế độ: xem chi tiết commit (diff, kiểu GitHub Desktop) =====
+                                     LƯU Ý: Visibility và DataContext KHÔNG được đặt trên cùng 1 Grid — khi cùng
+                                     1 phần tử vừa đổi DataContext (sang SelectedCommit) vừa tự bind Visibility bằng
+                                     implicit source, WPF sẽ resolve Visibility theo DataContext MỚI (SelectedCommit)
+                                     thay vì DataContext của trang, gây lỗi "CurrentWorkspace property not found on
+                                     object of type SourceCommitModel". Tách thành Grid ngoài (chỉ giữ Visibility,
+                                     dùng DataContext kế thừa từ trang) bọc Grid trong (mới đổi DataContext). -->
+                                <Grid Visibility="{Binding CurrentWorkspace.HasSelectedCommit, Converter={StaticResource B2V}}">
+                                <Grid DataContext="{Binding CurrentWorkspace.SelectedCommit}">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
@@ -855,6 +861,7 @@
                                             </Grid>
                                         </Border>
                                     </Grid>
+                                </Grid>
                                 </Grid>
 
                                 <!-- ===== Chế độ: sửa file (khi không xem commit) ===== -->
