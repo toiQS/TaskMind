@@ -67,7 +67,7 @@ namespace TaskMind.WPFs.Modules.Staffs.Utilities
             return node.Extension switch
             {
                 "cs" => SymbolRegular.Code24,
-                "xaml" => SymbolRegular.Layout24,
+                "xaml" => SymbolRegular.Code24,
                 "json" => SymbolRegular.Braces24,
                 "csproj" or "sln" => SymbolRegular.Apps24,
                 _ => SymbolRegular.Document24

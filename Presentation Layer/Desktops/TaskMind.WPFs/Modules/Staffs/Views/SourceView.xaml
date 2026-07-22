@@ -211,7 +211,7 @@
                                 </ui:Button.Style>
                             </ui:Button>
 
-                            <ui:Button Icon="{ui:SymbolIcon TestBeaker24}"
+                            <ui:Button Icon="{ui:SymbolIcon Bug24}"
                                        Command="{Binding SetEnvironmentCommand}"
                                        CommandParameter="{x:Static models:SourceEnvironment.Test}">
                                 <ui:Button.Content>
