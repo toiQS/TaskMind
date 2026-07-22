@@ -38,7 +38,6 @@ namespace TaskMind.WPFs.Modules.Staffs.Utilities
             => throw new NotSupportedException();
     }
 
-    /// <summary>Nhãn nút release: "Release lên Testing" / "Release lên Production" — rỗng ở Production.</summary>
     public class EnvironmentToReleaseLabelConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -53,8 +52,6 @@ namespace TaskMind.WPFs.Modules.Staffs.Utilities
             => throw new NotSupportedException();
     }
 
-    /// <summary>Icon thư mục/file (WPF-UI SymbolRegular) theo loại nút + phần mở rộng — bind thẳng
-    /// vào ui:SymbolIcon.Symbol.</summary>
     public class SourceNodeToSymbolConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -140,7 +137,8 @@ namespace TaskMind.WPFs.Modules.Staffs.Utilities
             => throw new NotSupportedException();
     }
 
-    /// <summary>So khớp môi trường hiện tại với ConverterParameter — dùng cho pill tab Dev/Test/Product.</summary>
+    /// <summary>So khớp giá trị enum bất kỳ (SourceEnvironment, SourceLeftTab...) với ConverterParameter
+    /// bằng ToString() — dùng cho pill tab Dev/Test/Product VÀ Duyệt/Thay đổi/Lịch sử/Lỗi.</summary>
     public class EnvironmentEqualsConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -150,7 +148,6 @@ namespace TaskMind.WPFs.Modules.Staffs.Utilities
             => throw new NotSupportedException();
     }
 
-    /// <summary>Ẩn nút "Đánh dấu đã sửa" khi thông báo lỗi đã ở trạng thái Resolved.</summary>
     public class IssueOpenToVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -160,8 +157,6 @@ namespace TaskMind.WPFs.Modules.Staffs.Utilities
             => throw new NotSupportedException();
     }
 
-    /// <summary>Chỉ hiện nút Release khi (1) nhân sự có quyền release ở dự án này VÀ (2) môi trường hiện
-    /// tại không phải Production (Production là điểm cuối, không release đi đâu tiếp nữa).</summary>
     public class CanReleaseVisibilityConverter : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
@@ -175,6 +170,121 @@ namespace TaskMind.WPFs.Modules.Staffs.Utilities
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
+    }
+
+    // ===================== Mới: Diff / Commit / Tab (lấy cảm hứng từ GitHub Desktop) =====================
+
+    /// <summary>Nền của 1 dòng diff: xanh nhạt cho dòng thêm, đỏ nhạt cho dòng xoá, trong suốt cho
+    /// dòng không đổi.</summary>
+    public class DiffLineTypeToBackgroundConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+            => value is DiffLineType t ? t switch
+            {
+                DiffLineType.Added => new SolidColorBrush(Color.FromArgb(0x33, 0x3F, 0xD0, 0x7A)),
+                DiffLineType.Removed => new SolidColorBrush(Color.FromArgb(0x33, 0xFF, 0x6B, 0x6B)),
+                _ => Brushes.Transparent
+            } : Brushes.Transparent;
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
+    }
+
+    /// <summary>Ký hiệu đầu dòng diff: "+" / "-" / khoảng trắng — đúng phong cách unified diff.</summary>
+    public class DiffLineTypePrefixConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+            => value is DiffLineType t ? t switch
+            {
+                DiffLineType.Added => "+",
+                DiffLineType.Removed => "-",
+                _ => " "
+            } : " ";
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
+    }
+
+    public class DiffLineTypeToForegroundConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+            => value is DiffLineType t ? t switch
+            {
+                DiffLineType.Added => new SolidColorBrush(Color.FromRgb(0x3F, 0xD0, 0x7A)),
+                DiffLineType.Removed => new SolidColorBrush(Color.FromRgb(0xFF, 0x6B, 0x6B)),
+                _ => new SolidColorBrush(Color.FromRgb(0x5C, 0x63, 0x70))
+            } : Brushes.Gray;
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
+    }
+
+    public class DiffChangeKindToTextConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+            => value is DiffChangeKind k ? k switch
+            {
+                DiffChangeKind.Added => "Mới",
+                DiffChangeKind.Modified => "Sửa",
+                DiffChangeKind.Deleted => "Xoá",
+                _ => value.ToString()
+            } : string.Empty;
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
+    }
+
+    /// <summary>Icon theo loại commit — flag kiểm tra IntelliSense trước khi build: ArrowUndo24,
+    /// History24, DocumentEdit24, Rocket24 (Rocket24 đã dùng ở nơi khác trong dự án nên chắc chắn tồn tại).</summary>
+    public class SourceCommitKindToIconConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+            => value is SourceCommitKind k ? k switch
+            {
+                SourceCommitKind.Edit => SymbolRegular.DocumentEdit24,
+                SourceCommitKind.Release => SymbolRegular.Rocket24,
+                SourceCommitKind.Revert => SymbolRegular.ArrowUndo24,
+                _ => SymbolRegular.DocumentEdit24
+            } : SymbolRegular.DocumentEdit24;
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
+    }
+
+    public class SourceCommitKindToBrushConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+            => value is SourceCommitKind k ? k switch
+            {
+                SourceCommitKind.Edit => new SolidColorBrush(Color.FromRgb(0x4C, 0x9A, 0xFF)),
+                SourceCommitKind.Release => new SolidColorBrush(Color.FromRgb(0x3F, 0xD0, 0x7A)),
+                SourceCommitKind.Revert => new SolidColorBrush(Color.FromRgb(0xFF, 0xC1, 0x4C)),
+                _ => Brushes.Gray
+            } : Brushes.Gray;
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
+    }
+
+    /// <summary>Hiển thị thời gian tương đối kiểu GitHub Desktop: "vài giây trước", "5 phút trước",
+    /// "2 giờ trước", "hôm qua", hoặc dd/MM/yyyy nếu đã lâu.</summary>
+    public class TimeAgoConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is not DateTime dt) return string.Empty;
+
+            var span = DateTime.Now - dt;
+            if (span.TotalSeconds < 60) return "Vài giây trước";
+            if (span.TotalMinutes < 60) return $"{(int)span.TotalMinutes} phút trước";
+            if (span.TotalHours < 24) return $"{(int)span.TotalHours} giờ trước";
+            if (span.TotalDays < 2) return "Hôm qua";
+            if (span.TotalDays < 7) return $"{(int)span.TotalDays} ngày trước";
+            return dt.ToString("dd/MM/yyyy");
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
             => throw new NotSupportedException();
     }
 }

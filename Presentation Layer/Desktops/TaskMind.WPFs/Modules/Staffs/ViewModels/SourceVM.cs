@@ -11,10 +11,11 @@ using TaskMind.WPFs.Utilities;
 namespace TaskMind.WPFs.Modules.Staffs.ViewModels
 {
     /// <summary>
-    /// ViewModel màn hình "Mã nguồn". Luồng sử dụng: chọn dự án -> nếu chưa clone mã nguồn về máy thì
-    /// chọn nơi lưu cục bộ -> xem cây kiến trúc + mã nguồn theo 3 thẻ môi trường (Dev/Test/Product) ->
-    /// chỉnh sửa & lưu mã nguồn -> release sang môi trường kế tiếp (chỉ Owner/Technical leader/Project
-    /// manager) -> tạo thông báo lỗi trong mã nguồn cần sửa.
+    /// ViewModel màn hình "Mã nguồn" — sidebar 4 tab kiểu GitHub Desktop (Duyệt/Thay đổi/Lịch sử/Lỗi).
+    /// Luồng: chọn dự án -> clone nếu cần -> tab "Duyệt" xem cây + sửa nhiều file song song (mỗi file
+    /// giữ bản nháp riêng) -> tab "Thay đổi" gom các file đang sửa, nhập message rồi Commit -> tab
+    /// "Lịch sử" xem lại từng commit dạng diff (+/- theo dòng), có thể Revert -> Release Dev->Test->
+    /// Product (chỉ Owner/Technical leader/Project manager), mỗi lần release cũng được ghi vào Lịch sử.
     /// </summary>
     public class SourceVM : ViewModelBase
     {
@@ -50,11 +51,7 @@ namespace TaskMind.WPFs.Modules.Staffs.ViewModels
             }
         }
         public bool HasSelectedProject => SelectedProject != null;
-
-        /// <summary>True khi đã chọn dự án nhưng chưa clone mã nguồn về máy — cần chọn nơi lưu cục bộ.</summary>
         public bool NeedsLocalPath => SelectedProject != null && !SelectedProject.IsCloned;
-
-        /// <summary>True khi đã sẵn sàng hiển thị khu vực làm việc (đã chọn dự án + đã có mã nguồn cục bộ).</summary>
         public bool CanShowWorkspace => SelectedProject != null && SelectedProject.IsCloned;
 
         private string _localPathInput;
@@ -72,13 +69,27 @@ namespace TaskMind.WPFs.Modules.Staffs.ViewModels
             set { _currentEnvironment = value; OnPropertyChanged(); OnPropertyChanged(nameof(CurrentWorkspace)); }
         }
 
-        /// <summary>Workspace đang hiển thị trên UI, tương ứng thẻ (tab) môi trường đang chọn.</summary>
         public SourceEnvironmentWorkspace CurrentWorkspace => CurrentEnvironment switch
         {
             SourceEnvironment.Dev => DevWorkspace,
             SourceEnvironment.Test => TestWorkspace,
             _ => ProductWorkspace
         };
+
+        // ===== Tab sidebar bên trái (Duyệt / Thay đổi / Lịch sử / Lỗi) =====
+        private SourceLeftTab _currentLeftTab = SourceLeftTab.Browse;
+        public SourceLeftTab CurrentLeftTab
+        {
+            get => _currentLeftTab;
+            set { _currentLeftTab = value; OnPropertyChanged(); }
+        }
+
+        // ===== Form commit (tab "Thay đổi") =====
+        private string _commitMessageInput;
+        public string CommitMessageInput { get => _commitMessageInput; set { _commitMessageInput = value; OnPropertyChanged(); } }
+
+        private string _commitDescriptionInput;
+        public string CommitDescriptionInput { get => _commitDescriptionInput; set { _commitDescriptionInput = value; OnPropertyChanged(); } }
 
         // ===== Form thêm thông báo lỗi mã nguồn =====
         private bool _isAddingIssue;
@@ -96,9 +107,15 @@ namespace TaskMind.WPFs.Modules.Staffs.ViewModels
         public ICommand BrowseLocalPathCommand { get; }
         public ICommand ConfirmCloneCommand { get; }
         public ICommand SetEnvironmentCommand { get; }
+        public ICommand SetLeftTabCommand { get; }
         public ICommand SelectNodeCommand { get; }
-        public ICommand SaveFileCommand { get; }
-        public ICommand DiscardChangesCommand { get; }
+        public ICommand DiscardDraftCommand { get; }
+        public ICommand DiscardAllCommand { get; }
+        public ICommand CommitChangesCommand { get; }
+        public ICommand SelectCommitCommand { get; }
+        public ICommand CloseCommitDetailCommand { get; }
+        public ICommand SelectDiffFileCommand { get; }
+        public ICommand RevertCommitCommand { get; }
         public ICommand ReleaseCommand { get; }
         public ICommand OpenAddIssueCommand { get; }
         public ICommand CancelAddIssueCommand { get; }
@@ -110,9 +127,15 @@ namespace TaskMind.WPFs.Modules.Staffs.ViewModels
             BrowseLocalPathCommand = new RelayCommand(_ => BrowseLocalPath());
             ConfirmCloneCommand = new RelayCommand(async _ => await ConfirmCloneAsync(), _ => !string.IsNullOrWhiteSpace(LocalPathInput));
             SetEnvironmentCommand = new RelayCommand(p => CurrentEnvironment = p is SourceEnvironment e ? e : SourceEnvironment.Dev);
+            SetLeftTabCommand = new RelayCommand(p => CurrentLeftTab = p is SourceLeftTab t ? t : SourceLeftTab.Browse);
             SelectNodeCommand = new RelayCommand(p => SelectNode(p as SourceNodeModel));
-            SaveFileCommand = new RelayCommand(_ => SaveFile(), _ => CurrentWorkspace.IsDirty);
-            DiscardChangesCommand = new RelayCommand(_ => DiscardChanges(), _ => CurrentWorkspace.IsDirty);
+            DiscardDraftCommand = new RelayCommand(p => DiscardDraft(p as SourceNodeModel));
+            DiscardAllCommand = new RelayCommand(_ => DiscardAllChanges(), _ => CurrentWorkspace.DirtyFiles.Count > 0);
+            CommitChangesCommand = new RelayCommand(_ => CommitChanges(), _ => CanCommit());
+            SelectCommitCommand = new RelayCommand(p => SelectCommit(p as SourceCommitModel));
+            CloseCommitDetailCommand = new RelayCommand(_ => CurrentWorkspace.SetSelectedCommit(null));
+            SelectDiffFileCommand = new RelayCommand(p => { if (CurrentWorkspace.SelectedCommit != null) CurrentWorkspace.SelectedCommit.SelectedFile = p as DiffFileModel; });
+            RevertCommitCommand = new RelayCommand(p => RevertCommit(p as SourceCommitModel));
             ReleaseCommand = new RelayCommand(_ => Release(), _ => CanRelease());
             OpenAddIssueCommand = new RelayCommand(_ => OpenAddIssue());
             CancelAddIssueCommand = new RelayCommand(_ => IsAddingIssue = false);
@@ -126,8 +149,7 @@ namespace TaskMind.WPFs.Modules.Staffs.ViewModels
         {
             IsBusy = true;
 
-            // TODO: gọi service GET /me/projects (dự án nhân sự tham gia) thay cho dữ liệu mẫu bên dưới;
-            // LocalPath nên lấy từ cấu hình máy trạm đã lưu trước đó (nếu nhân sự đã từng clone).
+            // TODO: gọi service GET /me/projects thay cho dữ liệu mẫu bên dưới.
             await Task.Delay(300);
 
             ProjectOptions.Clear();
@@ -141,7 +163,7 @@ namespace TaskMind.WPFs.Modules.Staffs.ViewModels
             {
                 ProjectName = "Website thương mại điện tử ABC",
                 MyRole = ProjectRole.Developer,
-                LocalPath = null // chưa clone về máy -> màn hình sẽ yêu cầu chọn nơi lưu cục bộ
+                LocalPath = null
             });
 
             IsBusy = false;
@@ -149,14 +171,9 @@ namespace TaskMind.WPFs.Modules.Staffs.ViewModels
             SelectedProject = ProjectOptions.FirstOrDefault();
         }
 
-        /// <summary>Mở hộp thoại chọn thư mục hệ điều hành để làm nơi lưu mã nguồn cục bộ.</summary>
         private void BrowseLocalPath()
         {
-            var dialog = new OpenFolderDialog
-            {
-                Title = "Chọn thư mục lưu mã nguồn cục bộ"
-            };
-
+            var dialog = new OpenFolderDialog { Title = "Chọn thư mục lưu mã nguồn cục bộ" };
             if (dialog.ShowDialog() == true)
                 LocalPathInput = dialog.FolderName;
         }
@@ -174,7 +191,6 @@ namespace TaskMind.WPFs.Modules.Staffs.ViewModels
             ErrorMessage = string.Empty;
             IsBusy = true;
 
-            // TODO: gọi service/git clone thật vào LocalPathInput thay cho việc chỉ gán đường dẫn.
             await Task.Delay(400);
 
             SelectedProject.LocalPath = LocalPathInput;
@@ -190,14 +206,18 @@ namespace TaskMind.WPFs.Modules.Staffs.ViewModels
         {
             IsBusy = true;
 
-            // TODO: gọi service GET /projects/{id}/source?env=dev|test|product (cây kiến trúc + nội dung
-            // file, đọc trực tiếp từ SelectedProject.LocalPath) thay cho dữ liệu mẫu bên dưới.
+            // TODO: gọi service GET /projects/{id}/source?env=... (cây kiến trúc, commit log thật)
+            // thay cho dữ liệu mẫu bên dưới.
             await Task.Delay(400);
 
+            var oldContent = "public class ProfileVM : ViewModelBase\n{\n    public ProfileModel Profile { get; set; }\n\n    // TODO: kiểm tra null trước khi truy cập Profile.Skills\n}";
+            var newContent = "public class ProfileVM : ViewModelBase\n{\n    public ProfileModel Profile { get; set; }\n\n    public bool IsLoaded => Profile != null;\n\n    // Đã kiểm tra null trước khi truy cập Profile.Skills.\n}";
+
             DevWorkspace.RootNodes.Clear();
-            foreach (var n in BuildSampleTree(includeUnreleasedFile: true))
+            foreach (var n in BuildSampleTree(includeUnreleasedFile: true, profileVmContent: newContent))
                 DevWorkspace.RootNodes.Add(n);
             DevWorkspace.SetSelectedFile(null);
+
             DevWorkspace.Issues.Clear();
             DevWorkspace.Issues.Add(new CodeIssueModel
             {
@@ -211,8 +231,37 @@ namespace TaskMind.WPFs.Modules.Staffs.ViewModels
                 CreatedDate = DateTime.Now.AddDays(-1)
             });
 
+            // ===== Dữ liệu mẫu: lịch sử commit (kiểu GitHub Desktop) =====
+            DevWorkspace.Commits.Clear();
+
+            var diff1 = new DiffFileModel { RelativePath = "ViewModels/ProfileVM.cs", ChangeKind = DiffChangeKind.Modified, OldContent = oldContent, NewContent = newContent };
+            var (lines1, added1, removed1) = DiffHelper.Compute(diff1.OldContent, diff1.NewContent);
+            diff1.Lines = new ObservableCollection<DiffLineModel>(lines1);
+            diff1.AddedCount = added1;
+            diff1.RemovedCount = removed1;
+
+            DevWorkspace.Commits.Add(new SourceCommitModel
+            {
+                Message = "Kiểm tra null trước khi truy cập Skills",
+                Description = "Sửa lỗi NullReferenceException khi vào màn hình Profile quá nhanh, thêm IsLoaded để View kiểm tra trạng thái tải.",
+                AuthorName = "Trần Văn Bình",
+                CommittedDate = DateTime.Now.AddHours(-2),
+                Kind = SourceCommitKind.Edit,
+                ChangedFiles = new ObservableCollection<DiffFileModel> { diff1 }
+            });
+
+            DevWorkspace.Commits.Add(new SourceCommitModel
+            {
+                Message = "upload files seconds",
+                AuthorName = CurrentUserName,
+                CommittedDate = DateTime.Now.AddHours(-15),
+                Kind = SourceCommitKind.Edit
+            });
+
+            DevWorkspace.RefreshDirtyFiles();
+
             TestWorkspace.RootNodes.Clear();
-            foreach (var n in BuildSampleTree(includeUnreleasedFile: false))
+            foreach (var n in BuildSampleTree(includeUnreleasedFile: false, profileVmContent: oldContent))
                 TestWorkspace.RootNodes.Add(n);
             TestWorkspace.SetSelectedFile(null);
             TestWorkspace.ReleaseLogs.Clear();
@@ -224,9 +273,19 @@ namespace TaskMind.WPFs.Modules.Staffs.ViewModels
                 ReleasedDate = DateTime.Now.AddDays(-3),
                 Note = "Release sprint 4."
             });
+            TestWorkspace.Commits.Clear();
+            TestWorkspace.Commits.Add(new SourceCommitModel
+            {
+                Message = $"Release từ Development lên Testing",
+                Description = "Release sprint 4.",
+                AuthorName = "Trần Văn Bình",
+                CommittedDate = DateTime.Now.AddDays(-3),
+                Kind = SourceCommitKind.Release
+            });
+            TestWorkspace.RefreshDirtyFiles();
 
             ProductWorkspace.RootNodes.Clear();
-            foreach (var n in BuildSampleTree(includeUnreleasedFile: false, stable: true))
+            foreach (var n in BuildSampleTree(includeUnreleasedFile: false, stable: true, profileVmContent: oldContent))
                 ProductWorkspace.RootNodes.Add(n);
             ProductWorkspace.SetSelectedFile(null);
             ProductWorkspace.ReleaseLogs.Clear();
@@ -238,13 +297,24 @@ namespace TaskMind.WPFs.Modules.Staffs.ViewModels
                 ReleasedDate = DateTime.Now.AddDays(-10),
                 Note = "Release chính thức phiên bản 1.2."
             });
+            ProductWorkspace.Commits.Clear();
+            ProductWorkspace.Commits.Add(new SourceCommitModel
+            {
+                Message = "Release từ Testing lên Production",
+                Description = "Release chính thức phiên bản 1.2.",
+                AuthorName = "Trần Văn Bình",
+                CommittedDate = DateTime.Now.AddDays(-10),
+                Kind = SourceCommitKind.Release
+            });
+            ProductWorkspace.RefreshDirtyFiles();
 
             CurrentEnvironment = SourceEnvironment.Dev;
+            CurrentLeftTab = SourceLeftTab.Browse;
 
             IsBusy = false;
         }
 
-        private static IEnumerable<SourceNodeModel> BuildSampleTree(bool includeUnreleasedFile, bool stable = false)
+        private static IEnumerable<SourceNodeModel> BuildSampleTree(bool includeUnreleasedFile, bool stable = false, string profileVmContent = null)
         {
             var models = new SourceNodeModel { Name = "Models", Type = SourceNodeType.Folder };
             models.Children.Add(new SourceNodeModel
@@ -263,7 +333,7 @@ namespace TaskMind.WPFs.Modules.Staffs.ViewModels
                 RelativePath = "ViewModels/ProfileVM.cs",
                 Content = stable
                     ? "public class ProfileVM : ViewModelBase\n{\n    // Bản ổn định đã release Product.\n}"
-                    : "public class ProfileVM : ViewModelBase\n{\n    public ProfileModel Profile { get; set; }\n\n    // TODO: kiểm tra null trước khi truy cập Profile.Skills\n}"
+                    : profileVmContent
             });
 
             if (includeUnreleasedFile)
@@ -289,6 +359,7 @@ namespace TaskMind.WPFs.Modules.Staffs.ViewModels
             return new[] { models, viewModels, views };
         }
 
+        // ===== Duyệt cây kiến trúc + mở file =====
         private void SelectNode(SourceNodeModel node)
         {
             if (node == null) return;
@@ -299,43 +370,133 @@ namespace TaskMind.WPFs.Modules.Staffs.ViewModels
                 return;
             }
 
-            if (CurrentWorkspace.IsDirty)
+            ErrorMessage = string.Empty;
+            CurrentWorkspace.SetSelectedFile(node);
+            CurrentLeftTab = SourceLeftTab.Browse;
+        }
+
+        // ===== Tab "Thay đổi" =====
+        private void DiscardDraft(SourceNodeModel node)
+        {
+            if (node == null || !node.IsDirty) return;
+            node.DiscardDraft();
+            CurrentWorkspace.RefreshDirtyFiles();
+        }
+
+        private void DiscardAllChanges()
+        {
+            foreach (var f in CurrentWorkspace.DirtyFiles.ToList())
+                f.DiscardDraft();
+            CurrentWorkspace.RefreshDirtyFiles();
+        }
+
+        private bool CanCommit() => CurrentWorkspace.DirtyFiles.Count > 0 && !string.IsNullOrWhiteSpace(CommitMessageInput);
+
+        /// <summary>Gộp toàn bộ file đang có thay đổi thành 1 commit — tính diff từng file (dùng để xem
+        /// lại/revert sau này), rồi chốt DraftContent thành Content chính thức.</summary>
+        private void CommitChanges()
+        {
+            var dirty = CurrentWorkspace.DirtyFiles.ToList();
+            if (dirty.Count == 0) return;
+
+            if (string.IsNullOrWhiteSpace(CommitMessageInput))
             {
-                ErrorMessage = "Bạn có thay đổi chưa lưu ở file hiện tại. Hãy Lưu hoặc Huỷ thay đổi trước khi mở file khác.";
+                ErrorMessage = "Vui lòng nhập nội dung commit.";
                 return;
             }
 
+            var commit = new SourceCommitModel
+            {
+                Message = CommitMessageInput.Trim(),
+                Description = CommitDescriptionInput?.Trim(),
+                AuthorName = CurrentUserName,
+                Kind = SourceCommitKind.Edit
+            };
+
+            foreach (var file in dirty)
+            {
+                var (lines, added, removed) = DiffHelper.Compute(file.Content, file.DraftContent);
+
+                commit.ChangedFiles.Add(new DiffFileModel
+                {
+                    RelativePath = file.RelativePath,
+                    ChangeKind = DiffChangeKind.Modified,
+                    OldContent = file.Content,
+                    NewContent = file.DraftContent,
+                    AddedCount = added,
+                    RemovedCount = removed,
+                    Lines = new ObservableCollection<DiffLineModel>(lines)
+                });
+
+                // TODO: gọi service PUT /projects/{id}/source/{env}/{path} để lưu nội dung file thật.
+                file.CommitDraft();
+            }
+
+            CurrentWorkspace.Commits.Insert(0, commit);
+            CurrentWorkspace.RefreshDirtyFiles();
+
+            CommitMessageInput = string.Empty;
+            CommitDescriptionInput = string.Empty;
             ErrorMessage = string.Empty;
-            CurrentWorkspace.SetSelectedFile(node);
         }
 
-        private void SaveFile()
+        // ===== Tab "Lịch sử" =====
+        private void SelectCommit(SourceCommitModel commit)
         {
-            var ws = CurrentWorkspace;
-            if (ws.SelectedFile == null || !ws.IsDirty) return;
-
-            // TODO: gọi service PUT /projects/{id}/source/{env}/{path} để lưu nội dung file thật.
-            ws.SelectedFile.Content = ws.EditableContent;
-            ws.IsDirty = false;
+            if (commit == null) return;
+            CurrentWorkspace.SetSelectedCommit(commit);
         }
 
-        private void DiscardChanges()
+        /// <summary>Hoàn tác 1 commit bằng cách tạo commit mới (Kind = Revert) đảo ngược nội dung cũ/mới
+        /// của từng file, đúng tinh thần "Revert" trong ảnh GitHub Desktop bạn gửi.</summary>
+        private void RevertCommit(SourceCommitModel commit)
         {
-            var ws = CurrentWorkspace;
-            if (ws.SelectedFile == null) return;
+            if (commit == null || commit.ChangedFiles.Count == 0) return;
 
-            ws.EditableContent = ws.SelectedFile.Content;
-            ws.IsDirty = false;
+            var revert = new SourceCommitModel
+            {
+                Message = $"Revert \"{commit.Message}\"",
+                Description = $"This reverts commit {commit.Id}.",
+                AuthorName = CurrentUserName,
+                Kind = SourceCommitKind.Revert,
+                RevertedCommitId = commit.Id,
+                RevertedCommitMessage = commit.Message
+            };
+
+            foreach (var changed in commit.ChangedFiles)
+            {
+                var node = CurrentWorkspace.FlattenFiles().FirstOrDefault(f => f.RelativePath == changed.RelativePath);
+                if (node == null) continue;
+
+                var (lines, added, removed) = DiffHelper.Compute(changed.NewContent, changed.OldContent);
+
+                revert.ChangedFiles.Add(new DiffFileModel
+                {
+                    RelativePath = changed.RelativePath,
+                    ChangeKind = DiffChangeKind.Modified,
+                    OldContent = changed.NewContent,
+                    NewContent = changed.OldContent,
+                    AddedCount = added,
+                    RemovedCount = removed,
+                    Lines = new ObservableCollection<DiffLineModel>(lines)
+                });
+
+                // TODO: gọi service PUT /projects/{id}/source/{env}/{path} để lưu nội dung file thật.
+                node.Content = changed.OldContent;
+                node.DiscardDraft();
+            }
+
+            CurrentWorkspace.Commits.Insert(0, revert);
+            CurrentWorkspace.RefreshDirtyFiles();
+            CurrentWorkspace.SetSelectedCommit(revert);
         }
 
+        // ===== Release Dev -> Test -> Product =====
         private bool CanRelease()
             => SelectedProject != null
                && SelectedProject.CanRelease
-               && CurrentEnvironment != SourceEnvironment.Product
-               && !CurrentWorkspace.IsDirty;
+               && CurrentEnvironment != SourceEnvironment.Product;
 
-        /// <summary>Release toàn bộ cây mã nguồn từ môi trường hiện tại sang môi trường kế tiếp
-        /// (Dev -> Test hoặc Test -> Product) — chỉ Owner/Technical leader/Project manager (mục 3).</summary>
         private void Release()
         {
             if (!CanRelease()) return;
@@ -355,10 +516,19 @@ namespace TaskMind.WPFs.Modules.Staffs.ViewModels
                 ReleasedBy = CurrentUserName,
                 ReleasedDate = DateTime.Now
             });
+            target.Commits.Insert(0, new SourceCommitModel
+            {
+                Message = $"Release từ {CurrentEnvironment} lên {target.Environment}",
+                AuthorName = CurrentUserName,
+                Kind = SourceCommitKind.Release
+            });
+            target.RefreshDirtyFiles();
 
             CurrentEnvironment = target.Environment;
+            CurrentLeftTab = SourceLeftTab.History;
         }
 
+        // ===== Thông báo lỗi mã nguồn =====
         private void OpenAddIssue()
         {
             IssueTitleInput = string.Empty;
@@ -376,7 +546,6 @@ namespace TaskMind.WPFs.Modules.Staffs.ViewModels
                 return;
             }
 
-            // TODO: gọi service POST /projects/{id}/source/{env}/issues thay cho việc thêm cục bộ.
             CurrentWorkspace.Issues.Insert(0, new CodeIssueModel
             {
                 Title = IssueTitleInput.Trim(),
@@ -395,9 +564,7 @@ namespace TaskMind.WPFs.Modules.Staffs.ViewModels
         {
             if (issue == null || issue.Status == CodeIssueStatus.Resolved) return;
 
-            // TODO: gọi service PATCH /projects/{id}/source/issues/{issueId}/resolve
             issue.Status = CodeIssueStatus.Resolved;
-
             CurrentWorkspace.TouchIssues();
         }
     }
