@@ -138,11 +138,21 @@ namespace TaskMind.WPFs.Modules.Staffs.Utilities
     }
 
     /// <summary>So khớp giá trị enum bất kỳ (SourceEnvironment, SourceLeftTab...) với ConverterParameter
-    /// bằng ToString() — dùng cho pill tab Dev/Test/Product VÀ Duyệt/Thay đổi/Lịch sử/Lỗi.</summary>
+    /// bằng ToString() — dùng cho pill tab Dev/Test/Product VÀ Duyệt/Thay đổi/Lịch sử/Lỗi.
+    /// LƯU Ý QUAN TRỌNG: converter này BẮT BUỘC phải trả về Visibility (không phải bool) vì WPF không
+    /// tự động chuyển đổi bool -> Visibility khi đi qua IValueConverter tường minh. Trước đây converter
+    /// này trả về bool khiến binding Visibility "im lặng" thất bại và giữ nguyên giá trị mặc định
+    /// (Visible) cho MỌI panel cùng lúc — đây chính là nguyên nhân gốc rễ của lỗi "view đè view" ở
+    /// sidebar 4 tab (Duyệt/Thay đổi/Lịch sử/Lỗi) trong SourceView.</summary>
     public class EnvironmentEqualsConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-            => value != null && parameter != null && string.Equals(value.ToString(), parameter.ToString(), StringComparison.OrdinalIgnoreCase);
+        {
+            var isMatch = value != null && parameter != null
+                && string.Equals(value.ToString(), parameter.ToString(), StringComparison.OrdinalIgnoreCase);
+
+            return isMatch ? Visibility.Visible : Visibility.Collapsed;
+        }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
             => throw new NotSupportedException();
@@ -173,7 +183,7 @@ namespace TaskMind.WPFs.Modules.Staffs.Utilities
             => throw new NotSupportedException();
     }
 
-    // ===================== Mới: Diff / Commit / Tab (lấy cảm hứng từ GitHub Desktop) =====================
+    // ===================== Diff / Commit / Tab (lấy cảm hứng từ GitHub Desktop) =====================
 
     /// <summary>Nền của 1 dòng diff: xanh nhạt cho dòng thêm, đỏ nhạt cho dòng xoá, trong suốt cho
     /// dòng không đổi.</summary>
@@ -235,8 +245,7 @@ namespace TaskMind.WPFs.Modules.Staffs.Utilities
             => throw new NotSupportedException();
     }
 
-    /// <summary>Icon theo loại commit — flag kiểm tra IntelliSense trước khi build: ArrowUndo24,
-    /// History24, DocumentEdit24, Rocket24 (Rocket24 đã dùng ở nơi khác trong dự án nên chắc chắn tồn tại).</summary>
+    /// <summary>Icon theo loại commit — đã kiểm tra tồn tại: ArrowUndo24, DocumentEdit24, Rocket24.</summary>
     public class SourceCommitKindToIconConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)

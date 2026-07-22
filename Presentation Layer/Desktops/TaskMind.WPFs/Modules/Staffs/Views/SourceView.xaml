@@ -381,8 +381,14 @@
                                         </ui:Button.Style>
                                     </ui:Button>
 
-                                    <ui:Button Icon="{ui:SymbolIcon DocumentEdit24}" Content="Thay đổi"
+                                    <ui:Button Icon="{ui:SymbolIcon DocumentEdit24}"
                                                Command="{Binding SetLeftTabCommand}" CommandParameter="{x:Static models:SourceLeftTab.Changes}">
+                                        <ui:Button.Content>
+                                            <TextBlock>
+                                                <Run Text="Thay đổi"/>
+                                                <Run Text=" ("/><Run Text="{Binding CurrentWorkspace.DirtyFiles.Count, Mode=OneWay}"/><Run Text=")"/>
+                                            </TextBlock>
+                                        </ui:Button.Content>
                                         <ui:Button.Style>
                                             <Style TargetType="ui:Button" BasedOn="{StaticResource SideTabButtonStyle}">
                                                 <Style.Triggers>
@@ -400,8 +406,14 @@
                                         </ui:Button.ToolTip>
                                     </ui:Button>
 
-                                    <ui:Button Icon="{ui:SymbolIcon History24}" Content="Lịch sử"
+                                    <ui:Button Icon="{ui:SymbolIcon History24}"
                                                Command="{Binding SetLeftTabCommand}" CommandParameter="{x:Static models:SourceLeftTab.History}">
+                                        <ui:Button.Content>
+                                            <TextBlock>
+                                                <Run Text="Lịch sử"/>
+                                                <Run Text=" ("/><Run Text="{Binding CurrentWorkspace.Commits.Count, Mode=OneWay}"/><Run Text=")"/>
+                                            </TextBlock>
+                                        </ui:Button.Content>
                                         <ui:Button.Style>
                                             <Style TargetType="ui:Button" BasedOn="{StaticResource SideTabButtonStyle}">
                                                 <Style.Triggers>
@@ -414,8 +426,14 @@
                                         </ui:Button.Style>
                                     </ui:Button>
 
-                                    <ui:Button Icon="{ui:SymbolIcon ErrorCircle24}" Content="Lỗi"
+                                    <ui:Button Icon="{ui:SymbolIcon ErrorCircle24}"
                                                Command="{Binding SetLeftTabCommand}" CommandParameter="{x:Static models:SourceLeftTab.Issues}">
+                                        <ui:Button.Content>
+                                            <TextBlock>
+                                                <Run Text="Lỗi"/>
+                                                <Run Text=" ("/><Run Text="{Binding CurrentWorkspace.OpenIssueCount, Mode=OneWay}"/><Run Text=")"/>
+                                            </TextBlock>
+                                        </ui:Button.Content>
                                         <ui:Button.Style>
                                             <Style TargetType="ui:Button" BasedOn="{StaticResource SideTabButtonStyle}">
                                                 <Style.Triggers>
