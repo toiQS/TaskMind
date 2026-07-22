@@ -27,10 +27,6 @@
         <staffView:SupportView/>
     </DataTemplate>
     
-    <!--<DataTemplate DataType="{x:Type staffVM:SourceVM}">
-        <staffView:SourceView/>
-    </DataTemplate>-->
-    
     
     
 </ResourceDictionary>

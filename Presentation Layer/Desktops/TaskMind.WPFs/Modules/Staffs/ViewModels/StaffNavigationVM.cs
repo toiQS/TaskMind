@@ -19,14 +19,12 @@ namespace TaskMind.WPFs.Modules.Staffs.ViewModels
         public ICommand TodoCommand { get; set; }
         public ICommand ChatCommand { get; set; }
         public ICommand SupportCommand { get; set; }
-        public ICommand SourceCommand {  get; set; }
 
         private void Profile(object obj) => StaffCurrentView = new ProfileVM();
         private void Project(object obj) => StaffCurrentView = new ProjectVM();
         private void Todo(object obj) => StaffCurrentView = new TodoVM();
         private void Chat(object obj) => StaffCurrentView = new ChatVM();
         private void Support(object obj) => StaffCurrentView = new SupportVM();
-        private void Source(object obj) => StaffCurrentView = new SourceVM();
 
         public StaffNavigationVM()
         {
@@ -35,9 +33,8 @@ namespace TaskMind.WPFs.Modules.Staffs.ViewModels
             TodoCommand = new RelayCommand(Todo);
             ChatCommand = new RelayCommand(Chat);
             SupportCommand = new RelayCommand(Support);
-            SourceCommand = new RelayCommand(Source);
 
-            StaffCurrentView = new SourceVM();
+            StaffCurrentView = new SupportVM();
         }
     }
 }
