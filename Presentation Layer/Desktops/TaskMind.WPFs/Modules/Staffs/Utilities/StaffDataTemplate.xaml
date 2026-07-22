@@ -30,7 +30,9 @@
     <DataTemplate DataType="{x:Type staffVM:SourceVM}">
         <staffView:SourceView/>
     </DataTemplate>
-    
-    
-    
+
+    <DataTemplate DataType="{x:Type staffVM:NotificationVM}">
+        <staffView:NotificationView/>
+    </DataTemplate>
+
 </ResourceDictionary>
