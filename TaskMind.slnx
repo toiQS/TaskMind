@@ -1,4 +1,10 @@
 <Solution>
+  <Folder Name="/Application Layer/" />
+  <Folder Name="/Domain Layer/">
+    <Project Path="Domain Layer/TaskMind.Domain.Commons/TaskMind.Domain.Commons.csproj" Id="a7d650e1-5971-46b0-a158-2a7132e779f1" />
+    <Project Path="Domain Layer/TaskMind.Domain.Entities/TaskMind.Domain.Entities.csproj" Id="227d841a-5a63-4f1a-bf2a-0e796f4294c7" />
+    <Project Path="Domain Layer/TaskMind.Domain.Enums/TaskMind.Domain.Enums.csproj" Id="689df7da-dafb-463a-89a8-8b2728c82c16" />
+  </Folder>
   <Folder Name="/Presentation Layer/" />
   <Folder Name="/Presentation Layer/Desktops/">
     <Project Path="Presentation Layer/Desktops/TaskMind.WPFs/TaskMind.WPFs.csproj" Id="c68c30a2-ef2c-4c5e-9404-2be19e863cc2" />

@@ -1,0 +1,23 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using TaskMind.Domain.Commons.Events;
+
+namespace TaskMind.Domain.Commons.Cores
+{
+    public class AggregateRoot : EntityBase
+    {
+        private readonly List<DomainEvent> _domainEvents = new List<DomainEvent>();
+        public IReadOnlyCollection<DomainEvent> DomainEvents => _domainEvents.AsReadOnly();
+
+        public void AddDomainEvent(DomainEvent domainEvent)
+        {
+            _domainEvents.Add(domainEvent);
+        }
+
+        public void ClearDomainEvents()
+        {
+            _domainEvents.Clear();
+        }
+    }
+}
