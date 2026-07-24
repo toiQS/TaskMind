@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using TaskMind.Domain.Commons.Result;
 
-namespace TaskMind.Domain.Entities.parents
+namespace TaskMind.Domain.Entities
 {
     public class Security
     {

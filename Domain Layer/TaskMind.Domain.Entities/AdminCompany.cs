@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Text;
 using TaskMind.Domain.Commons.Result;
-using TaskMind.Domain.Entities.company;
-using TaskMind.Domain.Entities.parents;
 using TaskMind.Domain.Enums;
 
-namespace TaskMind.Domain.Entities.management
+namespace TaskMind.Domain.Entities
 {
+    /// <summary>
+    /// tài khoản admin company là tài khoản quản trị viên của công ty, có quyền quản lý các thông tin liên quan đến công ty và các tài khoản người dùng trong công ty đó.
+    /// tài khoản không thể khởi tạo thông thường, chỉ có thể được tạo ra thông qua việc tạo công ty mới hoặc được cấp quyền từ admin system.
+    /// </summary>
     internal class AdminCompany : Account
     {
         public Guid CompanyId { get; private set; }

@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 using TaskMind.Domain.Commons.Result;
-using TaskMind.Domain.Entities.parents;
-using TaskMind.Domain.Entities.school;
 using TaskMind.Domain.Enums;
 
-namespace TaskMind.Domain.Entities.management
+namespace TaskMind.Domain.Entities
 {
     internal class AdminSchool : Account
     {

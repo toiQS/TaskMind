@@ -6,7 +6,7 @@ using System.Text;
 using TaskMind.Domain.Commons.Cores;
 using TaskMind.Domain.Commons.ObjectValues;
 
-namespace TaskMind.Domain.Entities.company
+namespace TaskMind.Domain.Entities
 {
     internal class Company : EntityBase
     {

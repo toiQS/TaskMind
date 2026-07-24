@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml.XPath;
 using TaskMind.Domain.Commons.Result;
-using TaskMind.Domain.Entities.parents;
 using TaskMind.Domain.Enums;
 
-namespace TaskMind.Domain.Entities.management
+namespace TaskMind.Domain.Entities
 {
     public class Admin : Account
     {
