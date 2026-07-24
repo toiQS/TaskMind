@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace TaskMind.WPFs.Modules.Companies.Models
+﻿namespace TaskMind.WPFs.Modules.Companies.Models
 {
     /// <summary>Xu hướng tăng/giảm nhu cầu tuyển dụng theo từng kỹ năng.</summary>
     public enum TrendDirection { Up, Down, Stable }

@@ -1,6 +1,4 @@
-﻿using Microsoft.VisualBasic;
-using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using TaskMind.Domain.Commons.Result;
 
@@ -41,7 +39,7 @@ namespace TaskMind.Domain.Entities
             {
                 return Result<Security>.Failure("Password hash cannot be null or empty.");
             }
-           
+
 
             var security = new Security(id, passwordHash);
             return Result<Security>.Success(security);
@@ -71,7 +69,7 @@ namespace TaskMind.Domain.Entities
             }
 
             RefreshToken = newRefreshToken;
-            RevokeAt = DateTime.Now.AddHours(2); 
+            RevokeAt = DateTime.Now.AddHours(2);
 
             return Result.Success();
         }

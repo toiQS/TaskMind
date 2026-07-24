@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TaskMind.WPFs.Modules.Admins.Models
+﻿namespace TaskMind.WPFs.Modules.Admins.Models
 {
     /// <summary>
     /// Dữ liệu form "Thêm công ty mới" do Admin nhập trực tiếp.

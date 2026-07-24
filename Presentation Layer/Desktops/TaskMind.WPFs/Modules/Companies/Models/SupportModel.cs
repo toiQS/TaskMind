@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TaskMind.WPFs.Modules.Companies.Models
+﻿namespace TaskMind.WPFs.Modules.Companies.Models
 {
     /// <summary>Loại yêu cầu hỗ trợ nội bộ công ty.</summary>
     public enum SupportType

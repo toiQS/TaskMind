@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace TaskMind.WPFs.Modules.Companies.Models
+﻿namespace TaskMind.WPFs.Modules.Companies.Models
 {
     /// <summary>Nguồn ứng viên.</summary>
     public enum CandidateSource

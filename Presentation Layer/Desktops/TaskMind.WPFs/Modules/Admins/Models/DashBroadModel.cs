@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace TaskMind.WPFs.Modules.Admins.Models
+﻿namespace TaskMind.WPFs.Modules.Admins.Models
 {
     public class DashBroadModel
     {

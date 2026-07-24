@@ -17,7 +17,7 @@ namespace TaskMind.WPFs.Modules
         }
 
         public ICommand AuthCommand { get; set; }
-        public ICommand AdminCommand {  get; set; }
+        public ICommand AdminCommand { get; set; }
         public ICommand CompanyCommand { get; set; }
         public ICommand StaffCommand { get; set; }
 

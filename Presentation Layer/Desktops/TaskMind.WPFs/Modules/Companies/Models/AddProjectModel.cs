@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace TaskMind.WPFs.Modules.Companies.Models
+﻿namespace TaskMind.WPFs.Modules.Companies.Models
 {
     /// <summary>
     /// Dữ liệu form "Tạo dự án mới" (mục 4.7 - Quản lý dự án trực thuộc công ty).

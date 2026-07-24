@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace TaskMind.WPFs.Modules.Staffs.Models
+﻿namespace TaskMind.WPFs.Modules.Staffs.Models
 {
     /// <summary>Trạng thái nhân sự — đồng bộ ý nghĩa với StaffStatus bên Modules.Companies (mục 4.5),
     /// do Admin company quản lý; nhân sự chỉ xem trên hồ sơ của chính mình.</summary>

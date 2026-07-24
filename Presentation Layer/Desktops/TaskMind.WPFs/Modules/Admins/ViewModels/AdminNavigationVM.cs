@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration.Internal;
-using System.Net.NetworkInformation;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Input;
-using TaskMind.WPFs.Modules.Auths.ViewModels;
 using TaskMind.WPFs.Utilities;
 
 namespace TaskMind.WPFs.Modules.Admins.ViewModels

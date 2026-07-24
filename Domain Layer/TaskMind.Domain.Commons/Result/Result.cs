@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace TaskMind.Domain.Commons.Result
+﻿namespace TaskMind.Domain.Commons.Result
 {
     public class Result<T>
     {

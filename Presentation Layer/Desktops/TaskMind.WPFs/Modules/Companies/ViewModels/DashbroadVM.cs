@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Threading.Tasks;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using TaskMind.WPFs.Modules.Companies.Models;
 using TaskMind.WPFs.Utilities;

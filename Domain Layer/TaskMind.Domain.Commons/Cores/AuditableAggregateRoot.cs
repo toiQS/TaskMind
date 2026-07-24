@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using TaskMind.Domain.Commons.Events;
+﻿using TaskMind.Domain.Commons.Events;
 
 namespace TaskMind.Domain.Commons.Cores
 {

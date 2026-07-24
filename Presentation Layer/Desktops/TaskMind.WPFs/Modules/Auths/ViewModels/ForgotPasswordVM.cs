@@ -1,6 +1,4 @@
-﻿using System;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+﻿using System.Text.RegularExpressions;
 using System.Windows.Input;
 using TaskMind.WPFs.Modules.Auths.Models;
 using TaskMind.WPFs.Utilities;

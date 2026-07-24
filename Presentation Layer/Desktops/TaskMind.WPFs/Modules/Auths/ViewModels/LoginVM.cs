@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Input;
+﻿using System.Windows.Input;
 using TaskMind.WPFs.Utilities;
 
 namespace TaskMind.WPFs.Modules.Auths.ViewModels

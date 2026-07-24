@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TaskMind.WPFs.Modules.Companies.Models
+﻿namespace TaskMind.WPFs.Modules.Companies.Models
 {
     /// <summary>
     /// Loại thông báo hệ thống (mục 5.3): mời tham gia dự án/công ty, kết quả kiểm tra,

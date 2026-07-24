@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows.Input;
+﻿using System.Windows.Input;
 using TaskMind.WPFs.Modules.Admins.Models;
 using TaskMind.WPFs.Utilities;
 

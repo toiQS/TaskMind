@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TaskMind.WPFs.Modules.Companies.Models
+﻿namespace TaskMind.WPFs.Modules.Companies.Models
 {
     /// <summary>
     /// Một chỉ số KPI hiển thị trên thẻ tổng quan (VD: "Dự án đang thực hiện": 4, tăng 12%).

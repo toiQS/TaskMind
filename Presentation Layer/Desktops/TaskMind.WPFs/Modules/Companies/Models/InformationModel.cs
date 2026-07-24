@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TaskMind.WPFs.Modules.Companies.Models
+﻿namespace TaskMind.WPFs.Modules.Companies.Models
 {
     /// <summary>Trạng thái kiểm duyệt/xác thực công ty bởi Admin hệ thống (mục 4.4).</summary>
     public enum CompanyVerificationStatus

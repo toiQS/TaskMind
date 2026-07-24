@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace TaskMind.WPFs.Modules.Companies.Models
+﻿namespace TaskMind.WPFs.Modules.Companies.Models
 {
     /// <summary>Nguồn dữ liệu khi thêm nhân sự mới (mục 4.5): kế thừa từ ứng viên đã tuyển
     /// (mục 5.1 - HireCommand) hoặc nhập thủ công hoàn toàn.</summary>

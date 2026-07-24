@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace TaskMind.WPFs.Modules.Admins.Models
+﻿namespace TaskMind.WPFs.Modules.Admins.Models
 {
     /// <summary>
     /// Nguồn thu của hệ thống (mục 4.13 - Quản lý lợi nhuận):

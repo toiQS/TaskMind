@@ -1,5 +1,4 @@
-﻿using System;
-using TaskMind.WPFs.Utilities;
+﻿using TaskMind.WPFs.Utilities;
 
 namespace TaskMind.WPFs.Modules.Staffs.Models
 {

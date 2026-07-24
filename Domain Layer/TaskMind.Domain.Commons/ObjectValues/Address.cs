@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace TaskMind.Domain.Commons.ObjectValues
+﻿namespace TaskMind.Domain.Commons.ObjectValues
 {
     public class Address
     {

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Text;
-using System.Windows.Controls;
-using System.Windows.Input;
+﻿using System.Windows.Input;
 using TaskMind.WPFs.Utilities;
 
 namespace TaskMind.WPFs.Modules.Companies.ViewModels

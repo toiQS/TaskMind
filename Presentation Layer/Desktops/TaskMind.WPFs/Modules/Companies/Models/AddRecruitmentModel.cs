@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace TaskMind.WPFs.Modules.Companies.Models
+﻿namespace TaskMind.WPFs.Modules.Companies.Models
 {
     /// <summary>
     /// Dữ liệu form "Đăng tin tuyển dụng mới" (mục 5.1 - Quản lý tuyển dụng và ứng tuyển).

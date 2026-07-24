@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TaskMind.WPFs.Modules.Auths.Models
+﻿namespace TaskMind.WPFs.Modules.Auths.Models
 {
     public enum UserRole
     {

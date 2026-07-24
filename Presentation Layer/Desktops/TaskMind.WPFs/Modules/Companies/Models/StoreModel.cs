@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace TaskMind.WPFs.Modules.Companies.Models
+﻿namespace TaskMind.WPFs.Modules.Companies.Models
 {
     /// <summary>Loại tin đăng: dự án thương mại (có thể tính phí trao đổi) hoặc mã nguồn mở (miễn phí, mục 4.12).</summary>
     public enum ListingType

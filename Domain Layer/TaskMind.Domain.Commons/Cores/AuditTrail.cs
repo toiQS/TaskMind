@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using TaskMind.Domain.Enums;
+﻿using TaskMind.Domain.Enums;
 
 namespace TaskMind.Domain.Commons.Cores
 {

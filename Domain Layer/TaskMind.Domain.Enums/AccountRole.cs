@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace TaskMind.Domain.Enums
+﻿namespace TaskMind.Domain.Enums
 {
     public enum AccountRole
     {

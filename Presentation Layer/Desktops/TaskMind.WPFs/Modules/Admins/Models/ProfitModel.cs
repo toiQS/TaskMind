@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TaskMind.WPFs.Modules.Admins.Models
+﻿namespace TaskMind.WPFs.Modules.Admins.Models
 {
     public enum ProfitSource
     {

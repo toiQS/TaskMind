@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
+﻿using System.ComponentModel.DataAnnotations;
 using TaskMind.Domain.Enums;
 
 namespace TaskMind.Domain.Commons.Cores
@@ -20,6 +17,6 @@ namespace TaskMind.Domain.Commons.Cores
             Status = status;
             UpdateAt = DateTime.UtcNow;
         }
-        
+
     }
 }
