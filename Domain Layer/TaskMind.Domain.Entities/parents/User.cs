@@ -17,7 +17,7 @@ namespace TaskMind.Domain.Entities.parents
             AccountRole role = AccountRole.User)
         {
             var user = new User();
-            var initResult = user.InitializeWithCredentials(id, citizenId, email, role, passwordHash, refreshToken);
+            var initResult = user.InitializeWithCredentials(citizenId, email, role, passwordHash);
 
             if (!initResult.IsSuccess)
             {

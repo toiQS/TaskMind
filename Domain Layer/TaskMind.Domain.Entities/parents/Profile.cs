@@ -1,10 +1,14 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using TaskMind.Domain.Commons.ObjectValues;
 using TaskMind.Domain.Commons.Result;
 
 namespace TaskMind.Domain.Entities.parents
 {
     public class Profile
     {
+        [Key, ForeignKey(nameof(Account))]
         public Guid Id { get; private set; }
         public virtual Account Account { get; private set; } = default!;
 
@@ -89,22 +93,6 @@ namespace TaskMind.Domain.Entities.parents
             }
 
             return Result.Success();
-        }
-    }
-
-    public class Address
-    {
-        public string Street { get; private set; } = string.Empty;
-        public string City { get; private set; } = string.Empty;
-        public string Country { get; private set; } = string.Empty;
-
-        public Address() { }
-
-        public Address(string street, string city, string country)
-        {
-            Street = street;
-            City = city;
-            Country = country;
         }
     }
 }

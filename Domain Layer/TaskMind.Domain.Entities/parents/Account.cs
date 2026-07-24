@@ -16,20 +16,17 @@ namespace TaskMind.Domain.Entities.parents
         protected Account() { }
 
         protected Result InitializeWithCredentials(
-            Guid id,
             string citizenId,
             string email,
             AccountRole role,
-            string passwordHash,
-            string refreshToken)
+            string passwordHash)
         {
-            Id = id;
 
             var profileResult = Profile.CreateProfile(Id, email, citizenId);
             if (!profileResult.IsSuccess)
                 return Result.Failure(profileResult.Message);
 
-            var securityResult = Security.Create(Id, passwordHash, refreshToken);
+            var securityResult = Security.Create(Id, passwordHash);
             if (!securityResult.IsSuccess)
                 return Result.Failure(securityResult.Message);
 

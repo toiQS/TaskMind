@@ -1,10 +1,14 @@
-﻿using System;
+﻿using Microsoft.VisualBasic;
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using TaskMind.Domain.Commons.Result;
 
 namespace TaskMind.Domain.Entities.parents
 {
     public class Security
     {
+        [Key, ForeignKey(nameof(Account))]
         public Guid Id { get; private set; }
         public virtual Account Account { get; private set; } = default!;
 
@@ -23,26 +27,23 @@ namespace TaskMind.Domain.Entities.parents
 
         private Security() { }
 
-        private Security(Guid id, string passwordHash, string refreshToken)
+        private Security(Guid id, string passwordHash)
         {
             Id = id;
             PasswordHash = passwordHash;
-            RefreshToken = refreshToken;
+            RefreshToken = string.Empty;
             RevokeAt = null; // Mặc định khi tạo mới là chưa bị thu hồi
         }
 
-        public static Result<Security> Create(Guid id, string passwordHash, string refreshToken)
+        public static Result<Security> Create(Guid id, string passwordHash)
         {
             if (string.IsNullOrWhiteSpace(passwordHash))
             {
                 return Result<Security>.Failure("Password hash cannot be null or empty.");
             }
-            if (string.IsNullOrWhiteSpace(refreshToken))
-            {
-                return Result<Security>.Failure("Refresh token cannot be null or empty.");
-            }
+           
 
-            var security = new Security(id, passwordHash, refreshToken);
+            var security = new Security(id, passwordHash);
             return Result<Security>.Success(security);
         }
 
@@ -58,9 +59,11 @@ namespace TaskMind.Domain.Entities.parents
         }
 
         /// <summary>
-        /// Cập nhật Refresh Token mới và reset lại trạng thái Revoke.
+        /// Hành vi cấp mới Refresh Token (ví dụ: khi User đăng nhập hoặc refresh token cũ sắp hết hạn).
         /// </summary>
-        public Result UpdateRefreshToken(string newRefreshToken)
+        /// <param name="newRefreshToken"></param>
+        /// <returns></returns>
+        public Result AccessRefreshToken(string newRefreshToken)
         {
             if (string.IsNullOrWhiteSpace(newRefreshToken))
             {
@@ -68,7 +71,7 @@ namespace TaskMind.Domain.Entities.parents
             }
 
             RefreshToken = newRefreshToken;
-            RevokeAt = null; // Reset lại RevokeAt khi cấp token mới
+            RevokeAt = DateTime.Now.AddHours(2); 
 
             return Result.Success();
         }
