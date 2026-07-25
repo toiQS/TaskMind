@@ -1,34 +1,43 @@
 ﻿using TaskMind.Domain.Commons.Result;
 using TaskMind.Domain.Enums;
+using TaskMind.Domain.Events;
 
 namespace TaskMind.Domain.Entities
 {
-    /// <summary>
-    /// tài khoản admin company là tài khoản quản trị viên của công ty, có quyền quản lý các thông tin liên quan đến công ty và các tài khoản người dùng trong công ty đó.
-    /// tài khoản không thể khởi tạo thông thường, chỉ có thể được tạo ra thông qua việc tạo công ty mới hoặc được cấp quyền từ admin system.
-    /// </summary>
     public class AdminCompany : Account
     {
         public Guid CompanyId { get; private set; }
         public virtual Company Company { get; private set; } = default!;
 
-        private AdminCompany(Guid companyId) : base()
+        /// <summary>Trỏ về tài khoản User gốc đã đăng ký thành lập công ty (mục 2.1, 4.1.1).</summary>
+        public Guid LinkedUserId { get; private set; }
+
+        private AdminCompany(Guid companyId, Guid linkedUserId) : base()
         {
             CompanyId = companyId;
+            LinkedUserId = linkedUserId;
         }
 
         public static Result<AdminCompany> CreateAdminCompany(
             string citizenId,
             string email,
             string passwordHash,
-            Guid companyId)
+            Guid companyId,
+            Guid linkedUserId)
         {
-            var adminCompany = new AdminCompany(companyId);
+            var adminCompany = new AdminCompany(companyId, linkedUserId);
             var result = adminCompany.InitializeWithCredentials(citizenId, email, AccountRole.AdminCompany, passwordHash);
             if (!result.IsSuccess)
                 return Result<AdminCompany>.Failure(result.Message);
-            return Result<AdminCompany>.Success(adminCompany);
 
+            adminCompany.AddDomainEvent(new AdminCompanyLinkedEvent
+            {
+                AdminCompanyAccountId = adminCompany.Id,
+                LinkedUserId = linkedUserId,
+                CompanyId = companyId
+            });
+
+            return Result<AdminCompany>.Success(adminCompany);
         }
     }
 }

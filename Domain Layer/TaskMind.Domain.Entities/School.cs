@@ -2,6 +2,7 @@
 using TaskMind.Domain.Commons.ObjectValues;
 using TaskMind.Domain.Commons.Result;
 using TaskMind.Domain.Enums;
+using TaskMind.Domain.Events;
 
 namespace TaskMind.Domain.Entities
 {
@@ -50,6 +51,7 @@ namespace TaskMind.Domain.Entities
             if (IsVerified) return Result.Failure("Cơ sở đào tạo đã được xác thực trước đó.");
             IsVerified = true;
             UpdateStatus(EntityStatus.Active);
+            AddDomainEvent(new SchoolVerifiedEvent { SchoolId = Id, SchoolName = SchoolName });
             return Result.Success();
         }
 

@@ -1,6 +1,7 @@
 ﻿using TaskMind.Domain.Commons.Cores;
 using TaskMind.Domain.Commons.ObjectValues;
 using TaskMind.Domain.Commons.Result;
+using TaskMind.Domain.Events;
 
 namespace TaskMind.Domain.Entities
 {
@@ -57,6 +58,7 @@ namespace TaskMind.Domain.Entities
             if (IsVerified) return Result.Failure("Công ty đã được xác thực trước đó.");
             IsVerified = true;
             UpdateStatus(Enums.EntityStatus.Active);
+            AddDomainEvent(new CompanyVerifiedEvent { CompanyId = Id, CompanyName = CompanyName });
             return Result.Success();
         }
 
@@ -90,5 +92,6 @@ namespace TaskMind.Domain.Entities
             if (address != null) Address = address;
             return Result.Success();
         }
+
     }
 }

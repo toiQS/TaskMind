@@ -6,6 +6,12 @@
     <Project Path="Domain Layer/TaskMind.Domain.Enums/TaskMind.Domain.Enums.csproj" Id="689df7da-dafb-463a-89a8-8b2728c82c16" />
     <Project Path="Domain Layer/TaskMind.Domain.Events/TaskMind.Domain.Events.csproj" Id="485fc62c-557c-4f59-aad4-3be4067028b2" />
   </Folder>
+  <Folder Name="/Hosting Layer/">
+    <Project Path="Hosting Layer/TaskMind/TaskMind.ApiService/TaskMind.ApiService.csproj" />
+    <Project Path="Hosting Layer/TaskMind/TaskMind.AppHost/TaskMind.AppHost.csproj" Id="9ec14074-e01e-46cc-ab9a-d52018af7880" />
+    <Project Path="Hosting Layer/TaskMind/TaskMind.ServiceDefaults/TaskMind.ServiceDefaults.csproj" />
+    <Project Path="Hosting Layer/TaskMind/TaskMind.Web/TaskMind.Web.csproj" />
+  </Folder>
   <Folder Name="/Presentation Layer/" />
   <Folder Name="/Presentation Layer/Desktops/">
     <Project Path="Presentation Layer/Desktops/TaskMind.WPFs/TaskMind.WPFs.csproj" Id="c68c30a2-ef2c-4c5e-9404-2be19e863cc2" />
