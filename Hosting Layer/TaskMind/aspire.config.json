@@ -1,0 +1,5 @@
+{
+  "appHost": {
+    "path": "TaskMind.AppHost/TaskMind.AppHost.csproj"
+  }
+}
