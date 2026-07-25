@@ -3,7 +3,7 @@ using TaskMind.Domain.Enums;
 
 namespace TaskMind.Domain.Entities
 {
-    internal class AdminSchool : Account
+    public class AdminSchool : Account
     {
         public Guid SchoolId { get; private set; }
         public virtual School School { get; private set; } = default!;

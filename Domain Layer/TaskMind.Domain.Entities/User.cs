@@ -15,7 +15,7 @@ namespace TaskMind.Domain.Entities
     /// user có nguyền đăng ký thành lập công ty hoặc cơ sở đào tạo, nhưng phải được xác minh thông tin trước khi cấp quyền quản lý công ty hoặc cơ sở đào tạo. (yêu cầu xác minh trước)
     /// nếu thành công sẽ cấp tài khoản admin company hoặc admin school tương ứng với thông tin đã xác minh.
     /// </summary>
-    internal class User : Account
+    public class User : Account
     {
         private User() : base() { }
         public static Result<User> CreateUser(

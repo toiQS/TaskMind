@@ -52,7 +52,7 @@ namespace TaskMind.Domain.Entities
                 return Result<Project>.Failure("Dự án thuộc công ty/cơ sở đào tạo phải có OwningEntityId.");
 
             if (isExchangeProject && sourceType == ProjectSourceType.OpenSource)
-                return Result<Project>.Failure("Dự án mã nguồn mở không phát sinh phí giao dịch (mục 4.12).");
+                return Result<Project>.Failure("Dự án mã nguồn mở không phát sinh phí giao dịch.");
 
             var project = new Project(title.Trim(), description?.Trim() ?? string.Empty, sourceType, owningEntityId, isExchangeProject);
 

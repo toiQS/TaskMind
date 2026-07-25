@@ -26,21 +26,21 @@ namespace TaskMind.Domain.Entities
             JoinedAt = DateTime.UtcNow;
         }
 
-        internal static Result<ProjectMember> Create(Guid accountId, ProjectRole role)
+        public static Result<ProjectMember> Create(Guid accountId, ProjectRole role)
         {
             if (accountId == Guid.Empty)
                 return Result<ProjectMember>.Failure("AccountId không hợp lệ.");
             return Result<ProjectMember>.Success(new ProjectMember(accountId, role));
         }
 
-        internal Result ChangeRole(ProjectRole newRole)
+        public Result ChangeRole(ProjectRole newRole)
         {
             if (!IsActive) return Result.Failure("Không thể đổi vai trò của thành viên đã rời dự án.");
             Role = newRole;
             return Result.Success();
         }
 
-        internal Result Leave()
+        public Result Leave()
         {
             if (!IsActive) return Result.Failure("Thành viên đã rời dự án trước đó.");
             LeftAt = DateTime.UtcNow;

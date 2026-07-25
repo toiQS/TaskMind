@@ -7,7 +7,7 @@ namespace TaskMind.Domain.Entities
     /// tài khoản admin company là tài khoản quản trị viên của công ty, có quyền quản lý các thông tin liên quan đến công ty và các tài khoản người dùng trong công ty đó.
     /// tài khoản không thể khởi tạo thông thường, chỉ có thể được tạo ra thông qua việc tạo công ty mới hoặc được cấp quyền từ admin system.
     /// </summary>
-    internal class AdminCompany : Account
+    public class AdminCompany : Account
     {
         public Guid CompanyId { get; private set; }
         public virtual Company Company { get; private set; } = default!;
