@@ -1,5 +1,9 @@
 <Solution>
-  <Folder Name="/Application Layer/" />
+  <Folder Name="/Application Layer/">
+    <Project Path="Application Layer/TaskMind.Application.Admins/TaskMind.Application.Admins.csproj" Id="62f52433-a8a7-4e3c-86d8-09cc56fdb45e" />
+    <Project Path="Application Layer/TaskMind.Application.Commons/TaskMind.Application.Commons.csproj" Id="40682e02-90fa-40f1-9eea-39981f94a272" />
+    <Project Path="Application Layer/TaskMind.Application.Events/TaskMind.Application.Events.csproj" Id="82dfe922-de59-4a77-b93f-1aaa8c6a047c" />
+  </Folder>
   <Folder Name="/Domain Layer/">
     <Project Path="Domain Layer/TaskMind.Domain.Commons/TaskMind.Domain.Commons.csproj" Id="a7d650e1-5971-46b0-a158-2a7132e779f1" />
     <Project Path="Domain Layer/TaskMind.Domain.Entities/TaskMind.Domain.Entities.csproj" Id="227d841a-5a63-4f1a-bf2a-0e796f4294c7" />
@@ -9,6 +13,9 @@
   <Folder Name="/Hosting Layer/">
     <Project Path="Hosting Layer/TaskMind/TaskMind.AppHost/TaskMind.AppHost.csproj" Id="6d425461-d431-48f3-8313-efb8eb7a2e26" />
     <Project Path="Hosting Layer/TaskMind/TaskMind.ServiceDefaults/TaskMind.ServiceDefaults.csproj" />
+  </Folder>
+  <Folder Name="/Infrastructor Layer/">
+    <Project Path="Infrastructor Layer/TaskMind.Infrastructor/TaskMind.Infrastructor.csproj" Id="707031e2-36f2-463e-9094-67d701846598" />
   </Folder>
   <Folder Name="/Presentation Layer/" />
   <Folder Name="/Presentation Layer/Desktops/">

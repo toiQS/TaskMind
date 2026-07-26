@@ -1,5 +1,8 @@
-﻿namespace TaskMind.Domain.Commons.ObjectValues
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace TaskMind.Domain.Commons.ObjectValues
 {
+    [Owned]
     public class Address
     {
         public string Street { get; private set; } = string.Empty;
