@@ -5,7 +5,7 @@ using System.Windows.Media;
 using TaskMind.WPFs.Modules.Admins.Models;
 using Wpf.Ui.Controls;
 
-namespace TaskMind.WPFs.Utilities
+namespace TaskMind.WPFs.Modules.Admins.Utilities
 {
     /// <summary>So khớp filter đang chọn để tô đậm (Primary) nút chip đang active</summary>
     public class FilterAppearanceConverter : IValueConverter

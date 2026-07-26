@@ -4,7 +4,7 @@ using System.Windows.Data;
 using System.Windows.Media;
 using TaskMind.WPFs.Modules.Admins.Models;
 
-namespace TaskMind.WPFs.Utilities
+namespace TaskMind.WPFs.Modules.Admins.Utilities
 {
     public class UserStatusToBrushConverter : IValueConverter
     {

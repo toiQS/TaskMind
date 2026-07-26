@@ -15,7 +15,8 @@
     <Project Path="Hosting Layer/TaskMind/TaskMind.ServiceDefaults/TaskMind.ServiceDefaults.csproj" />
   </Folder>
   <Folder Name="/Infrastructor Layer/">
-    <Project Path="Infrastructor Layer/TaskMind.Infrastructor/TaskMind.Infrastructor.csproj" Id="707031e2-36f2-463e-9094-67d701846598" />
+    <Project Path="Infrastructor Layer/TaskMind.Infrastructor.Applications/TaskMind.Infrastructor.Applications.csproj" Id="c6e82156-6205-4062-930d-f190a347a605" />
+    <Project Path="Infrastructor Layer/TaskMind.Infrastructor.Weblications/TaskMind.Infrastructor.Weblications.csproj" Id="60ce2c57-d634-4850-9d7c-5c953cf23814" />
   </Folder>
   <Folder Name="/Presentation Layer/" />
   <Folder Name="/Presentation Layer/Desktops/">

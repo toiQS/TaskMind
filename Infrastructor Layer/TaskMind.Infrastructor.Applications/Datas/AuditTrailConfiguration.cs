@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.Json;
 using TaskMind.Domain.Commons.Cores;
 
-namespace TaskMind.Infrastructor.Datas
+namespace TaskMind.Infrastructor.Applications.Datas
 {
     public class AuditTrailConfiguration : IEntityTypeConfiguration<AuditTrail>
     {

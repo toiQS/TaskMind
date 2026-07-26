@@ -8,19 +8,19 @@ using TaskMind.Domain.Commons.Events;
 using TaskMind.Domain.Entities;
 using TaskMind.Domain.Enums;
 
-namespace TaskMind.Infrastructor.Datas
+namespace TaskMind.Infrastructor.Weblications.Datas
 {
-    public class ApplicationDbContext : DbContext, IApplicationDbContext
+    public class WeblicationDbContext : DbContext, IApplicationDbContext
     {
         private readonly ICurrentSessionProvider _sessionProvider;
         private readonly IPublisher _publisher;
-        private readonly ILogger<ApplicationDbContext> _logger;
+        private readonly ILogger<WeblicationDbContext> _logger;
 
-        public ApplicationDbContext(
-            DbContextOptions<ApplicationDbContext> options,
+        public WeblicationDbContext(
+            DbContextOptions<WeblicationDbContext> options,
             ICurrentSessionProvider sessionProvider,
             IPublisher publisher,
-            ILogger<ApplicationDbContext> logger) : base(options)
+            ILogger<WeblicationDbContext> logger) : base(options)
         {
             _sessionProvider = sessionProvider;
             _publisher = publisher;
@@ -206,37 +206,5 @@ namespace TaskMind.Infrastructor.Datas
             _ = await base.SaveChangesAsync(cancellationToken);
         }
     }
-    public class AuditEntry
-    {
-        public AuditEntry(Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry entry)
-        {
-            Entry = entry;
-        }
-
-        public Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry Entry { get; set; }
-        public Guid? UserId { get; set; }
-        public string EntityName { get; set; } = string.Empty;
-        public string? PrimaryKey { get; set; }
-        public DateTimeOffset DateUtc { get; set; }
-        public TrailType TrailType { get; set; } = TrailType.None;
-        public Dictionary<string, object?> OldValues { get; set; } = [];
-        public Dictionary<string, object?> NewValues { get; set; } = [];
-        public List<string> ChangedColumns { get; set; } = [];
-
-        public AuditTrail ToAuditTrail()
-        {
-            return new AuditTrail
-            {
-                Id = Guid.NewGuid(),
-                UserId = UserId,
-                EntityName = EntityName,
-                PrimaryKey = PrimaryKey,
-                DateUtc = DateUtc,
-                TrailType = TrailType,
-                OldValues = OldValues,
-                NewValues = NewValues,
-                ChangedColumns = ChangedColumns
-            };
-        }
-    }
+    
 }

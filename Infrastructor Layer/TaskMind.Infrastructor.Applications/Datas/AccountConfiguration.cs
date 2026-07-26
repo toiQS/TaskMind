@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace TaskMind.Infrastructor.Datas
+namespace TaskMind.Infrastructor.Applications.Datas
 {
     
 }

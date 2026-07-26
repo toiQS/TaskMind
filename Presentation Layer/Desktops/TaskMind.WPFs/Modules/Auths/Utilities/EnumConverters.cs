@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 
-namespace TaskMind.WPFs.Utilities
+namespace TaskMind.WPFs.Modules.Auths.Utilities
 {
     /// <summary>
     /// So khớp enum hiện tại với ConverterParameter (tên enum dạng string) để quyết định Visibility.
