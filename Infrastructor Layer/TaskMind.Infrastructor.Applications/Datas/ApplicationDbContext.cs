@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.Logging;
-using TaskMind.Application.Commons;
+using TaskMind.Applications.Commons;
 using TaskMind.Domain.Commons.Cores;
 using TaskMind.Domain.Commons.Events;
 using TaskMind.Domain.Entities;

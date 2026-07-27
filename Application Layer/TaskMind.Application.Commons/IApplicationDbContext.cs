@@ -7,7 +7,7 @@ using System.Text;
 using TaskMind.Domain.Commons.Cores;
 using TaskMind.Domain.Entities;
 
-namespace TaskMind.Application.Commons
+namespace TaskMind.Applications.Commons
 {
     public interface IApplicationDbContext
     {
