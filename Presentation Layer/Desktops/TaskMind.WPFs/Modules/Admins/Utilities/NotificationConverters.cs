@@ -5,7 +5,7 @@ using System.Windows.Data;
 using System.Windows.Media;
 using TaskMind.WPFs.Modules.Admins.Models;
 
-namespace TaskMind.WPFs.Modules.Admins.Utilities
+namespace TaskMind.WPFs.Utilities
 {
     public class NotificationTypeToTextConverter : IValueConverter
     {

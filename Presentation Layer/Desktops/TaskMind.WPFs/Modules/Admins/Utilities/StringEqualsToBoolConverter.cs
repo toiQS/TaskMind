@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Windows.Data;
 
-namespace TaskMind.WPFs.Modules.Admins.Utilities
+namespace TaskMind.WPFs.Utilities
 {
     /// <summary>
     /// So sánh giá trị binding (ActiveKey) với ConverterParameter (key của từng menu item).

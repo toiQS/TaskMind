@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Windows.Data;
 
-namespace TaskMind.WPFs.Modules.Companies.Utilities
+namespace TaskMind.WPFs.Utilities
 {
     /// <summary>
     /// So khớp giá trị enum hiện tại với ConverterParameter (tên enum dạng string).
