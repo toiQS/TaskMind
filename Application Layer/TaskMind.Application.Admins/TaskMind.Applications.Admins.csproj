@@ -10,4 +10,10 @@
     <ProjectReference Include="..\TaskMind.Application.Commons\TaskMind.Applications.Commons.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Dtos\" />
+    <Folder Include="Handlers\" />
+    <Folder Include="Requests\" />
+  </ItemGroup>
+
 </Project>
