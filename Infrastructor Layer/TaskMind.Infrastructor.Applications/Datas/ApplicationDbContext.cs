@@ -61,6 +61,12 @@ namespace TaskMind.Infrastructor.Applications.Datas
 
         public DbSet<User> Users { get; set; }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Ignore<DomainEvent>();
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+        }
 
         // ── OVERRIDE SAVECHANGESASYNC: XỬ LÝ TẬP TRUNG TẤT CẢ LOGIC ───────
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

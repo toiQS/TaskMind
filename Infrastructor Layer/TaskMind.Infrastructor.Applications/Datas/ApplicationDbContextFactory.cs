@@ -15,7 +15,7 @@ namespace TaskMind.Infrastructor.Applications.Datas
         public ApplicationDbContext CreateDbContext(string[] args)
         {
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
-            optionsBuilder.UseNpgsql("Server=localhost:5432;Database=TaskMind;Username=postgres;Password=akai1234;");
+            optionsBuilder.UseNpgsql("Server=localhost:5432;Database=TaskMind;Username=postgres;Password=akai123;");
 
             return new ApplicationDbContext(
                 optionsBuilder.Options,

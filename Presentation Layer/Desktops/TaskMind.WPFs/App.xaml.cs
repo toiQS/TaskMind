@@ -35,7 +35,7 @@ namespace TaskMind.WPFs
         private void ConfigureServices(IServiceCollection services)
         {
             string connectionString = Configuration.GetConnectionString("PostgreConnectString")
-                ?? "Server=localhost:5432;Database=TaskMind;Username=postgres;Password=akai1234;";
+                ?? "Server=localhost:5432;Database=TaskMind;Username=postgres;Password=akai123;";
 
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(connectionString));

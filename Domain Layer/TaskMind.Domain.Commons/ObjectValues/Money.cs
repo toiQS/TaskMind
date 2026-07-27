@@ -1,5 +1,8 @@
-﻿namespace TaskMind.Domain.Commons.ObjectValues
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace TaskMind.Domain.Commons.ObjectValues
 {
+    [Owned]
     /// <summary>Value Object dùng chung (Shared Kernel) cho các số tiền: phí giao dịch, phí tham gia, hoá đơn...</summary>
     public class Money : IEquatable<Money>
     {
