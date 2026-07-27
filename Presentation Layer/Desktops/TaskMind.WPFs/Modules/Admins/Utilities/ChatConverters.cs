@@ -4,7 +4,7 @@ using System.Windows;
 using System.Windows.Data;
 using TaskMind.WPFs.Modules.Admins.Models;
 
-namespace TaskMind.WPFs.Modules.Admins.Utilities
+namespace TaskMind.WPFs.Utilities
 {
     public class ChatPartnerTypeToTextConverter : IValueConverter
     {

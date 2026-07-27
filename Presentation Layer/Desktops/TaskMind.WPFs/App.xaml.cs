@@ -14,28 +14,28 @@ namespace TaskMind.WPFs
     /// </summary>
     public partial class App : Application
     {
-        private readonly IHost Host;
+        private readonly IHost host;
         public IServiceProvider ServiceProvider { get; private set; }
         public IConfiguration Configuration { get; private set; }
 
         public App()
         {
-
+            host = Host.CreateDefaultBuilder()
+               .ConfigureServices((context, services) =>
+               {
+                   ConfigureServices(services);
+               }).Build();
         }
 
         private void ConfigureServices(IServiceCollection services)
         {
-            //services.AddDbContext<ApplicationDbContext>(options =>
-            //    options.UseNpgsql("Server=localhost:5432;Database=TaskMind;Username=postgres;Password=akai1234;"));
 
             services.AddDbContext<ApplicationDbContext>(options =>
             {
-                string connectionString = Configuration.GetConnectionString("DefaultConnection");
+                string connectionString = Configuration.GetConnectionString("PostgreConnectString") ?? "Server=localhost:5432;Database=TaskMind;Username=postgres;Password=akai1234;";
                 options.UseNpgsql(connectionString);
             });
-            // Register your services here
-            services.AddSingleton<MainWindow>();
-            // Add other services as needed
+            
         }
 
 
@@ -45,7 +45,7 @@ namespace TaskMind.WPFs
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
-            Configuration = (IConfiguration)builder.Build();
+            Configuration = builder.Build();
 
             var serviceCollection = new ServiceCollection();
             ConfigureServices(serviceCollection);
@@ -54,6 +54,16 @@ namespace TaskMind.WPFs
 
             var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
             mainWindow.Show();
+        }
+
+        protected override async void OnExit(ExitEventArgs e)
+        {
+            using (host)
+            {
+                await host.StopAsync(TimeSpan.FromSeconds(5));
+            }
+
+            base.OnExit(e);
         }
     }
 }   
