@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\TaskMind.Application.Commons\TaskMind.Applications.Commons.csproj" />
+  </ItemGroup>
+
 </Project>
