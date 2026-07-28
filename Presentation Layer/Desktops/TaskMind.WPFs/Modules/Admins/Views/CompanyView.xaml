@@ -148,7 +148,7 @@
             <!-- Danh sách công ty -->
             <Border Grid.Row="2" Style="{StaticResource SectionCard}" Padding="16">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <ItemsControl ItemsSource="{Binding CompaniesView}">
+                    <ItemsControl ItemsSource="{Binding Companies}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Border Style="{StaticResource CompanyRow}">

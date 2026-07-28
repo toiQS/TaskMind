@@ -164,7 +164,7 @@
             <!-- Danh sách người dùng -->
             <Border Grid.Row="3" Style="{StaticResource SectionCard}" Padding="16">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <ItemsControl ItemsSource="{Binding UsersView}">
+                    <ItemsControl ItemsSource="{Binding Users}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Border Style="{StaticResource UserRow}">
