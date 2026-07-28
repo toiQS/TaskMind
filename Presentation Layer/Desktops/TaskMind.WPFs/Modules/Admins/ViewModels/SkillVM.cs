@@ -2,6 +2,9 @@
 using System.ComponentModel;
 using System.Windows.Data;
 using System.Windows.Input;
+using MediatR;
+using TaskMind.Applications.Admins.Features.Skills;
+using TaskMind.WPFs.Modules.Admins.Mapping;
 using TaskMind.WPFs.Modules.Admins.Models;
 using TaskMind.WPFs.Utilities;
 
@@ -9,16 +12,11 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
 {
     public class SkillVM : ViewModelBase
     {
-        /// <summary>
-        /// Callback điều hướng do AdminNavigationVM truyền vào, dùng để thay thế toàn bộ
-        /// AdminCurrentView (vd. chuyển sang DetailSkillVM) thay vì hiển thị overlay.
-        /// Có thể null khi SkillVM được tạo ở design-time.
-        /// </summary>
         private readonly Action<object> _navigate;
+        private readonly IMediator _mediator;
 
-        public ObservableCollection<SkillModel> Skills { get; } = new ObservableCollection<SkillModel>();
+        public ObservableCollection<SkillModel> Skills { get; } = new();
 
-        // ----- Danh mục chính thức (đã duyệt), nhóm theo Category -----
         private ICollectionView _skillsView;
         public ICollectionView SkillsView
         {
@@ -26,7 +24,8 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
             private set { _skillsView = value; OnPropertyChanged(); }
         }
 
-        // ----- Đề xuất đang chờ duyệt -----
+        public ObservableCollection<SkillModel> PendingSkillsSource { get; } = new();
+
         private ICollectionView _pendingSkillsView;
         public ICollectionView PendingSkillsView
         {
@@ -38,15 +37,14 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
         public string SearchText
         {
             get => _searchText;
-            set { _searchText = value; OnPropertyChanged(); SkillsView?.Refresh(); }
+            set { _searchText = value; OnPropertyChanged(); _ = LoadDataAsync(); }
         }
 
-        /// <summary>"All" | tên SkillCategory</summary>
         private string _categoryFilter = "All";
         public string CategoryFilter
         {
             get => _categoryFilter;
-            set { _categoryFilter = value; OnPropertyChanged(); SkillsView?.Refresh(); }
+            set { _categoryFilter = value; OnPropertyChanged(); _ = LoadDataAsync(); }
         }
 
         private bool _isBusy;
@@ -56,7 +54,6 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
             set { _isBusy = value; OnPropertyChanged(); }
         }
 
-        // ----- Panel thêm kỹ năng mới -----
         private bool _isAddPanelOpen;
         public bool IsAddPanelOpen
         {
@@ -81,6 +78,7 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
             set { _newSkillCategory = value; OnPropertyChanged(); }
         }
 
+        // SkillDto/AddSkillCommand không có Level -> giữ property để không vỡ XAML nhưng không gửi lên server.
         private SkillLevel _newSkillLevel = SkillLevel.Beginner;
         public SkillLevel NewSkillLevel
         {
@@ -97,159 +95,106 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
         public ICommand RejectCommand { get; }
         public ICommand ViewDetailCommand { get; }
 
-        /// <summary>Constructor mặc định (dùng khi thiết kế XAML / không cần điều hướng).</summary>
-        public SkillVM() : this(null) { }
+        public SkillVM() : this(null, null) { }
+        public SkillVM(Action<object> navigate) : this(navigate, null) { }
 
-        /// <summary>
-        /// navigate: callback do AdminNavigationVM cung cấp để thay thế AdminCurrentView,
-        /// dùng khi mở DetailSkillView như một trang độc lập.
-        /// </summary>
-        public SkillVM(Action<object> navigate)
+        public SkillVM(Action<object> navigate, IMediator mediator)
         {
             _navigate = navigate;
+            _mediator = MediatorResolver.Resolve(mediator);
 
             RefreshCommand = new RelayCommand(async _ => await LoadDataAsync());
             FilterCommand = new RelayCommand(f => CategoryFilter = f as string ?? "All");
             ToggleAddPanelCommand = new RelayCommand(_ => IsAddPanelOpen = !IsAddPanelOpen);
-            AddSkillCommand = new RelayCommand(_ => AddSkill());
-            DeleteSkillCommand = new RelayCommand(DeleteSkill);
-            ApproveCommand = new RelayCommand(Approve);
-            RejectCommand = new RelayCommand(Reject);
+            AddSkillCommand = new RelayCommand(async _ => await AddSkillAsync());
+            DeleteSkillCommand = new RelayCommand(async o => await DeleteSkillAsync(o));
+            ApproveCommand = new RelayCommand(async o => await ApproveAsync(o));
+            RejectCommand = new RelayCommand(async o => await RejectAsync(o));
             ViewDetailCommand = new RelayCommand(ViewDetail);
 
             SkillsView = CollectionViewSource.GetDefaultView(Skills);
-            SkillsView.Filter = FilterApprovedSkills;
             SkillsView.GroupDescriptions.Add(new PropertyGroupDescription(nameof(SkillModel.Category)));
             SkillsView.SortDescriptions.Add(new SortDescription(nameof(SkillModel.Name), ListSortDirection.Ascending));
 
-            PendingSkillsView = new ListCollectionView(Skills) { Filter = s => !((SkillModel)s).IsApproved };
+            PendingSkillsView = CollectionViewSource.GetDefaultView(PendingSkillsSource);
 
             _ = LoadDataAsync();
         }
 
-        private bool FilterApprovedSkills(object obj)
+        /// <summary>
+        /// GetSkillsQuery hỗ trợ IsApproved -> gọi 2 lần (true cho danh mục chính thức, false cho chờ duyệt)
+        /// thay vì lọc client như bản mock cũ.
+        /// </summary>
+        private async Task LoadDataAsync()
         {
-            if (obj is not SkillModel skill || !skill.IsApproved) return false;
+            if (_mediator == null || IsBusy) return;
+            IsBusy = true;
 
-            if (CategoryFilter != "All" &&
-                !string.Equals(skill.Category.ToString(), CategoryFilter, StringComparison.OrdinalIgnoreCase))
-                return false;
+            var approved = await _mediator.Send(new GetSkillsQuery
+            {
+                SearchText = SearchText,
+                CategoryFilter = CategoryFilter,
+                IsApproved = true
+            });
 
-            if (!string.IsNullOrWhiteSpace(SearchText) &&
-                skill.Name.IndexOf(SearchText, StringComparison.OrdinalIgnoreCase) < 0)
-                return false;
+            var pending = await _mediator.Send(new GetSkillsQuery { IsApproved = false });
 
-            return true;
+            Skills.Clear();
+            foreach (var dto in approved)
+                Skills.Add(SkillUiMapper.ToUi(dto));
+
+            PendingSkillsSource.Clear();
+            foreach (var dto in pending)
+                PendingSkillsSource.Add(SkillUiMapper.ToUi(dto));
+
+            IsBusy = false;
         }
 
-        private void AddSkill()
+        private async Task AddSkillAsync()
         {
             if (string.IsNullOrWhiteSpace(NewSkillName)) return;
 
-            var skill = new SkillModel
+            var dto = await _mediator.Send(new AddSkillCommand
             {
-                Id = Guid.NewGuid().ToString("N")[..8],
                 Name = NewSkillName.Trim(),
-                Category = NewSkillCategory,
-                Level = NewSkillLevel,
-                IsApproved = true,
-                CreatedDate = DateTime.Now
-            };
+                Category = Enum.Parse<TaskMind.Domain.Enums.SkillCategory>(NewSkillCategory.ToString())
+            });
 
-            // TODO: gọi service POST /skills để lưu kỹ năng mới do Admin tạo
-            Skills.Add(skill);
+            Skills.Add(SkillUiMapper.ToUi(dto));
 
             NewSkillName = string.Empty;
             IsAddPanelOpen = false;
         }
 
-        private void DeleteSkill(object obj)
+        private async Task DeleteSkillAsync(object obj)
         {
-            if (obj is SkillModel skill)
-            {
-                // TODO: gọi service DELETE /skills/{id}
-                Skills.Remove(skill);
-            }
+            if (obj is not SkillModel skill) return;
+            await _mediator.Send(new DeleteSkillCommand { SkillId = Guid.Parse(skill.Id) });
+            Skills.Remove(skill);
         }
 
-        private void Approve(object obj)
+        private async Task ApproveAsync(object obj)
         {
-            if (obj is SkillModel skill)
-            {
-                skill.IsApproved = true;
-                // TODO: gọi service PUT /skills/{id}/approve
-                Touch(skill);
-            }
+            if (obj is not SkillModel skill) return;
+            var dto = await _mediator.Send(new ApproveSkillCommand { SkillId = Guid.Parse(skill.Id) });
+            PendingSkillsSource.Remove(skill);
+            Skills.Add(SkillUiMapper.ToUi(dto));
         }
 
-        private void Reject(object obj)
+        private async Task RejectAsync(object obj)
         {
-            if (obj is SkillModel skill)
-            {
-                // TODO: gọi service DELETE hoặc PUT /skills/{id}/reject
-                Skills.Remove(skill);
-            }
+            if (obj is not SkillModel skill) return;
+            await _mediator.Send(new RejectSkillCommand { SkillId = Guid.Parse(skill.Id) });
+            PendingSkillsSource.Remove(skill);
         }
 
-        /// <summary>
-        /// Điều hướng sang DetailSkillVM như một trang độc lập (thay thế toàn bộ nội dung),
-        /// thay vì hiển thị overlay. Khi bấm "Quay lại" ở DetailSkillView, callback onBack
-        /// sẽ điều hướng ngược lại về chính SkillVM hiện tại (giữ nguyên filter/search).
-        /// </summary>
         private void ViewDetail(object obj)
         {
             if (obj is SkillModel skill && _navigate != null)
             {
-                var detailVM = new DetailSkillVM(skill.Id, () => _navigate(this));
+                var detailVM = new DetailSkillVM(skill.Id, () => _navigate(this), _mediator);
                 _navigate(detailVM);
             }
-        }
-
-        /// <summary>SkillModel chưa implement INotifyPropertyChanged nên cần "chạm" lại item để 2 view cùng refresh.</summary>
-        private void Touch(SkillModel changed)
-        {
-            int index = Skills.IndexOf(changed);
-            if (index >= 0)
-            {
-                Skills.RemoveAt(index);
-                Skills.Insert(index, changed);
-            }
-        }
-
-        /// <summary>
-        /// TODO: thay bằng gọi service/API thực tế lấy danh mục kỹ năng + đề xuất chờ duyệt.
-        /// </summary>
-        private async Task LoadDataAsync()
-        {
-            if (IsBusy) return;
-            IsBusy = true;
-
-            await Task.Delay(400);
-
-            Skills.Clear();
-            foreach (var s in new[]
-            {
-                new SkillModel { Id="K001", Name="C#", Category=SkillCategory.ProgrammingLanguage, Level=SkillLevel.Advanced, IsApproved=true, CreatedDate=new DateTime(2023,1,1), UsageCount=410 },
-                new SkillModel { Id="K002", Name="Python", Category=SkillCategory.ProgrammingLanguage, Level=SkillLevel.Advanced, IsApproved=true, CreatedDate=new DateTime(2023,1,1), UsageCount=520 },
-                new SkillModel { Id="K003", Name="JavaScript", Category=SkillCategory.ProgrammingLanguage, Level=SkillLevel.Intermediate, IsApproved=true, CreatedDate=new DateTime(2023,1,1), UsageCount=610 },
-                new SkillModel { Id="K004", Name="WPF", Category=SkillCategory.Framework, Level=SkillLevel.Intermediate, IsApproved=true, CreatedDate=new DateTime(2023,2,1), UsageCount=95 },
-                new SkillModel { Id="K005", Name="ASP.NET Core", Category=SkillCategory.Framework, Level=SkillLevel.Advanced, IsApproved=true, CreatedDate=new DateTime(2023,2,1), UsageCount=180 },
-                new SkillModel { Id="K006", Name="React", Category=SkillCategory.Framework, Level=SkillLevel.Intermediate, IsApproved=true, CreatedDate=new DateTime(2023,2,1), UsageCount=342 },
-                new SkillModel { Id="K007", Name="Giao tiếp", Category=SkillCategory.SoftSkill, Level=SkillLevel.Beginner, IsApproved=true, CreatedDate=new DateTime(2023,3,1), UsageCount=280 },
-                new SkillModel { Id="K008", Name="Làm việc nhóm", Category=SkillCategory.SoftSkill, Level=SkillLevel.Beginner, IsApproved=true, CreatedDate=new DateTime(2023,3,1), UsageCount=350 },
-                new SkillModel { Id="K009", Name="Git", Category=SkillCategory.Tool, Level=SkillLevel.Intermediate, IsApproved=true, CreatedDate=new DateTime(2023,3,10), UsageCount=470 },
-                new SkillModel { Id="K010", Name="Docker", Category=SkillCategory.Tool, Level=SkillLevel.Advanced, IsApproved=true, CreatedDate=new DateTime(2023,3,10), UsageCount=210 },
-
-                // Đề xuất đang chờ duyệt
-                new SkillModel { Id="K011", Name="Rust", Category=SkillCategory.ProgrammingLanguage, Level=SkillLevel.Advanced, IsApproved=false, SuggestedBy="CloudBase JSC", CreatedDate=new DateTime(2026,7,10) },
-                new SkillModel { Id="K012", Name="Kubernetes", Category=SkillCategory.Tool, Level=SkillLevel.Advanced, IsApproved=false, SuggestedBy="DataWise Corp", CreatedDate=new DateTime(2026,7,12) },
-                new SkillModel { Id="K013", Name="Tư duy phản biện", Category=SkillCategory.SoftSkill, Level=SkillLevel.Intermediate, IsApproved=false, SuggestedBy="FUNiX Academy", CreatedDate=new DateTime(2026,7,13) },
-            })
-            {
-                Skills.Add(s);
-            }
-
-            IsBusy = false;
         }
     }
 }

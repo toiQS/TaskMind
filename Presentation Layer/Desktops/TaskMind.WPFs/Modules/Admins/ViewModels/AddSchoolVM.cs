@@ -1,18 +1,19 @@
-﻿using System.Text.RegularExpressions;
+﻿using MediatR;
+using System.Text.RegularExpressions;
 using System.Windows.Input;
+using TaskMind.Applications.Admins.Features.Schools;
+using TaskMind.Applications.Admins.Mapping;
+using TaskMind.WPFs.Modules.Admins.Mapping;
 using TaskMind.WPFs.Modules.Admins.Models;
 using TaskMind.WPFs.Utilities;
 
 namespace TaskMind.WPFs.Modules.Admins.ViewModels
 {
-    /// <summary>
-    /// ViewModel cho form "Thêm cơ sở đào tạo mới". Được SchoolVM khởi tạo và truyền vào
-    /// 2 callback: onSaved (khi tạo thành công) và onCancel (khi huỷ/đóng form).
-    /// </summary>
     public class AddSchoolVM : ViewModelBase
     {
         private readonly Action<SchoolModel> _onSaved;
         private readonly Action _onCancel;
+        private readonly IMediator _mediator;
 
         public AddSchoolModel Form { get; } = new AddSchoolModel();
 
@@ -46,7 +47,6 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
             set { Form.Address = value; OnPropertyChanged(); }
         }
 
-        /// <summary>Danh sách gói dịch vụ để bind vào ComboBox.</summary>
         public string[] PackageOptions { get; } = { "Starter", "Pro", "Enterprise" };
 
         public string Package
@@ -74,10 +74,11 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
 
-        public AddSchoolVM(Action<SchoolModel> onSaved, Action onCancel)
+        public AddSchoolVM(Action<SchoolModel> onSaved, Action onCancel, IMediator mediator)
         {
             _onSaved = onSaved;
             _onCancel = onCancel;
+            _mediator = MediatorResolver.Resolve(mediator);
 
             SaveCommand = new RelayCommand(async _ => await SaveAsync());
             CancelCommand = new RelayCommand(_ => _onCancel?.Invoke());
@@ -120,35 +121,24 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
             return true;
         }
 
-        /// <summary>
-        /// TODO: thay Task.Delay bằng gọi service thực tế (POST /schools) để tạo cơ sở đào tạo,
-        /// cơ sở vừa tạo sẽ ở trạng thái Pending chờ Admin duyệt (mục 4.8 - Quản lý cơ sở đào tạo).
-        /// </summary>
         private async Task SaveAsync()
         {
             if (!Validate()) return;
 
             IsBusy = true;
-            await Task.Delay(400);
 
-            var school = new SchoolModel
+            var dto = await _mediator.Send(new CreateSchoolCommand
             {
-                Id = "S" + Guid.NewGuid().ToString("N")[..6].ToUpper(),
                 Name = Name.Trim(),
                 Field = Field.Trim(),
                 Email = Email.Trim(),
                 Phone = Phone?.Trim(),
-                Address = Address?.Trim(),
-                Package = Package,
-                Status = SchoolStatus.Pending,
-                JoinedDate = DateTime.Now,
-                TeacherCount = 0,
-                CourseCount = 0,
-                StudentCount = 0
-            };
+                Street = Address?.Trim(),
+                Package = Package
+            });
 
             IsBusy = false;
-            _onSaved?.Invoke(school);
+            _onSaved?.Invoke(SchoolUiMapper.ToUi(dto));
         }
     }
 }

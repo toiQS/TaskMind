@@ -1,4 +1,7 @@
 ﻿using System.Windows.Input;
+using MediatR;
+using TaskMind.Applications.Admins.Features.Users;
+using TaskMind.WPFs.Modules.Admins.Mapping;
 using TaskMind.WPFs.Modules.Admins.Models;
 using TaskMind.WPFs.Utilities;
 
@@ -7,6 +10,7 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
     public class DetailUserVM : ViewModelBase
     {
         private readonly Action _onBack;
+        private readonly IMediator _mediator;
 
         public string UserId { get; }
 
@@ -29,131 +33,59 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
         public ICommand ToggleLockCommand { get; }
         public ICommand ToggleBanCommand { get; }
 
-        /// <summary>
-        /// userId: mã người dùng cần xem chi tiết.
-        /// onBack: callback gọi khi bấm "Quay lại", do UserVM cung cấp để điều hướng
-        /// ngược lại về chính UserVM hiện tại (giữ nguyên filter/search đang chọn).
-        /// </summary>
-        public DetailUserVM(string userId, Action onBack)
+        public DetailUserVM(string userId, Action onBack, IMediator mediator)
         {
             UserId = userId;
             _onBack = onBack;
+            _mediator = MediatorResolver.Resolve(mediator);
 
             RefreshCommand = new RelayCommand(async _ => await LoadDataAsync());
             BackCommand = new RelayCommand(_ => _onBack?.Invoke());
-            ToggleLockCommand = new RelayCommand(_ => ToggleLock());
-            ToggleBanCommand = new RelayCommand(_ => ToggleBan());
+            ToggleLockCommand = new RelayCommand(async _ => await ToggleLockAsync());
+            ToggleBanCommand = new RelayCommand(async _ => await ToggleBanAsync());
 
             _ = LoadDataAsync();
         }
 
-        private void ToggleLock()
+        private async Task ToggleLockAsync()
         {
             if (Detail?.User == null || Detail.User.Status == UserAccountStatus.Banned) return;
-
-            Detail.User.Status = Detail.User.Status == UserAccountStatus.Locked
-                ? UserAccountStatus.Active
-                : UserAccountStatus.Locked;
-
-            // TODO: gọi service PUT /users/{id}/lock hoặc /unlock
-            AppendAuditLog(Detail.User.Status == UserAccountStatus.Locked ? "Tạm khoá tài khoản" : "Mở khoá tài khoản");
+            var dto = await _mediator.Send(new ToggleLockUserCommand { UserId = Guid.Parse(UserId) });
+            Detail.User.Status = MapStatus(dto.Status);
             OnPropertyChanged(nameof(Detail));
         }
 
-        private void ToggleBan()
+        private async Task ToggleBanAsync()
         {
             if (Detail?.User == null) return;
-
-            Detail.User.Status = Detail.User.Status == UserAccountStatus.Banned
-                ? UserAccountStatus.Active
-                : UserAccountStatus.Banned;
-
-            // TODO: gọi service PUT /users/{id}/ban hoặc /unban
-            AppendAuditLog(Detail.User.Status == UserAccountStatus.Banned ? "Cấm tài khoản" : "Gỡ cấm tài khoản");
+            var dto = await _mediator.Send(new ToggleBanUserCommand { UserId = Guid.Parse(UserId) });
+            Detail.User.Status = MapStatus(dto.Status);
             OnPropertyChanged(nameof(Detail));
         }
 
-        private void AppendAuditLog(string action)
+        private static UserAccountStatus MapStatus(string status) => status switch
         {
-            Detail.AuditLogs.Insert(0, new AuditLogEntryModel
-            {
-                Id = Guid.NewGuid().ToString("N")[..8],
-                EntityId = UserId,
-                Action = action,
-                Description = "Thao tác được thực hiện từ trang chi tiết người dùng.",
-                PerformedBy = "Admin",
-                Timestamp = DateTime.Now
-            });
-        }
+            "Paused" => UserAccountStatus.Locked,
+            "Blocked" => UserAccountStatus.Banned,
+            _ => UserAccountStatus.Active
+        };
 
         /// <summary>
-        /// TODO: thay bằng gọi service/API thực tế lấy chi tiết user theo UserId:
-        /// thông tin cá nhân, hồ sơ kỹ năng, lịch sử dự án, đánh giá, báo cáo vi phạm, audit log.
+        /// Skills/ProjectHistory/AuditLogs đến từ GetUserDetailQuery thật.
+        /// Reviews (mục 5.2) và Reports (báo cáo vi phạm) chưa có Query tương ứng — giữ rỗng, TODO bổ sung.
         /// </summary>
         private async Task LoadDataAsync()
         {
             if (IsBusy) return;
             IsBusy = true;
 
-            await Task.Delay(400);
+            var dto = await _mediator.Send(new GetUserDetailQuery { UserId = Guid.Parse(UserId) });
 
-            var model = new DetailUserModel
-            {
-                User = new UserModel
-                {
-                    Id = UserId,
-                    FullName = "Phạm Gia Huy",
-                    Email = "huy.pham@dev.io",
-                    Type = UserType.OssContributor,
-                    Status = UserAccountStatus.Active,
-                    JoinedDate = new DateTime(2023, 5, 3),
-                    LastActiveDate = new DateTime(2026, 7, 14),
-                    SkillCount = 14,
-                    ProjectCount = 21
-                }
-            };
-
-            model.Skills.Add(new UserSkillItem { SkillName = "C#", Category = SkillCategory.ProgrammingLanguage, Level = SkillLevel.Advanced, EndorsementCount = 12 });
-            model.Skills.Add(new UserSkillItem { SkillName = "React", Category = SkillCategory.Framework, Level = SkillLevel.Intermediate, EndorsementCount = 6 });
-            model.Skills.Add(new UserSkillItem { SkillName = "Docker", Category = SkillCategory.Tool, Level = SkillLevel.Advanced, EndorsementCount = 8 });
-            model.Skills.Add(new UserSkillItem { SkillName = "Làm việc nhóm", Category = SkillCategory.SoftSkill, Level = SkillLevel.Expert, EndorsementCount = 15 });
-
-            model.ProjectHistory.Add(new UserProjectHistoryItem { ProjectName = "TaskMind Core Platform", ProjectRole = "Technical leader", ProjectSource = "OpenSource", StartDate = new DateTime(2025, 1, 10), IsOngoing = true });
-            model.ProjectHistory.Add(new UserProjectHistoryItem { ProjectName = "E-commerce API cho DataWise Corp", ProjectRole = "Developer", ProjectSource = "Company", StartDate = new DateTime(2024, 6, 1), EndDate = new DateTime(2024, 11, 20), IsOngoing = false });
-            model.ProjectHistory.Add(new UserProjectHistoryItem { ProjectName = "Dự án thực hành React Native", ProjectRole = "Developer", ProjectSource = "School", StartDate = new DateTime(2023, 9, 1), EndDate = new DateTime(2023, 12, 15), IsOngoing = false });
-
-            // ----- Đánh giá từ công ty / cơ sở đào tạo / người dùng khác (mục 5.2) -----
-            model.Reviews.Add(new UserReviewModel { Id = "URV1", ReviewerName = "DataWise Corp", ReviewerType = ChatPartnerType.Company, Rating = 5, Comment = "Kỹ năng kỹ thuật tốt, chủ động báo cáo tiến độ đúng hạn.", CreatedDate = DateTime.Now.AddMonths(-3) });
-            model.Reviews.Add(new UserReviewModel { Id = "URV2", ReviewerName = "FUNiX Academy", ReviewerType = ChatPartnerType.School, Rating = 4, Comment = "Hoàn thành tốt dự án thực hành, cần cải thiện thêm tài liệu bàn giao.", CreatedDate = DateTime.Now.AddMonths(-6) });
-            model.Reviews.Add(new UserReviewModel { Id = "URV3", ReviewerName = "Trần Thị Bích", ReviewerType = ChatPartnerType.User, Rating = 5, Comment = "Đồng đội nhiệt tình, hỗ trợ review code và hướng dẫn rất kỹ.", CreatedDate = DateTime.Now.AddMonths(-1) });
+            var model = new DetailUserModel { User = UserUiMapper.ToUi(dto) };
+            UserUiMapper.ApplyDetail(model, dto);
 
             model.TotalReviews = model.Reviews.Count;
             model.AverageRating = model.Reviews.Count > 0 ? Math.Round(model.Reviews.Average(r => r.Rating), 1) : 0;
-
-            model.Reports.Add(new ReportModel
-            {
-                Id = "R030",
-                ReporterName = "Đặng Hải Yến",
-                ReportedEntityId = UserId,
-                ReportedEntityName = model.User.FullName,
-                ReportedEntityType = ReportedEntityType.User,
-                ViolationType = ViolationType.Other,
-                Priority = ReportPriority.Low,
-                Description = "Chậm phản hồi trong nhóm dự án chung, không có dấu hiệu vi phạm nghiêm trọng.",
-                Status = ReportStatus.Dismissed,
-                CreatedDate = DateTime.Now.AddMonths(-2),
-                Resolution = new ResolutionModel
-                {
-                    Action = ResolutionAction.Dismiss,
-                    Note = "Không phát hiện vi phạm, chỉ là hiểu lầm trong giao tiếp nhóm.",
-                    ResolvedBy = "Admin",
-                    ResolvedDate = DateTime.Now.AddMonths(-2).AddDays(1)
-                }
-            });
-
-            model.AuditLogs.Add(new AuditLogEntryModel { Id = "UL1", EntityId = UserId, Action = "Đăng ký tài khoản", Description = "Tạo tài khoản mới với vai trò OSS Contributor.", PerformedBy = "System", Timestamp = model.User.JoinedDate });
-            model.AuditLogs.Add(new AuditLogEntryModel { Id = "UL2", EntityId = UserId, Action = "Tham gia dự án", Description = "Tham gia dự án TaskMind Core Platform vai trò Technical leader.", PerformedBy = UserId, Timestamp = new DateTime(2025, 1, 10) });
-            model.AuditLogs.Add(new AuditLogEntryModel { Id = "UL3", EntityId = UserId, Action = "Cập nhật kỹ năng", Description = "Thêm kỹ năng Docker vào hồ sơ cá nhân.", PerformedBy = UserId, Timestamp = new DateTime(2025, 8, 4) });
 
             Detail = model;
             IsBusy = false;

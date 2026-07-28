@@ -43,9 +43,9 @@ namespace TaskMind.WPFs.Modules.Admins.ViewModels
         private void Company(object obj) { AdminCurrentView = new CompanyVM(NavigateTo); ActiveKey = "Company"; }
         private void School(object obj) { AdminCurrentView = new SchoolVM(NavigateTo); ActiveKey = "School"; }
         private void Profit(object obj) { AdminCurrentView = new ProfitVM(); ActiveKey = "Profit"; }
-        private void Report(object obj) { AdminCurrentView = new ReportVM(); ActiveKey = "Report"; }
-        private void Handler(object obj) { AdminCurrentView = new HandlerVM(); ActiveKey = "Handler"; }
-        private void Chat(object obj) { AdminCurrentView = new ChatVM(); ActiveKey = "Chat"; }
+        private void Report(object obj) { AdminCurrentView = new ReportVM(); ActiveKey = "Report"; } // giữ mock
+        private void Handler(object obj) { AdminCurrentView = new HandlerVM(); ActiveKey = "Handler"; } // giữ mock
+        private void Chat(object obj) { AdminCurrentView = new ChatVM(); ActiveKey = "Chat"; } // giữ mock
 
         /// <summary>
         /// Cho phép các ViewModel con (vd. CompanyVM, SkillVM) điều hướng thay thế toàn bộ nội dung trang,

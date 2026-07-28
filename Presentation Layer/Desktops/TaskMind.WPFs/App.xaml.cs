@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using System.Configuration;
 using System.IO;
 using System.Windows;
+using TaskMind.Applications.Admins;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Events;
 using TaskMind.Infrastructor.Applications.Datas;
@@ -24,7 +25,7 @@ namespace TaskMind.WPFs
         {
             Configuration = new ConfigurationBuilder()
                 .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                //.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .Build();
 
             host = Host.CreateDefaultBuilder()
@@ -40,7 +41,13 @@ namespace TaskMind.WPFs
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(connectionString));
 
-            services.AddScoped<ICurrentSessionProvider, CurrentSessionProvider>(); // implement thật
+            // Bind interface -> implementation để Application layer dùng được
+            services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
+
+            services.AddScoped<ICurrentSessionProvider, CurrentSessionProvider>();
+
+
+            services.AddApplicationAdmins();
             services.AddMediatR(cfg =>
                 cfg.RegisterServicesFromAssembly(typeof(CompanyVerifiedEvent).Assembly));
 
