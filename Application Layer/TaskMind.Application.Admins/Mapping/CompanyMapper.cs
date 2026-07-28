@@ -1,4 +1,4 @@
-﻿using TaskMind.Applications.Admins.Common;
+using TaskMind.Applications.Admins.Common;
 using TaskMind.Applications.Admins.Dtos;
 using TaskMind.Domain.Entities;
 
@@ -6,7 +6,7 @@ namespace TaskMind.Applications.Admins.Mapping
 {
     public static class CompanyMapper
     {
-        public static CompanyDto ToDto(Company c) => new CompanyDto
+        public static CompanyDto ToDto(Company c, int staffCount = 0, int projectCount = 0) => new CompanyDto
         {
             Id = c.Id,
             Name = c.CompanyName,
@@ -16,7 +16,9 @@ namespace TaskMind.Applications.Admins.Mapping
             Phone = c.Phone,
             Package = c.MembershipPackage,
             Status = VerifiableEntityStatusHelper.Derive(c.IsVerified, c.Status),
-            JoinedDateUtc = c.JoinDate
+            JoinedDateUtc = c.JoinDate,
+            StaffCount = staffCount,
+            ProjectCount = projectCount
         };
 
         public static CompanyDetailDto ToDetailDto(Company c, int staffCount, int projectCount) => new CompanyDetailDto
@@ -30,9 +32,9 @@ namespace TaskMind.Applications.Admins.Mapping
             Package = c.MembershipPackage,
             Status = VerifiableEntityStatusHelper.Derive(c.IsVerified, c.Status),
             JoinedDateUtc = c.JoinDate,
-            Address = $"{c.Address.Street}, {c.Address.City}, {c.Address.Country}".Trim().Trim(',').Trim(),
             StaffCount = staffCount,
-            ProjectCount = projectCount
+            ProjectCount = projectCount,
+            Address = $"{c.Address.Street}, {c.Address.City}, {c.Address.Country}".Trim().Trim(',').Trim()
         };
     }
 }

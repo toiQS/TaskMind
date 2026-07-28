@@ -1,4 +1,4 @@
-﻿namespace TaskMind.Applications.Admins.Dtos
+namespace TaskMind.Applications.Admins.Dtos
 {
     public class SchoolDto
     {
@@ -12,13 +12,14 @@
         /// <summary>"Pending" | "Active" | "Suspended" | "Rejected" (xem VerifiableEntityStatusHelper)</summary>
         public string Status { get; set; } = string.Empty;
         public DateTime JoinedDateUtc { get; set; }
-    }
 
-    public class SchoolDetailDto : SchoolDto
-    {
-        public string Address { get; set; } = string.Empty;
+        /// <summary>Số giảng viên (Teacher) trực thuộc — dùng cho cột thống kê nhanh ở SchoolView.</summary>
         public int TeacherCount { get; set; }
+
+        /// <summary>Số học viên (Student) trực thuộc.</summary>
         public int StudentCount { get; set; }
+
+        /// <summary>Số dự án đào tạo trực thuộc (Project.SourceType = School).</summary>
         public int ProjectCount { get; set; }
 
         /// <summary>
@@ -26,5 +27,10 @@
         /// Bổ sung khi mục 4.8 (Quản lý khoá học) được mô hình hoá ở tầng Domain.
         /// </summary>
         public int CourseCount { get; set; }
+    }
+
+    public class SchoolDetailDto : SchoolDto
+    {
+        public string Address { get; set; } = string.Empty;
     }
 }

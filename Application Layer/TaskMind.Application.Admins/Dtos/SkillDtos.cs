@@ -1,4 +1,4 @@
-﻿namespace TaskMind.Applications.Admins.Dtos
+namespace TaskMind.Applications.Admins.Dtos
 {
     public class SkillDto
     {
@@ -15,5 +15,8 @@
     public class SkillDetailDto : SkillDto
     {
         public List<SkillDto> RelatedSkills { get; set; } = new();
+
+        /// <summary>Số người dùng đã khai báo kỹ năng này trong SkillProfile cá nhân (mục 4.3).</summary>
+        public int UsageCount { get; set; }
     }
 }

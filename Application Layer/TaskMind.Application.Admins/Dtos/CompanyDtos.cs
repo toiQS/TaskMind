@@ -1,4 +1,4 @@
-﻿namespace TaskMind.Applications.Admins.Dtos
+namespace TaskMind.Applications.Admins.Dtos
 {
     public class CompanyDto
     {
@@ -13,12 +13,16 @@
         /// <summary>"Pending" | "Active" | "Suspended" | "Rejected" (xem VerifiableEntityStatusHelper)</summary>
         public string Status { get; set; } = string.Empty;
         public DateTime JoinedDateUtc { get; set; }
+
+        /// <summary>Số nhân sự (Staff) trực thuộc — dùng cho cột thống kê nhanh ở CompanyView.</summary>
+        public int StaffCount { get; set; }
+
+        /// <summary>Số dự án trực thuộc công ty (Project.SourceType = Company).</summary>
+        public int ProjectCount { get; set; }
     }
 
     public class CompanyDetailDto : CompanyDto
     {
         public string Address { get; set; } = string.Empty;
-        public int StaffCount { get; set; }
-        public int ProjectCount { get; set; }
     }
 }
