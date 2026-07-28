@@ -11,9 +11,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Dtos\" />
-    <Folder Include="Handlers\" />
-    <Folder Include="Requests\" />
+    <Folder Include="Handlers\Companies\" />
+    <Folder Include="Handlers\Dashbroads\" />
+    <Folder Include="Handlers\Invoices\" />
+    <Folder Include="Handlers\Skills\" />
+    <Folder Include="Handlers\Users\" />
+    <Folder Include="Requests\Companies\" />
+    <Folder Include="Requests\Dashbroads\" />
+    <Folder Include="Requests\Invoices\" />
+    <Folder Include="Requests\Skills\" />
   </ItemGroup>
 
 </Project>
