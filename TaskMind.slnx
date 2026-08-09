@@ -3,6 +3,7 @@
     <Project Path="Application Layer/TaskMind.Application.Admins/TaskMind.Applications.Admins.csproj" Id="62f52433-a8a7-4e3c-86d8-09cc56fdb45e" />
     <Project Path="Application Layer/TaskMind.Application.Commons/TaskMind.Applications.Commons.csproj" Id="40682e02-90fa-40f1-9eea-39981f94a272" />
     <Project Path="Application Layer/TaskMind.Application.Events/TaskMind.Applications.Events.csproj" Id="82dfe922-de59-4a77-b93f-1aaa8c6a047c" />
+    <Project Path="Application Layer/TaskMind.Applications.Auths/TaskMind.Applications.Auths.csproj" />
   </Folder>
   <Folder Name="/Domain Layer/">
     <Project Path="Domain Layer/TaskMind.Domain.Commons/TaskMind.Domain.Commons.csproj" Id="a7d650e1-5971-46b0-a158-2a7132e779f1" />

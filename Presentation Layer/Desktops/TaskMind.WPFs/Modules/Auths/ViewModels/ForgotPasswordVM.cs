@@ -1,60 +1,38 @@
 ﻿using System.Text.RegularExpressions;
 using System.Windows.Input;
+using MediatR;
 using TaskMind.WPFs.Modules.Auths.Models;
 using TaskMind.WPFs.Utilities;
+using AuthSendOtpCommand = TaskMind.Applications.Auths.Features.SendOtpCommand;
+using AuthVerifyOtpCommand = TaskMind.Applications.Auths.Features.VerifyOtpCommand;
+using AuthResetPasswordCommand = TaskMind.Applications.Auths.Features.ResetPasswordCommand;
 
 namespace TaskMind.WPFs.Modules.Auths.ViewModels
 {
     public class ForgotPasswordVM : ViewModelBase
     {
+        private readonly IMediator _mediator;
+
         private ForgotPasswordStep _currentStep = ForgotPasswordStep.EnterEmail;
-        public ForgotPasswordStep CurrentStep
-        {
-            get => _currentStep;
-            set { _currentStep = value; OnPropertyChanged(); }
-        }
+        public ForgotPasswordStep CurrentStep { get => _currentStep; set { _currentStep = value; OnPropertyChanged(); } }
 
         private string _email;
-        public string Email
-        {
-            get => _email;
-            set { _email = value; OnPropertyChanged(); }
-        }
+        public string Email { get => _email; set { _email = value; OnPropertyChanged(); } }
 
         private string _otpCode;
-        public string OtpCode
-        {
-            get => _otpCode;
-            set { _otpCode = value; OnPropertyChanged(); }
-        }
+        public string OtpCode { get => _otpCode; set { _otpCode = value; OnPropertyChanged(); } }
 
         private string _newPassword;
-        public string NewPassword
-        {
-            get => _newPassword;
-            set { _newPassword = value; OnPropertyChanged(); }
-        }
+        public string NewPassword { get => _newPassword; set { _newPassword = value; OnPropertyChanged(); } }
 
         private string _confirmPassword;
-        public string ConfirmPassword
-        {
-            get => _confirmPassword;
-            set { _confirmPassword = value; OnPropertyChanged(); }
-        }
+        public string ConfirmPassword { get => _confirmPassword; set { _confirmPassword = value; OnPropertyChanged(); } }
 
         private string _errorMessage;
-        public string ErrorMessage
-        {
-            get => _errorMessage;
-            set { _errorMessage = value; OnPropertyChanged(); }
-        }
+        public string ErrorMessage { get => _errorMessage; set { _errorMessage = value; OnPropertyChanged(); } }
 
         private bool _isBusy;
-        public bool IsBusy
-        {
-            get => _isBusy;
-            set { _isBusy = value; OnPropertyChanged(); }
-        }
+        public bool IsBusy { get => _isBusy; set { _isBusy = value; OnPropertyChanged(); } }
 
         private int _resendCooldownSeconds;
         public int ResendCooldownSeconds
@@ -62,7 +40,6 @@ namespace TaskMind.WPFs.Modules.Auths.ViewModels
             get => _resendCooldownSeconds;
             set { _resendCooldownSeconds = value; OnPropertyChanged(); OnPropertyChanged(nameof(CanResend)); }
         }
-
         public bool CanResend => ResendCooldownSeconds <= 0;
 
         public ICommand SendOtpCommand { get; }
@@ -71,8 +48,12 @@ namespace TaskMind.WPFs.Modules.Auths.ViewModels
         public ICommand ResetPasswordCommand { get; }
         public ICommand BackCommand { get; }
 
-        public ForgotPasswordVM()
+        public ForgotPasswordVM() : this(null) { }
+
+        public ForgotPasswordVM(IMediator mediator)
         {
+            _mediator = MediatorResolver.Resolve(mediator);
+
             SendOtpCommand = new RelayCommand(async _ => await SendOtpAsync());
             ResendOtpCommand = new RelayCommand(async _ => await SendOtpAsync(isResend: true));
             VerifyOtpCommand = new RelayCommand(async _ => await VerifyOtpAsync());
@@ -91,7 +72,6 @@ namespace TaskMind.WPFs.Modules.Auths.ViewModels
             };
         }
 
-        /// <summary>TODO: gọi service POST /auth/forgot-password gửi OTP về email thật.</summary>
         private async Task SendOtpAsync(bool isResend = false)
         {
             ErrorMessage = string.Empty;
@@ -103,13 +83,23 @@ namespace TaskMind.WPFs.Modules.Auths.ViewModels
             }
 
             IsBusy = true;
-            await Task.Delay(500);
-            IsBusy = false;
+            try
+            {
+                await _mediator.Send(new AuthSendOtpCommand { Email = Email.Trim() });
 
-            if (!isResend)
-                CurrentStep = ForgotPasswordStep.EnterOtp;
+                if (!isResend)
+                    CurrentStep = ForgotPasswordStep.EnterOtp;
 
-            _ = StartResendCooldownAsync();
+                _ = StartResendCooldownAsync();
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = ex.Message;
+            }
+            finally
+            {
+                IsBusy = false;
+            }
         }
 
         private async Task StartResendCooldownAsync()
@@ -122,7 +112,6 @@ namespace TaskMind.WPFs.Modules.Auths.ViewModels
             }
         }
 
-        /// <summary>TODO: gọi service POST /auth/verify-otp xác thực mã thật.</summary>
         private async Task VerifyOtpAsync()
         {
             ErrorMessage = string.Empty;
@@ -134,14 +123,21 @@ namespace TaskMind.WPFs.Modules.Auths.ViewModels
             }
 
             IsBusy = true;
-            await Task.Delay(500);
-            IsBusy = false;
-
-            // TODO: nếu OTP sai, service trả lỗi -> gán ErrorMessage và return, không chuyển bước.
-            CurrentStep = ForgotPasswordStep.ResetPassword;
+            try
+            {
+                await _mediator.Send(new AuthVerifyOtpCommand { Email = Email.Trim(), OtpCode = OtpCode.Trim() });
+                CurrentStep = ForgotPasswordStep.ResetPassword;
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = ex.Message;
+            }
+            finally
+            {
+                IsBusy = false;
+            }
         }
 
-        /// <summary>TODO: gọi service POST /auth/reset-password đặt mật khẩu mới thật.</summary>
         private async Task ResetPasswordAsync()
         {
             ErrorMessage = string.Empty;
@@ -151,7 +147,6 @@ namespace TaskMind.WPFs.Modules.Auths.ViewModels
                 ErrorMessage = "Mật khẩu phải có ít nhất 8 ký tự.";
                 return;
             }
-
             if (NewPassword != ConfirmPassword)
             {
                 ErrorMessage = "Mật khẩu xác nhận không khớp.";
@@ -159,10 +154,26 @@ namespace TaskMind.WPFs.Modules.Auths.ViewModels
             }
 
             IsBusy = true;
-            await Task.Delay(500);
-            IsBusy = false;
+            try
+            {
+                await _mediator.Send(new AuthResetPasswordCommand
+                {
+                    Email = Email.Trim(),
+                    OtpCode = OtpCode.Trim(),
+                    NewPassword = NewPassword,
+                    ConfirmPassword = ConfirmPassword
+                });
 
-            CurrentStep = ForgotPasswordStep.Done;
+                CurrentStep = ForgotPasswordStep.Done;
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = ex.Message;
+            }
+            finally
+            {
+                IsBusy = false;
+            }
         }
     }
 }
