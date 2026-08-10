@@ -1,6 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using TaskMind.Applications.Auths.Interfaces;
-using TaskMind.Applications.Auths.Services;
 
 namespace TaskMind.Applications.Auths
 {
@@ -14,10 +12,7 @@ namespace TaskMind.Applications.Auths
         {
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly));
 
-            services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
-            services.AddScoped<ITokenService, GuidTokenService>();
-            services.AddScoped<IEmailSender, ConsoleEmailSender>();
-            services.AddSingleton<IOtpService, InMemoryOtpService>();
+            
 
             return services;
         }

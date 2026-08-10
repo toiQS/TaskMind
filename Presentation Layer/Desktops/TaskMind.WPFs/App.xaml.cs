@@ -6,6 +6,7 @@ using System.Configuration;
 using System.IO;
 using System.Windows;
 using TaskMind.Applications.Admins;
+using TaskMind.Applications.Auths;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Events;
 using TaskMind.Infrastructor.Applications.Datas;
@@ -48,6 +49,8 @@ namespace TaskMind.WPFs
 
 
             services.AddApplicationAdmins();
+            services.AddApplicationAuths();
+
             services.AddMediatR(cfg =>
                 cfg.RegisterServicesFromAssembly(typeof(CompanyVerifiedEvent).Assembly));
 
