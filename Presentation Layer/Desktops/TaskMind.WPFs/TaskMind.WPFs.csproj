@@ -55,7 +55,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Application Layer\TaskMind.Application.Admins\TaskMind.Applications.Admins.csproj" />
-    <ProjectReference Include="..\..\..\Application Layer\TaskMind.Applications.Auths\TaskMind.Applications.Auths.csproj" />
     <ProjectReference Include="..\..\..\Infrastructor Layer\TaskMind.Infrastructor.Applications\TaskMind.Infrastructor.Applications.csproj" />
   </ItemGroup>
 
