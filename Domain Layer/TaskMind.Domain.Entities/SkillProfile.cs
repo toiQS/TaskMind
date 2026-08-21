@@ -1,4 +1,5 @@
-﻿using TaskMind.Domain.Commons.Cores;
+﻿using Microsoft.EntityFrameworkCore;
+using TaskMind.Domain.Commons.Cores;
 using TaskMind.Domain.Commons.Result;
 using TaskMind.Domain.Enums;
 using TaskMind.Domain.Events;
@@ -9,6 +10,7 @@ namespace TaskMind.Domain.Entities
     /// Aggregate Root SkillProfile — hồ sơ kỹ năng cá nhân của một User (mục 4.3),
     /// khác với SkillCatalog (mục 4.15, danh mục chuẩn hoá toàn hệ thống).
     /// </summary>
+    [Index(nameof(UserId), IsUnique = true)]
     public class SkillProfile : AggregateRoot
     {
         public Guid UserId { get; private set; }

@@ -1,4 +1,5 @@
-﻿using TaskMind.Domain.Commons.Cores;
+﻿using Microsoft.EntityFrameworkCore;
+using TaskMind.Domain.Commons.Cores;
 using TaskMind.Domain.Commons.ObjectValues;
 using TaskMind.Domain.Commons.Result;
 using TaskMind.Domain.Enums;
@@ -10,6 +11,8 @@ namespace TaskMind.Domain.Entities
     /// Hợp đồng trao đổi cho các dự án có tính chất thương mại giữa các bên (mục 4.14 - Quản lý trao đổi).
     /// Aggregate Root của Exchange & Billing context (mục 6).
     /// </summary>
+    [Index(nameof(ProjectId), nameof(ContractStatus))]
+    [Index(nameof(PartyAAccountId), nameof(PartyBAccountId))]
     public class ExchangeContract : AuditableAggregateRoot
     {
         public Guid ProjectId { get; private set; }

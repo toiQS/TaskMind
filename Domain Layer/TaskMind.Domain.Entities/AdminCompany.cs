@@ -1,9 +1,11 @@
-﻿using TaskMind.Domain.Commons.Result;
+﻿using Microsoft.EntityFrameworkCore;
+using TaskMind.Domain.Commons.Result;
 using TaskMind.Domain.Enums;
 using TaskMind.Domain.Events;
 
 namespace TaskMind.Domain.Entities
 {
+    [Index(nameof(CompanyId), nameof(LinkedUserId), IsUnique = true)]
     public class AdminCompany : Account
     {
         public Guid CompanyId { get; private set; }

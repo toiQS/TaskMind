@@ -1,4 +1,5 @@
-﻿using TaskMind.Domain.Commons.Result;
+﻿using Microsoft.EntityFrameworkCore;
+using TaskMind.Domain.Commons.Result;
 using TaskMind.Domain.Enums;
 using TaskMind.Domain.Events;
 
@@ -12,6 +13,8 @@ namespace TaskMind.Domain.Entities
     /// LinkedUserId trỏ về đúng tài khoản User gốc để truy xuất thông tin cơ bản, kỹ năng và
     /// lịch sử tham gia dự án/khoá học.
     /// </summary>
+    [Index(nameof(SchoolId), nameof(IsActive))]
+    [Index(nameof(LinkedUserId), IsUnique = true)]
     public class Student : Account
     {
         public Guid SchoolId { get; private set; }

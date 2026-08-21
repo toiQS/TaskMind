@@ -1,4 +1,5 @@
-﻿using TaskMind.Domain.Commons.Cores;
+﻿using Microsoft.EntityFrameworkCore;
+using TaskMind.Domain.Commons.Cores;
 using TaskMind.Domain.Commons.Result;
 using TaskMind.Domain.Enums;
 
@@ -7,6 +8,7 @@ namespace TaskMind.Domain.Entities
     /// <summary>
     /// Account là lớp cơ sở trừu tượng cho tất cả các loại tài khoản trong hệ thống, bao gồm User, AdminCompany, AdminSchool, AdminSystem, Student, Teacher và Staff.
     /// </summary>
+    [Index(nameof(Role), nameof(IsVerified))]
     public abstract class Account : AuditableAggregateRoot
     {
         public AccountRole Role { get; protected set; }

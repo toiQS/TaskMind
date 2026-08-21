@@ -1,4 +1,5 @@
-﻿using TaskMind.Domain.Commons.Cores;
+﻿using Microsoft.EntityFrameworkCore;
+using TaskMind.Domain.Commons.Cores;
 using TaskMind.Domain.Commons.ObjectValues;
 using TaskMind.Domain.Commons.Result;
 using TaskMind.Domain.Enums;
@@ -7,6 +8,8 @@ using TaskMind.Domain.Events;
 namespace TaskMind.Domain.Entities
 {
     /// <summary>Aggregate Root TrainingCenter/School (mục 4.8 - Quản lý cơ sở đào tạo).</summary>
+    [Index(nameof(Email), IsUnique = true)]
+    [Index(nameof(IsVerified), nameof(Status))]
     public class School : AuditableAggregateRoot
     {
         public string SchoolName { get; private set; } = string.Empty;

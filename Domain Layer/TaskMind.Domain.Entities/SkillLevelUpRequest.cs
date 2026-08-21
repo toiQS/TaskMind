@@ -1,4 +1,5 @@
-﻿using TaskMind.Domain.Commons.Cores;
+﻿using Microsoft.EntityFrameworkCore;
+using TaskMind.Domain.Commons.Cores;
 using TaskMind.Domain.Commons.Result;
 using TaskMind.Domain.Enums;
 using TaskMind.Domain.Events;
@@ -10,6 +11,7 @@ namespace TaskMind.Domain.Entities
     /// trong đơn vị công tác của User (Technical leader, Admin company, Admin school), hoặc trải
     /// qua chu trình đánh giá năng lực chuẩn của hệ thống (Assessment context).
     /// </summary>
+    [Index(nameof(UserId), nameof(SkillId), nameof(RequestStatus))]
     public class SkillLevelUpRequest : AggregateRoot
     {
         public Guid UserId { get; private set; }

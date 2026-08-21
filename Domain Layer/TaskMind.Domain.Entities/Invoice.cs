@@ -1,4 +1,5 @@
-﻿using TaskMind.Domain.Commons.Cores;
+﻿using Microsoft.EntityFrameworkCore;
+using TaskMind.Domain.Commons.Cores;
 using TaskMind.Domain.Commons.ObjectValues;
 using TaskMind.Domain.Commons.Result;
 using TaskMind.Domain.Enums;
@@ -9,6 +10,8 @@ namespace TaskMind.Domain.Entities
     public enum InvoicePartnerType { Company, School }
 
     /// <summary>Hoá đơn cho phí tham gia hệ thống hoặc phí giao dịch trao đổi (mục 4.13, 5.5).</summary>
+    [Index(nameof(PartnerId), nameof(InvoiceStatus))]
+    [Index(nameof(RelatedExchangeContractId))]
     public class Invoice : AuditableAggregateRoot
     {
         public Guid PartnerId { get; private set; }

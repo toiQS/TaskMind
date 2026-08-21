@@ -1,4 +1,5 @@
-﻿using TaskMind.Domain.Commons.Cores;
+﻿using Microsoft.EntityFrameworkCore;
+using TaskMind.Domain.Commons.Cores;
 using TaskMind.Domain.Commons.Result;
 using TaskMind.Domain.Enums;
 using TaskMind.Domain.Events;
@@ -6,6 +7,8 @@ using TaskMind.Domain.Events;
 namespace TaskMind.Domain.Entities
 {
     /// <summary>Thông báo hệ thống gửi tới một tài khoản cụ thể (mục 5.3), Aggregate Root độc lập, giao tiếp qua domain event (mục 6).</summary>
+    [Index(nameof(RecipientAccountId), nameof(IsRead))]
+    [Index(nameof(RecipientAccountId), nameof(CreatedAtUtc))]
     public class Notification : AggregateRoot
     {
         public Guid RecipientAccountId { get; private set; }

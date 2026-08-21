@@ -1,10 +1,13 @@
-﻿using TaskMind.Domain.Commons.Cores;
+﻿using Microsoft.EntityFrameworkCore;
+using TaskMind.Domain.Commons.Cores;
 using TaskMind.Domain.Commons.Result;
 using TaskMind.Domain.Enums;
 
 namespace TaskMind.Domain.Entities
 {
     /// <summary>Một kỹ năng trong danh mục chuẩn hoá toàn hệ thống (mục 4.15).</summary>
+    [Index(nameof(Category), nameof(IsApproved))]
+    [Index(nameof(SkillName), IsUnique = true)]
     public class Skill : EntityBase
     {
         public string SkillName { get; private set; } = string.Empty;

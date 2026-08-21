@@ -1,4 +1,5 @@
-﻿using TaskMind.Domain.Commons.Cores;
+﻿using Microsoft.EntityFrameworkCore;
+using TaskMind.Domain.Commons.Cores;
 using TaskMind.Domain.Commons.ObjectValues;
 using TaskMind.Domain.Commons.Result;
 using TaskMind.Domain.Events;
@@ -6,6 +7,9 @@ using TaskMind.Domain.Events;
 namespace TaskMind.Domain.Entities
 {
     /// <summary>Aggregate Root Company (mục 4.4 - Quản lý công ty).</summary>
+    [Index(nameof(TaxCode), IsUnique = true)]
+    [Index(nameof(Email), IsUnique = true)]
+    [Index(nameof(IsVerified), nameof(Status))]
     public class Company : AuditableAggregateRoot
     {
         public string CompanyName { get; private set; } = string.Empty;

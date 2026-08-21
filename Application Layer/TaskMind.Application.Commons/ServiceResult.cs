@@ -3,7 +3,7 @@
 namespace TaskMind.Applications.Commons
 {
     public enum ResultStatus
-    {
+    {   
         [Description("None")]
         None,
 
@@ -17,9 +17,14 @@ namespace TaskMind.Applications.Commons
         Failed,
 
         [Description("Error")]
-        Error
-    }
+        Error,
 
+        [Description("Unauthorized")]
+        Unauthorized,
+
+        [Description("Forbidden")]
+        Forbidden
+    }
 
     public class ServiceResult
     {
@@ -27,6 +32,8 @@ namespace TaskMind.Applications.Commons
         public bool IsFailed => Status == ResultStatus.Failed;
         public bool IsError => Status == ResultStatus.Error;
         public bool IsNotFound => Status == ResultStatus.NotFound;
+        public bool IsUnauthorized => Status == ResultStatus.Unauthorized;
+        public bool IsForbidden => Status == ResultStatus.Forbidden;
 
         public string Message { get; private set; } = string.Empty;
         public ResultStatus Status { get; private set; }
@@ -66,6 +73,24 @@ namespace TaskMind.Applications.Commons
                 Status = ResultStatus.NotFound
             };
         }
+
+        public static ServiceResult Unauthorized(string message = "Unauthorized access")
+        {
+            return new()
+            {
+                Message = message,
+                Status = ResultStatus.Unauthorized
+            };
+        }
+
+        public static ServiceResult Forbidden(string message = "Access forbidden")
+        {
+            return new()
+            {
+                Message = message,
+                Status = ResultStatus.Forbidden
+            };
+        }
     }
 
     public class ServiceResult<T>
@@ -74,6 +99,8 @@ namespace TaskMind.Applications.Commons
         public bool IsFailed => Status == ResultStatus.Failed;
         public bool IsError => Status == ResultStatus.Error;
         public bool IsNotFound => Status == ResultStatus.NotFound;
+        public bool IsUnauthorized => Status == ResultStatus.Unauthorized;
+        public bool IsForbidden => Status == ResultStatus.Forbidden;
 
         public string Message { get; private set; } = string.Empty;
         public ResultStatus Status { get; private set; }
@@ -134,8 +161,29 @@ namespace TaskMind.Applications.Commons
         {
             return new()
             {
+                Data = default,
                 Message = message,
                 Status = ResultStatus.NotFound
+            };
+        }
+
+        public static ServiceResult<T> Unauthorized(string message = "Unauthorized access")
+        {
+            return new()
+            {
+                Data = default,
+                Message = message,
+                Status = ResultStatus.Unauthorized
+            };
+        }
+
+        public static ServiceResult<T> Forbidden(string message = "Access forbidden")
+        {
+            return new()
+            {
+                Data = default,
+                Message = message,
+                Status = ResultStatus.Forbidden
             };
         }
     }

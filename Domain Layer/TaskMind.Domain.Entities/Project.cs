@@ -1,4 +1,5 @@
-﻿using TaskMind.Domain.Commons.Cores;
+﻿using Microsoft.EntityFrameworkCore;
+using TaskMind.Domain.Commons.Cores;
 using TaskMind.Domain.Commons.Result;
 using TaskMind.Domain.Enums;
 using TaskMind.Domain.Events;
@@ -9,6 +10,8 @@ namespace TaskMind.Domain.Entities
     /// Aggregate Root Project, dùng chung cho dự án công ty / cơ sở đào tạo / mã nguồn mở
     /// (theo bảng DDD mục 6). OwningEntityId trỏ tới Company/School tương ứng, null nếu là OpenSource.
     /// </summary>
+    [Index(nameof(OwningEntityId), nameof(SourceType), nameof(ProjectStatus))]
+    [Index(nameof(IsExchangeProject), nameof(ProjectStatus))]
     public class Project : AuditableAggregateRoot
     {
         public string Title { get; private set; } = string.Empty;
