@@ -30,6 +30,7 @@ namespace TaskMind.Applications.Commons
         public DbSet<Student> Students { get; }
         public DbSet<Teacher> Teachers { get; } 
         public DbSet<User> Users { get; }
+        public DbSet<Chat> Chats { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }

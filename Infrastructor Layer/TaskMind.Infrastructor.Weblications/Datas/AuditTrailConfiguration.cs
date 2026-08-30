@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 using TaskMind.Domain.Commons.Cores;
+using TaskMind.Domain.Entities;
 
 namespace TaskMind.Infrastructor.Weblications.Datas
 {

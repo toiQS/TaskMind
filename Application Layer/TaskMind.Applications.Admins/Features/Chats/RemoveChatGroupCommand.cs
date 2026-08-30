@@ -1,10 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Microsoft.EntityFrameworkCore;
+using TaskMind.Applications.Commons;
 
 namespace TaskMind.Applications.Admins.Features.Chats
 {
-    internal class RemoveChatGroupCommand
+    /// <summary>Admin xoá một nhóm trò chuyện (mục 4.22) - dùng cho mục đích kiểm duyệt/dọn dẹp.</summary>
+    internal class RemoveChatGroupCommand : ServiceResult
     {
+        public Guid ChatId { get; }
+
+        public RemoveChatGroupCommand(Guid chatId)
+        {
+            ChatId = chatId;
+        }
+    }
+
+    internal class RemoveChatGroupHandler
+    {
+        private readonly IApplicationDbContext _dbContext;
+
+        public RemoveChatGroupHandler(IApplicationDbContext dbContext)
+        {
+            _dbContext = dbContext;
+        }
+
+        public async Task<ServiceResult> Handle(RemoveChatGroupCommand command, CancellationToken cancellationToken)
+        {
+            var chat = await _dbContext.Chats.FirstOrDefaultAsync(c => c.Id == command.ChatId, cancellationToken);
+            if (chat == null)
+                return ServiceResult.NotFound("Không tìm thấy nhóm trò chuyện.");
+
+            _dbContext.Chats.Remove(chat);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+
+            return ServiceResult.Success("Xoá nhóm trò chuyện thành công");
+        }
     }
 }
