@@ -4,7 +4,7 @@ using TaskMind.Applications.Commons;
 namespace TaskMind.Applications.Admins.Features.Chats
 {
     /// <summary>Admin xoá một nhóm trò chuyện (mục 4.22) - dùng cho mục đích kiểm duyệt/dọn dẹp.</summary>
-    internal class RemoveChatGroupCommand : ServiceResult
+    public class RemoveChatGroupCommand : ServiceResult
     {
         public Guid ChatId { get; }
 
@@ -14,7 +14,7 @@ namespace TaskMind.Applications.Admins.Features.Chats
         }
     }
 
-    internal class RemoveChatGroupHandler
+    public class RemoveChatGroupHandler
     {
         private readonly IApplicationDbContext _dbContext;
 

@@ -10,11 +10,11 @@ using TaskMind.Domain.Enums;
 
 namespace TaskMind.Applications.Admins.Features.Jobs
 {
-    internal class GetDashbroadQuery()  : IRequest<ServiceResult<DashboardRecruitmentStatsDto>>
+    public class GetDashbroadQuery()  : IRequest<ServiceResult<DashboardRecruitmentStatsDto>>
     {
 
     }
-    internal class GetDashbroadHandler : IRequestHandler<GetDashbroadQuery, ServiceResult<DashboardRecruitmentStatsDto>>
+    public class GetDashbroadHandler : IRequestHandler<GetDashbroadQuery, ServiceResult<DashboardRecruitmentStatsDto>>
     {
         private readonly IApplicationDbContext _dbContext;
         public GetDashbroadHandler(IApplicationDbContext dbContext)

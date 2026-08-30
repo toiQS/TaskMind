@@ -8,7 +8,7 @@ namespace TaskMind.Applications.Admins.Features.Skills
     /// (chỉ SkillCatalog.Reject có, nhưng ta không dùng SkillCatalog ở tầng Application này) — nên
     /// kiểm tra bất biến "chỉ xoá được kỹ năng chưa duyệt" trực tiếp ở Handler rồi xoá khỏi DbSet.
     /// </summary>
-    internal class RejectSkillCommand : ServiceResult
+    public class RejectSkillCommand : ServiceResult
     {
         public Guid SkillId { get; }
 
@@ -18,7 +18,7 @@ namespace TaskMind.Applications.Admins.Features.Skills
         }
     }
 
-    internal class RejectSkillHandler
+    public class RejectSkillHandler
     {
         private readonly IApplicationDbContext _dbContext;
 

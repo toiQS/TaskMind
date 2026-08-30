@@ -5,7 +5,7 @@ using TaskMind.Domain.Enums;
 namespace TaskMind.Applications.Admins.Features.Users
 {
     /// <summary>Admin khoá (cấm) một tài khoản User do vi phạm (mục 4.1: quản lý trạng thái tài khoản).</summary>
-    internal class BlockUserCommand : ServiceResult
+    public class BlockUserCommand : ServiceResult
     {
         public Guid UserId { get; }
         public string? Reason { get; }
@@ -17,7 +17,7 @@ namespace TaskMind.Applications.Admins.Features.Users
         }
     }
 
-    internal class BlockUserHandler
+    public class BlockUserHandler
     {
         private readonly IApplicationDbContext _dbContext;
 

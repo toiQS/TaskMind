@@ -4,7 +4,7 @@ using TaskMind.Applications.Commons;
 namespace TaskMind.Applications.Admins.Features.Companies
 {
     /// <summary>Admin tạm ngưng hoạt động một công ty (vi phạm chính sách, tranh chấp...).</summary>
-    internal class SuspendCompanyCommand : ServiceResult
+    public class SuspendCompanyCommand : ServiceResult
     {
         public Guid CompanyId { get; }
         public string? Reason { get; }
@@ -16,7 +16,7 @@ namespace TaskMind.Applications.Admins.Features.Companies
         }
     }
 
-    internal class SuspendCompanyHandler
+    public class SuspendCompanyHandler
     {
         private readonly IApplicationDbContext _dbContext;
 

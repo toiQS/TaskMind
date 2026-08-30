@@ -4,7 +4,7 @@ using TaskMind.Applications.Commons;
 namespace TaskMind.Applications.Admins.Features.Projects
 {
     /// <summary>Admin buộc loại một thành viên khỏi dự án (kiểm duyệt), dùng chung Project.RemoveMember() với Owner.</summary>
-    internal class AdminRemoveProjectMemberCommand : ServiceResult
+    public class AdminRemoveProjectMemberCommand : ServiceResult
     {
         public Guid ProjectId { get; }
         public Guid AccountId { get; }
@@ -20,7 +20,7 @@ namespace TaskMind.Applications.Admins.Features.Projects
         }
     }
 
-    internal class AdminRemoveProjectMemberHandler
+    public class AdminRemoveProjectMemberHandler
     {
         private readonly IApplicationDbContext _dbContext;
 

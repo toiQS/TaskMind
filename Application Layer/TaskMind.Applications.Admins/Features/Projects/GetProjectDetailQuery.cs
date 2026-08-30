@@ -5,7 +5,7 @@ using TaskMind.Domain.Enums;
 
 namespace TaskMind.Applications.Admins.Features.Projects
 {
-    internal class GetProjectDetailQuery : ServiceResult<ProjectDetailDto>
+    public class GetProjectDetailQuery : ServiceResult<ProjectDetailDto>
     {
         public Guid ProjectId { get; }
 
@@ -15,7 +15,7 @@ namespace TaskMind.Applications.Admins.Features.Projects
         }
     }
 
-    internal class GetProjectDetailHandler
+    public class GetProjectDetailHandler
     {
         private readonly IApplicationDbContext _dbContext;
 

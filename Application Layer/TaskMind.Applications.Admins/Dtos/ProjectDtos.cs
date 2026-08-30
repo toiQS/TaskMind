@@ -62,7 +62,7 @@ namespace TaskMind.Applications.Admins.Dtos
         public List<ProjectStatusCountDto> ByStatus { get; set; } = new();
         public List<ProjectSourceTypeCountDto> BySourceType { get; set; } = new();
         public int ExchangeProjectCount { get; set; }
-        public int InternalProjectCount { get; set; }
+        public int publicProjectCount { get; set; }
     }
 
     public class ProjectSourceTypeCountDto

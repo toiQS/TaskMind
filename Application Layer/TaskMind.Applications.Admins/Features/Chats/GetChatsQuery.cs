@@ -6,7 +6,7 @@ using TaskMind.Domain.Enums;
 namespace TaskMind.Applications.Admins.Features.Chats
 {
     /// <summary>Admin xem danh sách nhóm trò chuyện (toàn hệ thống, hoặc lọc theo một AccountId) phục vụ giám sát/hỗ trợ (mục 4.22).</summary>
-    internal class GetChatsQuery : ServiceResult<List<ChatSummaryDto>>
+    public class GetChatsQuery : ServiceResult<List<ChatSummaryDto>>
     {
         public Guid? MemberAccountId { get; }
 
@@ -16,7 +16,7 @@ namespace TaskMind.Applications.Admins.Features.Chats
         }
     }
 
-    internal class GetChatsHandler
+    public class GetChatsHandler
     {
         private readonly IApplicationDbContext _dbContext;
 

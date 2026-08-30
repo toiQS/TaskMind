@@ -9,7 +9,7 @@ namespace TaskMind.Applications.Admins.Features.Dashbroads
     /// Admin xem tổng quan hệ thống: doanh thu (mục 4.14), số lượng công ty/cơ sở đào tạo
     /// đã duyệt/chờ duyệt (mục 4.4, 4.8), số lượng người dùng, trạng thái dự án, hoá đơn gần đây.
     /// </summary>
-    internal class GetDashboardQuery : ServiceResult<DashboardOverviewDto>
+    public class GetDashboardQuery : ServiceResult<DashboardOverviewDto>
     {
         /// <summary>Khoảng thời gian tính doanh thu theo tháng. Mặc định: 6 tháng gần nhất nếu không truyền.</summary>
         public DateTime? FromDateUtc { get; }
@@ -22,7 +22,7 @@ namespace TaskMind.Applications.Admins.Features.Dashbroads
         }
     }
 
-    internal class GetDashboardHandler
+    public class GetDashboardHandler
     {
         private readonly IApplicationDbContext _dbContext;
 

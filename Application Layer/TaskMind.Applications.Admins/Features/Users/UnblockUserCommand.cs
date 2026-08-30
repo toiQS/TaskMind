@@ -4,7 +4,7 @@ using TaskMind.Domain.Enums;
 
 namespace TaskMind.Applications.Admins.Features.Users
 {
-    internal class UnblockUserCommand : ServiceResult
+    public class UnblockUserCommand : ServiceResult
     {
         public Guid UserId { get; }
 
@@ -14,7 +14,7 @@ namespace TaskMind.Applications.Admins.Features.Users
         }
     }
 
-    internal class UnblockUserHandler
+    public class UnblockUserHandler
     {
         private readonly IApplicationDbContext _dbContext;
 

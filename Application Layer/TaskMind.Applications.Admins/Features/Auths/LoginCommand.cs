@@ -12,13 +12,13 @@ using TaskMind.Domain.Enums;
 
 namespace TaskMind.Applications.Admins.Features.Auths
 {
-    internal class LoginCommand(string email, string password) : ServiceResult<LoginResultDto>
+    public class LoginCommand(string email, string password) : ServiceResult<LoginResultDto>
     {
         public string Email { get; } = email;
         public string Password { get; } = password;
     }
 
-    internal class LoginHandler : ServiceResult<LoginResultDto>
+    public class LoginHandler : ServiceResult<LoginResultDto>
     {
         private readonly IApplicationDbContext _dbContext;
         public LoginHandler(IApplicationDbContext dbContext)

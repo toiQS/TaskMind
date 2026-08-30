@@ -3,7 +3,7 @@ using TaskMind.Applications.Commons;
 
 namespace TaskMind.Applications.Admins.Features.Companies
 {
-    internal class ReactivateCompanyCommand : ServiceResult
+    public class ReactivateCompanyCommand : ServiceResult
     {
         public Guid CompanyId { get; }
 
@@ -13,7 +13,7 @@ namespace TaskMind.Applications.Admins.Features.Companies
         }
     }
 
-    internal class ReactivateCompanyHandler
+    public class ReactivateCompanyHandler
     {
         private readonly IApplicationDbContext _dbContext;
 

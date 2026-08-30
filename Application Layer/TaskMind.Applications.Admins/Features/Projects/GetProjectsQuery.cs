@@ -6,7 +6,7 @@ using TaskMind.Domain.Enums;
 namespace TaskMind.Applications.Admins.Features.Projects
 {
     /// <summary>Admin xem toàn bộ dự án trên nền tảng (Company/School/OpenSource) để giám sát (mục 4.7, 4.12, 4.13).</summary>
-    internal class GetProjectsQuery : ServiceResult<PagedResult<ProjectListItemDto>>
+    public class GetProjectsQuery : ServiceResult<PagedResult<ProjectListItemDto>>
     {
         public GetProjectsFilter Filter { get; }
 
@@ -16,7 +16,7 @@ namespace TaskMind.Applications.Admins.Features.Projects
         }
     }
 
-    internal class GetProjectsHandler
+    public class GetProjectsHandler
     {
         private readonly IApplicationDbContext _dbContext;
 

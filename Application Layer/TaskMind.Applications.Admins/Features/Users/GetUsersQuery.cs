@@ -6,7 +6,7 @@ using TaskMind.Domain.Entities;
 namespace TaskMind.Applications.Admins.Features.Users
 {
     /// <summary>Admin xem danh sách tài khoản User gốc (mục 4.1) — không bao gồm Staff/Teacher/Student/Admin*, vì đó là các LinkedAccount riêng.</summary>
-    internal class GetUsersQuery : ServiceResult<PagedResult<UserListItemDto>>
+    public class GetUsersQuery : ServiceResult<PagedResult<UserListItemDto>>
     {
         public GetUsersFilter Filter { get; }
 
@@ -16,7 +16,7 @@ namespace TaskMind.Applications.Admins.Features.Users
         }
     }
 
-    internal class GetUsersHandler
+    public class GetUsersHandler
     {
         private readonly IApplicationDbContext _dbContext;
 

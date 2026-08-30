@@ -3,7 +3,7 @@ using TaskMind.Applications.Commons;
 
 namespace TaskMind.Applications.Admins.Features.Schools
 {
-    internal class ChangeSchoolMembershipPackageCommand : ServiceResult
+    public class ChangeSchoolMembershipPackageCommand : ServiceResult
     {
         public Guid SchoolId { get; }
         public string Package { get; }
@@ -15,7 +15,7 @@ namespace TaskMind.Applications.Admins.Features.Schools
         }
     }
 
-    internal class ChangeSchoolMembershipPackageHandler
+    public class ChangeSchoolMembershipPackageHandler
     {
         private readonly IApplicationDbContext _dbContext;
 

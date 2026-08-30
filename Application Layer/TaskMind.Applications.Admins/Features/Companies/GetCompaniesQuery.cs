@@ -5,7 +5,7 @@ using TaskMind.Applications.Commons;
 namespace TaskMind.Applications.Admins.Features.Companies
 {
     /// <summary>Admin xem danh sách công ty, lọc theo trạng thái duyệt/hoạt động (mục 4.4).</summary>
-    internal class GetCompaniesQuery : ServiceResult<PagedResult<CompanyListItemDto>>
+    public class GetCompaniesQuery : ServiceResult<PagedResult<CompanyListItemDto>>
     {
         public GetCompaniesFilter Filter { get; }
 
@@ -15,7 +15,7 @@ namespace TaskMind.Applications.Admins.Features.Companies
         }
     }
 
-    internal class GetCompaniesHandler
+    public class GetCompaniesHandler
     {
         private readonly IApplicationDbContext _dbContext;
 

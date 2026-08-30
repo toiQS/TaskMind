@@ -3,7 +3,7 @@ using TaskMind.Applications.Commons;
 
 namespace TaskMind.Applications.Admins.Features.Schools
 {
-    internal class SuspendSchoolCommand : ServiceResult
+    public class SuspendSchoolCommand : ServiceResult
     {
         public Guid SchoolId { get; }
 
@@ -13,7 +13,7 @@ namespace TaskMind.Applications.Admins.Features.Schools
         }
     }
 
-    internal class SuspendSchoolHandler
+    public class SuspendSchoolHandler
     {
         private readonly IApplicationDbContext _dbContext;
 

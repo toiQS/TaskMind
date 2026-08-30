@@ -4,7 +4,7 @@ using TaskMind.Applications.Commons;
 
 namespace TaskMind.Applications.Admins.Features.Jobs
 {
-    internal class GetJobPostingDetailQuery : ServiceResult<JobPostingDetailDto>
+    public class GetJobPostingDetailQuery : ServiceResult<JobPostingDetailDto>
     {
         public Guid JobPostingId { get; }
 
@@ -14,7 +14,7 @@ namespace TaskMind.Applications.Admins.Features.Jobs
         }
     }
 
-    internal class GetJobPostingDetailHandler
+    public class GetJobPostingDetailHandler
     {
         private readonly IApplicationDbContext _dbContext;
 

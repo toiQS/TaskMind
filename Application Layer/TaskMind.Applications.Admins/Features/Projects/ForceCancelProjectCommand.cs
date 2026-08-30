@@ -4,7 +4,7 @@ using TaskMind.Applications.Commons;
 namespace TaskMind.Applications.Admins.Features.Projects
 {
     /// <summary>Admin buộc huỷ một dự án vi phạm nghiêm trọng (gian lận, khiếu nại...).</summary>
-    internal class ForceCancelProjectCommand : ServiceResult
+    public class ForceCancelProjectCommand : ServiceResult
     {
         public Guid ProjectId { get; }
         public Guid ApproverAdminId { get; }
@@ -18,7 +18,7 @@ namespace TaskMind.Applications.Admins.Features.Projects
         }
     }
 
-    internal class ForceCancelProjectHandler
+    public class ForceCancelProjectHandler
     {
         private readonly IApplicationDbContext _dbContext;
 

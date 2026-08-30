@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TaskMind.Application.Commons\TaskMind.Applications.Commons.csproj" />
+    <ProjectReference Include="..\..\Domain Layer\TaskMind.Domain.Events\TaskMind.Domain.Events.csproj" />
   </ItemGroup>
 
 </Project>

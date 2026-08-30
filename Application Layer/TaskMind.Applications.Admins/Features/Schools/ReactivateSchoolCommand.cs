@@ -3,7 +3,7 @@ using TaskMind.Applications.Commons;
 
 namespace TaskMind.Applications.Admins.Features.Schools
 {
-    internal class ReactivateSchoolCommand : ServiceResult
+    public class ReactivateSchoolCommand : ServiceResult
     {
         public Guid SchoolId { get; }
 
@@ -13,7 +13,7 @@ namespace TaskMind.Applications.Admins.Features.Schools
         }
     }
 
-    internal class ReactivateSchoolHandler
+    public class ReactivateSchoolHandler
     {
         private readonly IApplicationDbContext _dbContext;
 

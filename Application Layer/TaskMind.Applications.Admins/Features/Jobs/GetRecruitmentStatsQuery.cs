@@ -6,11 +6,11 @@ using TaskMind.Domain.Enums;
 namespace TaskMind.Applications.Admins.Features.Jobs
 {
     /// <summary>Admin xem thống kê tổng quan tuyển dụng toàn nền tảng (mục 4.18) — có thể ghép vào Dashboard (mục 4.14) khi cần.</summary>
-    internal class GetRecruitmentStatsQuery : ServiceResult<RecruitmentStatsDto>
+    public class GetRecruitmentStatsQuery : ServiceResult<RecruitmentStatsDto>
     {
     }
 
-    internal class GetRecruitmentStatsHandler
+    public class GetRecruitmentStatsHandler
     {
         private readonly IApplicationDbContext _dbContext;
 

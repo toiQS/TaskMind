@@ -4,7 +4,7 @@ using TaskMind.Applications.Commons;
 namespace TaskMind.Applications.Admins.Features.Companies
 {
     /// <summary>Admin hệ thống duyệt một công ty đăng ký (mục 4.4) — kích hoạt CompanyVerifiedEvent qua Company.Verify().</summary>
-    internal class VerifyCompanyCommand : ServiceResult
+    public class VerifyCompanyCommand : ServiceResult
     {
         public Guid CompanyId { get; }
         public Guid ApproverAdminId { get; }
@@ -16,7 +16,7 @@ namespace TaskMind.Applications.Admins.Features.Companies
         }
     }
 
-    internal class VerifyCompanyHandler
+    public class VerifyCompanyHandler
     {
         private readonly IApplicationDbContext _dbContext;
 

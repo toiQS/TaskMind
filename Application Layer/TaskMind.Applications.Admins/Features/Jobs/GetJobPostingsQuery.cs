@@ -5,7 +5,7 @@ using TaskMind.Applications.Commons;
 namespace TaskMind.Applications.Admins.Features.Jobs
 {
     /// <summary>Admin xem toàn bộ tin tuyển dụng trên nền tảng (mọi công ty) để giám sát/kiểm duyệt (mục 4.18).</summary>
-    internal class GetJobPostingsQuery : ServiceResult<PagedResult<JobPostingListItemDto>>
+    public class GetJobPostingsQuery : ServiceResult<PagedResult<JobPostingListItemDto>>
     {
         public GetJobPostingsFilter Filter { get; }
 
@@ -15,7 +15,7 @@ namespace TaskMind.Applications.Admins.Features.Jobs
         }
     }
 
-    internal class GetJobPostingsHandler
+    public class GetJobPostingsHandler
     {
         private readonly IApplicationDbContext _dbContext;
 

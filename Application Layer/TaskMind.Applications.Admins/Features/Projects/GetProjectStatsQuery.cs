@@ -5,11 +5,11 @@ using TaskMind.Applications.Commons;
 namespace TaskMind.Applications.Admins.Features.Projects
 {
     /// <summary>Admin xem thống kê tổng quan dự án toàn nền tảng (chi tiết hơn phần ProjectsByStatus của Dashboard).</summary>
-    internal class GetProjectStatsQuery : ServiceResult<ProjectStatsDto>
+    public class GetProjectStatsQuery : ServiceResult<ProjectStatsDto>
     {
     }
 
-    internal class GetProjectStatsHandler
+    public class GetProjectStatsHandler
     {
         private readonly IApplicationDbContext _dbContext;
 
@@ -40,7 +40,7 @@ namespace TaskMind.Applications.Admins.Features.Projects
                 ByStatus = byStatus,
                 BySourceType = bySourceType,
                 ExchangeProjectCount = exchangeCount,
-                InternalProjectCount = totalProjects - exchangeCount
+                publicProjectCount = totalProjects - exchangeCount
             };
 
             return ServiceResult<ProjectStatsDto>.Success(dto, "Lấy thống kê dự án thành công");

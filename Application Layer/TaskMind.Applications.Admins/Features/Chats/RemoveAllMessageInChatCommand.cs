@@ -5,7 +5,7 @@ using TaskMind.Domain.Enums;
 namespace TaskMind.Applications.Admins.Features.Chats
 {
     /// <summary>Admin thu hồi toàn bộ tin nhắn trong một nhóm trò chuyện (kiểm duyệt) — dùng Message.Recall() để giữ lịch sử thay vì xoá cứng.</summary>
-    internal class RemoveAllMessageInChatCommand : ServiceResult
+    public class RemoveAllMessageInChatCommand : ServiceResult
     {
         public Guid ChatId { get; }
 
@@ -15,7 +15,7 @@ namespace TaskMind.Applications.Admins.Features.Chats
         }
     }
 
-    internal class RemoveAllMessageInChatHandler
+    public class RemoveAllMessageInChatHandler
     {
         private readonly IApplicationDbContext _dbContext;
 

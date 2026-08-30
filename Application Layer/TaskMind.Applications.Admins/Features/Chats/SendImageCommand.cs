@@ -10,7 +10,7 @@ namespace TaskMind.Applications.Admins.Features.Chats
     /// riêng cho ảnh. Tạm lưu ImageUrl vào Content với tiền tố "[image]" để tầng Presentation phân biệt.
     /// Khi Domain bổ sung MessageType, cần cập nhật lại handler này.
     /// </summary>
-    internal class SendImageCommand : ServiceResult<MessageDto>
+    public class SendImageCommand : ServiceResult<MessageDto>
     {
         public Guid ChatId { get; }
         public Guid SenderAccountId { get; }
@@ -24,7 +24,7 @@ namespace TaskMind.Applications.Admins.Features.Chats
         }
     }
 
-    internal class SendImageHandler
+    public class SendImageHandler
     {
         private const string ImagePrefix = "[image]";
         private readonly IApplicationDbContext _dbContext;

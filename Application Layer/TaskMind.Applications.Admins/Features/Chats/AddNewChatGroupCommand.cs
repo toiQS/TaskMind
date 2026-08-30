@@ -4,7 +4,7 @@ using TaskMind.Domain.Entities;
 namespace TaskMind.Applications.Admins.Features.Chats
 {
     /// <summary>Admin tạo nhóm trò chuyện mới (mục 4.22), tối thiểu 2 thành viên (theo Chat.Create).</summary>
-    internal class AddNewChatGroupCommand : ServiceResult<Guid>
+    public class AddNewChatGroupCommand : ServiceResult<Guid>
     {
         public List<Guid> MemberAccountIds { get; }
 
@@ -14,7 +14,7 @@ namespace TaskMind.Applications.Admins.Features.Chats
         }
     }
 
-    internal class AddNewChatGroupHandler
+    public class AddNewChatGroupHandler
     {
         private readonly IApplicationDbContext _dbContext;
 

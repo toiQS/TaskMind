@@ -4,7 +4,7 @@ using TaskMind.Applications.Commons;
 namespace TaskMind.Applications.Admins.Features.Skills
 {
     /// <summary>Admin duyệt một kỹ năng do công ty/cơ sở đào tạo đề xuất (mục 4.16).</summary>
-    internal class ApproveSkillCommand : ServiceResult
+    public class ApproveSkillCommand : ServiceResult
     {
         public Guid SkillId { get; }
         public Guid ApproverAdminId { get; }
@@ -16,7 +16,7 @@ namespace TaskMind.Applications.Admins.Features.Skills
         }
     }
 
-    internal class ApproveSkillHandler
+    public class ApproveSkillHandler
     {
         private readonly IApplicationDbContext _dbContext;
 

@@ -4,7 +4,7 @@ using TaskMind.Applications.Commons;
 namespace TaskMind.Applications.Admins.Features.Projects
 {
     /// <summary>Admin buộc tạm dừng một dự án vi phạm chính sách nền tảng (khác Owner tự Pause).</summary>
-    internal class ForcePauseProjectCommand : ServiceResult
+    public class ForcePauseProjectCommand : ServiceResult
     {
         public Guid ProjectId { get; }
         public Guid ApproverAdminId { get; }
@@ -18,7 +18,7 @@ namespace TaskMind.Applications.Admins.Features.Projects
         }
     }
 
-    internal class ForcePauseProjectHandler
+    public class ForcePauseProjectHandler
     {
         private readonly IApplicationDbContext _dbContext;
 

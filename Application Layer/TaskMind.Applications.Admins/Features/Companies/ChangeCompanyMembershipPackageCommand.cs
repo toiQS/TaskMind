@@ -4,7 +4,7 @@ using TaskMind.Applications.Commons;
 namespace TaskMind.Applications.Admins.Features.Companies
 {
     /// <summary>Admin đổi gói tham gia hệ thống của công ty (mục 4.4, liên kết mục 4.14 nguồn thu CompanySubscription).</summary>
-    internal class ChangeCompanyMembershipPackageCommand : ServiceResult
+    public class ChangeCompanyMembershipPackageCommand : ServiceResult
     {
         public Guid CompanyId { get; }
         public string Package { get; }
@@ -16,7 +16,7 @@ namespace TaskMind.Applications.Admins.Features.Companies
         }
     }
 
-    internal class ChangeCompanyMembershipPackageHandler
+    public class ChangeCompanyMembershipPackageHandler
     {
         private readonly IApplicationDbContext _dbContext;
 

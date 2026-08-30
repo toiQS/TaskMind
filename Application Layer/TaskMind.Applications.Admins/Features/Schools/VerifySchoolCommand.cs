@@ -4,7 +4,7 @@ using TaskMind.Applications.Commons;
 namespace TaskMind.Applications.Admins.Features.Schools
 {
     /// <summary>Admin hệ thống duyệt một cơ sở đào tạo đăng ký (mục 4.8) — kích hoạt SchoolVerifiedEvent.</summary>
-    internal class VerifySchoolCommand : ServiceResult
+    public class VerifySchoolCommand : ServiceResult
     {
         public Guid SchoolId { get; }
         public Guid ApproverAdminId { get; }
@@ -16,7 +16,7 @@ namespace TaskMind.Applications.Admins.Features.Schools
         }
     }
 
-    internal class VerifySchoolHandler
+    public class VerifySchoolHandler
     {
         private readonly IApplicationDbContext _dbContext;
 

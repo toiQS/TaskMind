@@ -5,7 +5,7 @@ using TaskMind.Applications.Commons;
 namespace TaskMind.Applications.Admins.Features.Skills
 {
     /// <summary>Admin xem danh mục kỹ năng, lọc theo trạng thái duyệt (mục 4.16) — dùng chung cho cả xem toàn bộ và xem hàng chờ duyệt.</summary>
-    internal class GetSkillsQuery : ServiceResult<PagedResult<SkillListItemDto>>
+    public class GetSkillsQuery : ServiceResult<PagedResult<SkillListItemDto>>
     {
         public GetSkillsFilter Filter { get; }
 
@@ -15,7 +15,7 @@ namespace TaskMind.Applications.Admins.Features.Skills
         }
     }
 
-    internal class GetSkillsHandler
+    public class GetSkillsHandler
     {
         private readonly IApplicationDbContext _dbContext;
 

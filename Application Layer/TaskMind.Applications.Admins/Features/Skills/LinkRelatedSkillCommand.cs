@@ -4,7 +4,7 @@ using TaskMind.Applications.Commons;
 namespace TaskMind.Applications.Admins.Features.Skills
 {
     /// <summary>Admin liên kết hai kỹ năng có liên quan với nhau trong danh mục (mục 4.16).</summary>
-    internal class LinkRelatedSkillCommand : ServiceResult
+    public class LinkRelatedSkillCommand : ServiceResult
     {
         public Guid SkillId { get; }
         public Guid RelatedSkillId { get; }
@@ -16,7 +16,7 @@ namespace TaskMind.Applications.Admins.Features.Skills
         }
     }
 
-    internal class LinkRelatedSkillHandler
+    public class LinkRelatedSkillHandler
     {
         private readonly IApplicationDbContext _dbContext;
 

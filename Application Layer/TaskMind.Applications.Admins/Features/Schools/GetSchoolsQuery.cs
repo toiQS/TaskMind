@@ -4,7 +4,7 @@ using TaskMind.Applications.Commons;
 
 namespace TaskMind.Applications.Admins.Features.Schools
 {
-    internal class GetSchoolsQuery : ServiceResult<PagedResult<SchoolListItemDto>>
+    public class GetSchoolsQuery : ServiceResult<PagedResult<SchoolListItemDto>>
     {
         public GetSchoolsFilter Filter { get; }
 
@@ -14,7 +14,7 @@ namespace TaskMind.Applications.Admins.Features.Schools
         }
     }
 
-    internal class GetSchoolsHandler
+    public class GetSchoolsHandler
     {
         private readonly IApplicationDbContext _dbContext;
 

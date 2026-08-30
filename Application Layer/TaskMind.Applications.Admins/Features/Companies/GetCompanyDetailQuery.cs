@@ -5,7 +5,7 @@ using TaskMind.Domain.Enums;
 
 namespace TaskMind.Applications.Admins.Features.Companies
 {
-    internal class GetCompanyDetailQuery : ServiceResult<CompanyDetailDto>
+    public class GetCompanyDetailQuery : ServiceResult<CompanyDetailDto>
     {
         public Guid CompanyId { get; }
 
@@ -15,7 +15,7 @@ namespace TaskMind.Applications.Admins.Features.Companies
         }
     }
 
-    internal class GetCompanyDetailHandler
+    public class GetCompanyDetailHandler
     {
         private readonly IApplicationDbContext _dbContext;
 

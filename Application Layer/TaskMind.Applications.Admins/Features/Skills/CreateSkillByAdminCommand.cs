@@ -6,7 +6,7 @@ using TaskMind.Domain.Enums;
 namespace TaskMind.Applications.Admins.Features.Skills
 {
     /// <summary>Admin tạo trực tiếp một kỹ năng mới vào danh mục chuẩn hoá, được duyệt ngay (mục 4.16).</summary>
-    internal class CreateSkillByAdminCommand : ServiceResult<Guid>
+    public class CreateSkillByAdminCommand : ServiceResult<Guid>
     {
         public string SkillName { get; }
         public SkillCategory Category { get; }
@@ -18,7 +18,7 @@ namespace TaskMind.Applications.Admins.Features.Skills
         }
     }
 
-    internal class CreateSkillByAdminHandler
+    public class CreateSkillByAdminHandler
     {
         private readonly IApplicationDbContext _dbContext;
 

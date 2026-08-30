@@ -4,7 +4,7 @@ using System.Text;
 
 namespace TaskMind.Applications.Admins.Features.Companies
 {
-    internal class GetDashbroadQuery
+    public class GetDashbroadQuery
     {
     }
 }

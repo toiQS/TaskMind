@@ -7,7 +7,7 @@ namespace TaskMind.Applications.Admins.Features.Jobs
     /// Admin buộc huỷ một tin tuyển dụng vi phạm chính sách nền tảng (kiểm duyệt cấp hệ thống,
     /// khác với Company tự đóng tin qua JobPosting.Close()). Dùng chung JobPosting.Cancel().
     /// </summary>
-    internal class CancelJobPostingCommand : ServiceResult
+    public class CancelJobPostingCommand : ServiceResult
     {
         public Guid JobPostingId { get; }
         public Guid ApproverAdminId { get; }
@@ -21,7 +21,7 @@ namespace TaskMind.Applications.Admins.Features.Jobs
         }
     }
 
-    internal class CancelJobPostingHandler
+    public class CancelJobPostingHandler
     {
         private readonly IApplicationDbContext _dbContext;
 

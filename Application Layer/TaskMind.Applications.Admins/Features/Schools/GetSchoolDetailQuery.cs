@@ -5,7 +5,7 @@ using TaskMind.Domain.Enums;
 
 namespace TaskMind.Applications.Admins.Features.Schools
 {
-    internal class GetSchoolDetailQuery : ServiceResult<SchoolDetailDto>
+    public class GetSchoolDetailQuery : ServiceResult<SchoolDetailDto>
     {
         public Guid SchoolId { get; }
 
@@ -15,7 +15,7 @@ namespace TaskMind.Applications.Admins.Features.Schools
         }
     }
 
-    internal class GetSchoolDetailHandler
+    public class GetSchoolDetailHandler
     {
         private readonly IApplicationDbContext _dbContext;
 

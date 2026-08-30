@@ -5,7 +5,7 @@ using TaskMind.Applications.Commons;
 namespace TaskMind.Applications.Admins.Features.Chats
 {
     /// <summary>Gửi tin nhắn văn bản trong một nhóm trò chuyện (mục 4.22), phát sinh MessageSentEvent qua Chat.SendMessage.</summary>
-    internal class SendMessageCommand : ServiceResult<MessageDto>
+    public class SendMessageCommand : ServiceResult<MessageDto>
     {
         public Guid ChatId { get; }
         public Guid SenderAccountId { get; }
@@ -19,7 +19,7 @@ namespace TaskMind.Applications.Admins.Features.Chats
         }
     }
 
-    internal class SendMessageHandler
+    public class SendMessageHandler
     {
         private readonly IApplicationDbContext _dbContext;
 
