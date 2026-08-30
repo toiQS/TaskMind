@@ -1,9 +1,8 @@
 <Solution>
   <Folder Name="/Application Layer/">
-    <Project Path="D:/Coding/TaskMind/Application Layer/TaskMind.Application.Admins/TaskMind.Applications.Admins.csproj" Id="62f52433-a8a7-4e3c-86d8-09cc56fdb45e" />
+    <Project Path="Application Layer/TaskMind.Applications.Admins/TaskMind.Applications.Admins.csproj" Id="737ed3b2-f234-4603-9681-4b55913d859d" />
     <Project Path="D:/Coding/TaskMind/Application Layer/TaskMind.Application.Commons/TaskMind.Applications.Commons.csproj" Id="40682e02-90fa-40f1-9eea-39981f94a272" />
     <Project Path="D:/Coding/TaskMind/Application Layer/TaskMind.Application.Events/TaskMind.Applications.Events.csproj" Id="82dfe922-de59-4a77-b93f-1aaa8c6a047c" />
-    <Project Path="D:/Coding/TaskMind/Application Layer/TaskMind.Applications.Auths/TaskMind.Applications.Auths.csproj" />
   </Folder>
   <Folder Name="/Domain Layer/">
     <Project Path="D:/Coding/TaskMind/Domain Layer/TaskMind.Domain.Commons/TaskMind.Domain.Commons.csproj" Id="a7d650e1-5971-46b0-a158-2a7132e779f1" />
@@ -19,9 +18,4 @@
     <Project Path="D:/Coding/TaskMind/Infrastructor Layer/TaskMind.Infrastructor.Applications/TaskMind.Infrastructor.Applications.csproj" Id="c6e82156-6205-4062-930d-f190a347a605" />
     <Project Path="D:/Coding/TaskMind/Infrastructor Layer/TaskMind.Infrastructor.Weblications/TaskMind.Infrastructor.Weblications.csproj" Id="60ce2c57-d634-4850-9d7c-5c953cf23814" />
   </Folder>
-  <Folder Name="/Presentation Layer/" />
-  <Folder Name="/Presentation Layer/Desktops/">
-    <Project Path="D:/Coding/TaskMind/Presentation Layer/Desktops/TaskMind.WPFs/TaskMind.WPFs.csproj" Id="c68c30a2-ef2c-4c5e-9404-2be19e863cc2" />
-  </Folder>
-  <Folder Name="/Presentation Layer/Websites/" />
 </Solution>

@@ -44,15 +44,18 @@ namespace TaskMind.Domain.Entities
             return record.AddEndorsement(endorserId);
         }
 
-        /// <summary>Khởi tạo yêu cầu nâng level kỹ năng (mục 4.3.1): cần endorsement từ người có thẩm
-        /// quyền cao hơn, hoặc trải qua chu trình đánh giá năng lực (Assessment context).</summary>
-        public Result<SkillLevelUpRequest> RequestLevelUp(Guid skillId, Guid approverAccountId)
+        /// <summary>
+        /// [CẬP NHẬT] Khởi tạo yêu cầu nâng level kỹ năng (mục 4.3.1) với requestType tường minh
+        /// (Endorsement/Assessment) theo tài liệu v2 — trước đây chỉ cần approverAccountId mặc định
+        /// theo hướng Endorsement.
+        /// </summary>
+        public Result<SkillLevelUpRequest> RequestLevelUp(Guid skillId, Guid approverAccountId, SkillLevelUpMethod requestType = SkillLevelUpMethod.Endorsement)
         {
             var record = _records.FirstOrDefault(r => r.SkillId == skillId);
             if (record == null) return Result<SkillLevelUpRequest>.Failure("Không tìm thấy kỹ năng trong hồ sơ.");
             if (record.Level == SkillLevel.Expert) return Result<SkillLevelUpRequest>.Failure("Kỹ năng đã đạt cấp cao nhất.");
 
-            var requestResult = SkillLevelUpRequest.Create(UserId, skillId, record.Level, approverAccountId);
+            var requestResult = SkillLevelUpRequest.Create(UserId, skillId, record.Level, approverAccountId, requestType);
             if (!requestResult.IsSuccess) return requestResult;
 
             AddDomainEvent(new SkillLevelUpRequestedEvent
@@ -60,7 +63,8 @@ namespace TaskMind.Domain.Entities
                 UserId = UserId,
                 SkillId = skillId,
                 CurrentLevel = record.Level,
-                RequestId = requestResult.Data!.Id
+                RequestId = requestResult.Data!.Id,
+                RequestType = requestType
             });
 
             return requestResult;
@@ -80,6 +84,8 @@ namespace TaskMind.Domain.Entities
         /// <summary>
         /// Hạ level kỹ năng khi xác minh không đạt (mục 4.3.1): mức phạt hạ cấp gấp đôi (x2) so với
         /// mức hạ cấp thông thường, coi như một lời cảnh báo chính thức đầu tiên trên tài khoản.
+        /// Lưu ý (mục 8 - vấn đề mở): số lần cảnh báo tối đa trước khi hạn chế tài khoản vẫn cần
+        /// được quy định thêm ở tầng Application/Policy.
         /// </summary>
         public Result ApplyPenaltyDowngrade(Guid skillId)
         {

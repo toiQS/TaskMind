@@ -47,7 +47,7 @@ namespace TaskMind.Applications.Commons
             };
         }
 
-        public static ServiceResult Failed(string message = "Failed")
+        public static ServiceResult Failure(string message = "Failed")
         {
             return new()
             {
@@ -137,7 +137,7 @@ namespace TaskMind.Applications.Commons
                     };
         }
 
-        public static ServiceResult<T> Failed(string message = "Failed")
+        public static ServiceResult<T> Failure(string message = "Failed")
         {
             return new()
             {

@@ -8,7 +8,8 @@ using TaskMind.Domain.Events;
 namespace TaskMind.Domain.Entities
 {
     /// <summary>
-    /// Hợp đồng trao đổi cho các dự án có tính chất thương mại giữa các bên (mục 4.14 - Quản lý trao đổi).
+    /// Hợp đồng trao đổi cho các dự án có tính chất thương mại giữa các bên (mục 4.14, 4.15).
+    /// [CẬP NHẬT] bổ sung PaymentType (Milestone/FullPackage) theo tài liệu v2.
     /// Aggregate Root của Exchange & Billing context (mục 6).
     /// </summary>
     [Index(nameof(ProjectId), nameof(ContractStatus))]
@@ -20,6 +21,9 @@ namespace TaskMind.Domain.Entities
         public Guid PartyBAccountId { get; private set; }
         public Money ContractValue { get; private set; } = Money.Of(0);
 
+        /// <summary>Hình thức thanh toán: theo cột mốc (Milestone) hoặc trọn gói (FullPackage) - mục 4.15. [MỚI]</summary>
+        public PaymentType PaymentType { get; private set; } = PaymentType.FullPackage;
+
         /// <summary>% khấu trừ phí dịch vụ hệ thống (mục 4.13/4.14), ví dụ 5 nghĩa là 5%.</summary>
         public decimal ServiceFeePercent { get; private set; }
 
@@ -28,16 +32,23 @@ namespace TaskMind.Domain.Entities
 
         private ExchangeContract() { }
 
-        private ExchangeContract(Guid projectId, Guid partyAAccountId, Guid partyBAccountId, Money contractValue, decimal serviceFeePercent)
+        private ExchangeContract(Guid projectId, Guid partyAAccountId, Guid partyBAccountId, Money contractValue, decimal serviceFeePercent, PaymentType paymentType)
         {
             ProjectId = projectId;
             PartyAAccountId = partyAAccountId;
             PartyBAccountId = partyBAccountId;
             ContractValue = contractValue;
             ServiceFeePercent = serviceFeePercent;
+            PaymentType = paymentType;
         }
 
-        public static Result<ExchangeContract> Create(Guid projectId, Guid partyAAccountId, Guid partyBAccountId, Money contractValue, decimal serviceFeePercent)
+        public static Result<ExchangeContract> Create(
+            Guid projectId,
+            Guid partyAAccountId,
+            Guid partyBAccountId,
+            Money contractValue,
+            decimal serviceFeePercent,
+            PaymentType paymentType = PaymentType.FullPackage)
         {
             if (projectId == Guid.Empty)
                 return Result<ExchangeContract>.Failure("ProjectId không hợp lệ.");
@@ -46,7 +57,7 @@ namespace TaskMind.Domain.Entities
             if (serviceFeePercent is < 0 or > 100)
                 return Result<ExchangeContract>.Failure("Phần trăm phí dịch vụ không hợp lệ.");
 
-            return Result<ExchangeContract>.Success(new ExchangeContract(projectId, partyAAccountId, partyBAccountId, contractValue, serviceFeePercent));
+            return Result<ExchangeContract>.Success(new ExchangeContract(projectId, partyAAccountId, partyBAccountId, contractValue, serviceFeePercent, paymentType));
         }
 
         public Result Activate()
@@ -59,8 +70,7 @@ namespace TaskMind.Domain.Entities
 
         /// <summary>
         /// Hoàn tất giao dịch: hệ thống khấu trừ phí dịch vụ tự động (mục 4.14), phát sinh
-        /// ExchangeContractCompletedEvent để Exchange & Billing context tạo Invoice tương ứng
-        /// (liên kết mục 4.13 - Nguồn thu 1).
+        /// ExchangeContractCompletedEvent để Exchange & Billing context tạo Invoice (SourceType = ExchangeFee) tương ứng.
         /// </summary>
         public Result Complete()
         {

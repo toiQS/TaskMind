@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Commons\" />
+    <Folder Include="Features\Finds\" />
+    <Folder Include="Features\Dashbroads\" />
+    <Folder Include="Features\Schools\" />
+    <Folder Include="Features\Users\" />
+    <Folder Include="Features\Projects\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TaskMind.Application.Commons\TaskMind.Applications.Commons.csproj" />
+  </ItemGroup>
+
+</Project>

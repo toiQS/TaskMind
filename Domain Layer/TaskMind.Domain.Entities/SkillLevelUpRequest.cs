@@ -7,9 +7,12 @@ using TaskMind.Domain.Events;
 namespace TaskMind.Domain.Entities
 {
     /// <summary>
-    /// Yêu cầu nâng level kỹ năng (mục 4.3.1): cần endorsement từ người có thẩm quyền cao hơn
-    /// trong đơn vị công tác của User (Technical leader, Admin company, Admin school), hoặc trải
-    /// qua chu trình đánh giá năng lực chuẩn của hệ thống (Assessment context).
+    /// Yêu cầu nâng level kỹ năng (mục 4.3.1). [CẬP NHẬT] bổ sung RequestType (SkillLevelUpMethod:
+    /// Endorsement/Assessment) và SubmissionId (liên kết tuỳ chọn tới Submission làm bằng chứng khi
+    /// RequestType = Assessment) theo tài liệu v2.
+    /// - Endorsement: cần bảo lãnh/xác nhận từ người có thẩm quyền cao hơn trong đơn vị công tác của
+    ///   User (Technical leader, Admin company, Admin school).
+    /// - Assessment: User trải qua chu trình đánh giá năng lực chuẩn (TestPaper/Submission).
     /// </summary>
     [Index(nameof(UserId), nameof(SkillId), nameof(RequestStatus))]
     public class SkillLevelUpRequest : AggregateRoot
@@ -19,26 +22,55 @@ namespace TaskMind.Domain.Entities
         public SkillLevel CurrentLevel { get; private set; }
         public Guid ApproverAccountId { get; private set; }
 
+        /// <summary>Phương thức nâng cấp: Endorsement hay Assessment (mục 4.3.1). [MỚI]</summary>
+        public SkillLevelUpMethod RequestType { get; private set; } = SkillLevelUpMethod.Endorsement;
+
+        /// <summary>Liên kết tuỳ chọn tới Submission làm bằng chứng, chỉ áp dụng khi RequestType = Assessment. [MỚI]</summary>
+        public Guid? SubmissionId { get; private set; }
+
         /// <summary>Đặt tên khác "Status" để không che khuất EntityBase.Status (EntityStatus).</summary>
         public SkillLevelUpRequestStatus RequestStatus { get; private set; } = SkillLevelUpRequestStatus.PendingEndorsement;
         public string? RejectionReason { get; private set; }
 
         private SkillLevelUpRequest() { }
 
-        private SkillLevelUpRequest(Guid userId, Guid skillId, SkillLevel currentLevel, Guid approverAccountId)
+        private SkillLevelUpRequest(Guid userId, Guid skillId, SkillLevel currentLevel, Guid approverAccountId, SkillLevelUpMethod requestType)
         {
             UserId = userId;
             SkillId = skillId;
             CurrentLevel = currentLevel;
             ApproverAccountId = approverAccountId;
+            RequestType = requestType;
+            RequestStatus = requestType == SkillLevelUpMethod.Assessment
+                ? SkillLevelUpRequestStatus.PendingAssessment
+                : SkillLevelUpRequestStatus.PendingEndorsement;
         }
 
-        public static Result<SkillLevelUpRequest> Create(Guid userId, Guid skillId, SkillLevel currentLevel, Guid approverAccountId)
+        public static Result<SkillLevelUpRequest> Create(
+            Guid userId,
+            Guid skillId,
+            SkillLevel currentLevel,
+            Guid approverAccountId,
+            SkillLevelUpMethod requestType = SkillLevelUpMethod.Endorsement)
         {
-            if (userId == Guid.Empty || skillId == Guid.Empty || approverAccountId == Guid.Empty)
+            if (userId == Guid.Empty || skillId == Guid.Empty)
                 return Result<SkillLevelUpRequest>.Failure("Thông tin yêu cầu nâng level không hợp lệ.");
+            if (requestType == SkillLevelUpMethod.Endorsement && approverAccountId == Guid.Empty)
+                return Result<SkillLevelUpRequest>.Failure("Yêu cầu bảo lãnh (Endorsement) cần xác định ApproverAccountId.");
 
-            return Result<SkillLevelUpRequest>.Success(new SkillLevelUpRequest(userId, skillId, currentLevel, approverAccountId));
+            return Result<SkillLevelUpRequest>.Success(new SkillLevelUpRequest(userId, skillId, currentLevel, approverAccountId, requestType));
+        }
+
+        /// <summary>Gắn Submission làm bằng chứng đánh giá (chỉ áp dụng cho RequestType = Assessment - mục 4.3.1). [MỚI]</summary>
+        public Result LinkSubmission(Guid submissionId)
+        {
+            if (RequestType != SkillLevelUpMethod.Assessment)
+                return Result.Failure("Chỉ yêu cầu theo hình thức Assessment mới có thể liên kết Submission.");
+            if (submissionId == Guid.Empty)
+                return Result.Failure("SubmissionId không hợp lệ.");
+
+            SubmissionId = submissionId;
+            return Result.Success();
         }
 
         public Result Approve()

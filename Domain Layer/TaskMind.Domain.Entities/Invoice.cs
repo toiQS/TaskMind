@@ -7,42 +7,47 @@ using TaskMind.Domain.Events;
 
 namespace TaskMind.Domain.Entities
 {
-    public enum InvoicePartnerType { Company, School }
-
-    /// <summary>Hoá đơn cho phí tham gia hệ thống hoặc phí giao dịch trao đổi (mục 4.13, 5.5).</summary>
-    [Index(nameof(PartnerId), nameof(InvoiceStatus))]
-    [Index(nameof(RelatedExchangeContractId))]
+    /// <summary>
+    /// [CẬP NHẬT] Hoá đơn cho phí tham gia hệ thống hoặc phí giao dịch trao đổi (mục 4.13, 4.14).
+    /// Thay PartnerId/PartnerType (enum InvoicePartnerType cũ) bằng SourceRefId/SourceType
+    /// (Enums.InvoiceSourceType: ExchangeFee/CompanySubscription/SchoolSubscription) để khớp tài liệu v2.
+    /// SourceRefId tham chiếu đa hình tới ExchangeContract.Id / Company.Id / School.Id tuỳ SourceType
+    /// (mục 8 - vấn đề mở: không thể dùng FK thông thường cho tham chiếu đa hình này).
+    /// </summary>
+    [Index(nameof(SourceRefId), nameof(InvoiceStatus))]
+    [Index(nameof(SourceType))]
     public class Invoice : AuditableAggregateRoot
     {
-        public Guid PartnerId { get; private set; }
-        public InvoicePartnerType PartnerType { get; private set; }
+        public InvoiceSourceType SourceType { get; private set; }
+
+        /// <summary>ExchangeContract.Id nếu SourceType = ExchangeFee; Company.Id nếu CompanySubscription; School.Id nếu SchoolSubscription.</summary>
+        public Guid SourceRefId { get; private set; }
         public Money Amount { get; private set; } = Money.Of(0);
         public InvoiceStatus InvoiceStatus { get; private set; } = InvoiceStatus.Pending;
-        public Guid? RelatedExchangeContractId { get; private set; }
         public DateTime? PaidAtUtc { get; private set; }
 
         private Invoice() { }
 
-        private Invoice(Guid partnerId, InvoicePartnerType partnerType, Money amount, Guid? relatedExchangeContractId)
+        private Invoice(InvoiceSourceType sourceType, Guid sourceRefId, Money amount)
         {
-            PartnerId = partnerId;
-            PartnerType = partnerType;
+            SourceType = sourceType;
+            SourceRefId = sourceRefId;
             Amount = amount;
-            RelatedExchangeContractId = relatedExchangeContractId;
         }
 
-        public static Result<Invoice> Create(Guid partnerId, InvoicePartnerType partnerType, Money amount, Guid? relatedExchangeContractId = null)
+        public static Result<Invoice> Create(InvoiceSourceType sourceType, Guid sourceRefId, Money amount)
         {
-            if (partnerId == Guid.Empty)
-                return Result<Invoice>.Failure("PartnerId không hợp lệ.");
+            if (sourceRefId == Guid.Empty)
+                return Result<Invoice>.Failure("SourceRefId không hợp lệ.");
             if (amount.Amount <= 0)
                 return Result<Invoice>.Failure("Số tiền hoá đơn phải lớn hơn 0.");
 
-            var invoice = new Invoice(partnerId, partnerType, amount, relatedExchangeContractId);
+            var invoice = new Invoice(sourceType, sourceRefId, amount);
             invoice.AddDomainEvent(new InvoiceIssuedEvent
             {
                 InvoiceId = invoice.Id,
-                PartnerId = partnerId,
+                SourceType = sourceType,
+                SourceRefId = sourceRefId,
                 Amount = amount.Amount,
                 Currency = amount.Currency
             });
@@ -65,7 +70,7 @@ namespace TaskMind.Domain.Entities
             InvoiceStatus = InvoiceStatus.Paid;
             PaidAtUtc = DateTime.UtcNow;
 
-            AddDomainEvent(new InvoicePaidEvent { InvoiceId = Id, PartnerId = PartnerId, Amount = Amount.Amount });
+            AddDomainEvent(new InvoicePaidEvent { InvoiceId = Id, SourceRefId = SourceRefId, Amount = Amount.Amount });
             return Result.Success();
         }
 
