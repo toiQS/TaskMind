@@ -9,5 +9,4 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Application Layer\TaskMind.Application.Commons\TaskMind.Applications.Commons.csproj" />
   </ItemGroup>
-
 </Project>

@@ -61,6 +61,12 @@ namespace TaskMind.Infrastructor.Weblications.Datas
 
         public DbSet<User> Users { get; set; }
 
+        public DbSet<Chat> Chats {  get; set; }
+
+        public DbSet<JobApplication> JobApplications {  get; set; }
+
+        public DbSet<JobPosting> JobPostings {  get; set; }
+
 
         // ── OVERRIDE SAVECHANGESASYNC: XỬ LÝ TẬP TRUNG TẤT CẢ LOGIC ───────
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
