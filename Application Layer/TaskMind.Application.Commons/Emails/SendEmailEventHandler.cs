@@ -1,10 +1,9 @@
 ﻿// Application Layer/TaskMind.Application.Events/SendEmailEventHandler.cs
 using MediatR;
 using System.Net;
-using TaskMind.Applications.Commons;
 using TaskMind.Domain.Events;
 
-namespace TaskMind.Applications.Commons.Email
+namespace TaskMind.Applications.Commons.Emails
 {
     /// <summary>
     /// Thực thi việc gửi email qua IEmailSender, áp dụng biểu mẫu chung EmailTemplate cho mọi email
