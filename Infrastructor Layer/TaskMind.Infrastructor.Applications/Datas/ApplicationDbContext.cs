@@ -66,6 +66,11 @@ namespace TaskMind.Infrastructor.Applications.Datas
         public DbSet<JobApplication> JobApplications { get; set; }
 
         public DbSet<JobPosting> JobPostings { get; set; }
+        public DbSet<AuditLog> AuditLogs { get; }
+        public DbSet<Review> Reviews { get; }
+        public DbSet<Certificate> Certificates { get; }
+        public DbSet<TestPaper> TestPapers { get; }
+        public DbSet<Submission> Submissions { get; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

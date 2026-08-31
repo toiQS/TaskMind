@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
+using TaskMind.Domain.Entities;
 
 namespace TaskMind.Applications.Admins.Features.Companies
 {
@@ -37,8 +38,10 @@ namespace TaskMind.Applications.Admins.Features.Companies
             if (!result.IsSuccess)
                 return ServiceResult.Failure(result.Message);
 
-            // TODO: ghi AuditLog.Record(command.ApproverAdminId, "CompanyVerified", nameof(Company), company.Id)
-            // khi IApplicationDbContext bổ sung DbSet<AuditLog> (mục 4.21, 7.3.1).
+            // thay TODO bằng:
+            var auditResult = AuditLog.Record(command.ApproverAdminId, "CompanyVerified", nameof(Company), company.Id);
+            if (auditResult.IsSuccess)
+                _dbContext.AuditLogs.Add(auditResult.Data!);
 
             await _dbContext.SaveChangesAsync(cancellationToken);
 

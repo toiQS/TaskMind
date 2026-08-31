@@ -14,7 +14,6 @@
 
   <ItemGroup>
     <Folder Include="Commons\" />
-    <Folder Include="Features\Users\" />
     <Folder Include="Features\Projects\" />
   </ItemGroup>
 

@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Entities;
 using TaskMind.Domain.Enums;
@@ -21,7 +22,7 @@ namespace TaskMind.Applications.Events
             _dbContext = dbContext;
         }
 
-        public Task Handle(SubmissionGradedEvent notification, CancellationToken cancellationToken)
+        public async Task Handle(SubmissionGradedEvent notification, CancellationToken cancellationToken)
         {
             var notifResult = Notification.Create(
                 notification.UserId,
@@ -32,9 +33,18 @@ namespace TaskMind.Applications.Events
             if (notifResult.IsSuccess)
                 _dbContext.Notifications.Add(notifResult.Data!);
 
-            // TODO (mục 7.3.4): cấp Certificate tự động khi đạt yêu cầu — xem ghi chú ở summary class trên.
+            // Cấp Certificate tự động khi TestPaper.OwnerType = School và đạt yêu cầu (mục 7.3.4).
+            var testPaper = await _dbContext.TestPapers
+                .AsNoTracking()
+                .FirstOrDefaultAsync(t => t.Id == notification.TestPaperId, cancellationToken);
 
-            return Task.CompletedTask;
+            const decimal passThreshold = 5.0m; // TODO: nên đưa ra config thay vì hardcode
+            if (testPaper?.OwnerType == TestOwnerType.School && notification.Score >= passThreshold)
+            {
+                var certResult = Certificate.Issue(notification.UserId, notification.SubmissionId);
+                if (certResult.IsSuccess)
+                    _dbContext.Certificates.Add(certResult.Data!);
+            }
         }
     }
 }

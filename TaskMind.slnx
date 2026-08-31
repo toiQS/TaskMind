@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/Application Layer/">
     <Project Path="Application Layer/TaskMind.Applications.Admins/TaskMind.Applications.Admins.csproj" Id="737ed3b2-f234-4603-9681-4b55913d859d" />
+    <Project Path="Application Layer/TaskMind.Applications.Users/TaskMind.Applications.Users.csproj" />
     <Project Path="D:/Coding/TaskMind/Application Layer/TaskMind.Application.Commons/TaskMind.Applications.Commons.csproj" Id="40682e02-90fa-40f1-9eea-39981f94a272" />
     <Project Path="D:/Coding/TaskMind/Application Layer/TaskMind.Application.Events/TaskMind.Applications.Events.csproj" Id="82dfe922-de59-4a77-b93f-1aaa8c6a047c" />
   </Folder>

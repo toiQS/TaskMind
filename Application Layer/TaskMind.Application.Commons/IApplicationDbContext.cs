@@ -28,6 +28,12 @@ namespace TaskMind.Applications.Commons
         public DbSet<JobApplication> JobApplications { get; }
         public DbSet<JobPosting> JobPostings { get; }
 
+        public DbSet<AuditLog> AuditLogs { get; }
+        public DbSet<Review> Reviews { get; }
+        public DbSet<Certificate> Certificates { get; }
+        public DbSet<TestPaper> TestPapers { get; }
+        public DbSet<Submission> Submissions { get; }
+
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }
