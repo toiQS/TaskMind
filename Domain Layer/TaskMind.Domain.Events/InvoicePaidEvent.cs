@@ -1,13 +1,11 @@
 ﻿// InvoicePaidEvent.cs
 using TaskMind.Domain.Commons.Events;
+using TaskMind.Domain.Enums;
 
-namespace TaskMind.Domain.Events
+public class InvoicePaidEvent : DomainEvent
 {
-    /// <summary>[CẬP NHẬT] PartnerId cũ đổi thành SourceRefId để khớp Invoice.SourceRefId (mục 4.14).</summary>
-    public class InvoicePaidEvent : DomainEvent
-    {
-        public Guid InvoiceId { get; init; }
-        public Guid SourceRefId { get; init; }
-        public decimal Amount { get; init; }
-    }
+    public Guid InvoiceId { get; init; }
+    public InvoiceSourceType SourceType { get; init; }   // [MỚI]
+    public Guid SourceRefId { get; init; }
+    public decimal Amount { get; init; }
 }

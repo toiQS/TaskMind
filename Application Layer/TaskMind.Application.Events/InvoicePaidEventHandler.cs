@@ -1,31 +1,49 @@
 ﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
-using TaskMind.Domain.Events;
+using TaskMind.Domain.Entities;
+using TaskMind.Domain.Enums;
 
-namespace TaskMind.Applications.Events.Handlers
+public class InvoicePaidEventHandler : INotificationHandler<InvoicePaidEvent>
 {
-    /// <summary>
-    /// Xử lý khi một Invoice được thanh toán (mục 7.3.6: AuditLog ghi nhận Action = PaymentIssued).
-    /// LƯU Ý: khác với InvoiceIssuedEvent, InvoicePaidEvent hiện KHÔNG mang SourceType — nên không thể
-    /// resolve người nhận Notification (Company/School/ExchangeContract) như InvoiceIssuedEventHandler.
-    /// Đề xuất: bổ sung SourceType vào InvoicePaidEvent (Invoice.MarkAsPaid) nếu muốn gửi Notification
-    /// "hoá đơn đã thanh toán" chính xác.
-    /// </summary>
-    internal class InvoicePaidEventHandler : INotificationHandler<InvoicePaidEvent>
+    private readonly IApplicationDbContext _dbContext;
+
+    public InvoicePaidEventHandler(IApplicationDbContext dbContext)
     {
-        private readonly IApplicationDbContext _dbContext;
+        _dbContext = dbContext;
+    }
 
-        public InvoicePaidEventHandler(IApplicationDbContext dbContext)
+    public async Task Handle(InvoicePaidEvent notification, CancellationToken cancellationToken)
+    {
+        Guid? recipientAccountId = notification.SourceType switch
         {
-            _dbContext = dbContext;
-        }
+            InvoiceSourceType.CompanySubscription => (await _dbContext.AdminCompanies
+                .AsNoTracking()
+                .FirstOrDefaultAsync(ac => ac.CompanyId == notification.SourceRefId, cancellationToken))?.LinkedUserId,
 
-        public Task Handle(InvoicePaidEvent notification, CancellationToken cancellationToken)
-        {
-            // TODO: AuditLog.Record(Guid.Empty, "PaymentIssued", nameof(Invoice), notification.InvoiceId)
-            // khi IApplicationDbContext bổ sung DbSet<AuditLog> (mục 4.21, 7.3.6).
+            InvoiceSourceType.SchoolSubscription => (await _dbContext.AdminSchools
+                .AsNoTracking()
+                .FirstOrDefaultAsync(a => a.SchoolId == notification.SourceRefId, cancellationToken))?.LinkedUserId,
 
-            return Task.CompletedTask;
-        }
+            InvoiceSourceType.ExchangeFee => (await _dbContext.ExchangeContracts
+                .AsNoTracking()
+                .FirstOrDefaultAsync(e => e.Id == notification.SourceRefId, cancellationToken))?.PartyAAccountId,
+
+            _ => null
+        };
+
+        if (recipientAccountId is null || recipientAccountId == Guid.Empty)
+            return;
+
+        var notifResult = Notification.Create(
+            recipientAccountId.Value,
+            "Hoá đơn đã thanh toán",
+            $"Hoá đơn của bạn trị giá {notification.Amount:N0} đã được thanh toán thành công.",
+            NotificationType.Success);
+
+        if (notifResult.IsSuccess)
+            _dbContext.Notifications.Add(notifResult.Data!);
+
+        // TODO: AuditLog.Record(Guid.Empty, "PaymentIssued", nameof(Invoice), notification.InvoiceId)
     }
 }

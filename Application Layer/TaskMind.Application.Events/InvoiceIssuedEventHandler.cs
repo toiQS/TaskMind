@@ -12,16 +12,16 @@ namespace TaskMind.Applications.Events.Handlers
     /// (mục 8 - vấn đề mở) nên phải resolve người nhận Notification tuỳ từng trường hợp:
     /// CompanySubscription -> AdminCompany, SchoolSubscription -> AdminSchool, ExchangeFee -> PartyA của ExchangeContract.
     /// </summary>
-    internal class InvoiceIssuedEventHandler : INotificationHandler<InvoiceIssuedEvent>
+    public class InvoicePaidEventHandler : INotificationHandler<InvoicePaidEvent>
     {
         private readonly IApplicationDbContext _dbContext;
 
-        public InvoiceIssuedEventHandler(IApplicationDbContext dbContext)
+        public InvoicePaidEventHandler(IApplicationDbContext dbContext)
         {
             _dbContext = dbContext;
         }
 
-        public async Task Handle(InvoiceIssuedEvent notification, CancellationToken cancellationToken)
+        public async Task Handle(InvoicePaidEvent notification, CancellationToken cancellationToken)
         {
             Guid? recipientAccountId = notification.SourceType switch
             {
@@ -45,12 +45,14 @@ namespace TaskMind.Applications.Events.Handlers
 
             var notifResult = Notification.Create(
                 recipientAccountId.Value,
-                "Hoá đơn mới",
-                $"Bạn có hoá đơn mới trị giá {notification.Amount:N0} {notification.Currency}.",
-                NotificationType.System);
+                "Hoá đơn đã thanh toán",
+                $"Hoá đơn của bạn trị giá {notification.Amount:N0} đã được thanh toán thành công.",
+                NotificationType.Success);
 
             if (notifResult.IsSuccess)
                 _dbContext.Notifications.Add(notifResult.Data!);
+
+            // TODO: AuditLog.Record(Guid.Empty, "PaymentIssued", nameof(Invoice), notification.InvoiceId)
         }
     }
 }

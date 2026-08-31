@@ -12,7 +12,7 @@ namespace TaskMind.Applications.Events.Handlers
     /// SkillPenaltyAppliedEvent do SkillProfile.ApplyPenaltyDowngrade phát sinh riêng ở tầng Domain —
     /// không tự trigger tại đây để tránh coupling ngược vào Domain layer.
     /// </summary>
-    internal class SkillLevelUpRejectedEventHandler : INotificationHandler<SkillLevelUpRejectedEvent>
+    public class SkillLevelUpRejectedEventHandler : INotificationHandler<SkillLevelUpRejectedEvent>
     {
         private readonly IApplicationDbContext _dbContext;
 

@@ -8,7 +8,7 @@ using TaskMind.Domain.Events;
 namespace TaskMind.Applications.Events.Handlers
 {
     /// <summary>Xử lý khi một Student chuyển từ cơ sở đào tạo này sang cơ sở đào tạo khác.</summary>
-    internal class StudentTransferredEventHandler : INotificationHandler<StudentTransferredEvent>
+    public class StudentTransferredEventHandler : INotificationHandler<StudentTransferredEvent>
     {
         private readonly IApplicationDbContext _dbContext;
 

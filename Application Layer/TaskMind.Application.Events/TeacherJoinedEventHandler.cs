@@ -7,7 +7,7 @@ using TaskMind.Domain.Events;
 namespace TaskMind.Applications.Events.Handlers
 {
     /// <summary>Xử lý khi User được cấp tài khoản Teacher sau khi cơ sở đào tạo mời và xác minh thành công (mục 4.1.1, 4.9).</summary>
-    internal class TeacherJoinedEventHandler : INotificationHandler<TeacherJoinedEvent>
+    public class TeacherJoinedEventHandler : INotificationHandler<TeacherJoinedEvent>
     {
         private readonly IApplicationDbContext _dbContext;
 

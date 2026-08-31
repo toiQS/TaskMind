@@ -8,7 +8,7 @@ using TaskMind.Domain.Events;
 namespace TaskMind.Applications.Events.Handlers
 {
     /// <summary>Xử lý khi yêu cầu nâng level kỹ năng được duyệt (mục 4.3.1).</summary>
-    internal class SkillLevelApprovedEventHandler : INotificationHandler<SkillLevelApprovedEvent>
+    public class SkillLevelApprovedEventHandler : INotificationHandler<SkillLevelApprovedEvent>
     {
         private readonly IApplicationDbContext _dbContext;
 

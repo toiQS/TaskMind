@@ -8,7 +8,7 @@ using TaskMind.Domain.Events;
 namespace TaskMind.Applications.Events.Handlers
 {
     /// <summary>Xử lý khi Admin hệ thống duyệt một cơ sở đào tạo (mục 4.8, 7.3.1) — tương tự CompanyVerifiedEventHandler.</summary>
-    internal class SchoolVerifiedEventHandler : INotificationHandler<SchoolVerifiedEvent>
+    public class SchoolVerifiedEventHandler : INotificationHandler<SchoolVerifiedEvent>
     {
         private readonly IApplicationDbContext _dbContext;
 

@@ -11,7 +11,7 @@ namespace TaskMind.Applications.Events.Handlers
     /// Xử lý khi một ExchangeContract hoàn tất (mục 4.13, 4.14, 7.3.6): tạo Invoice khấu trừ phí dịch vụ
     /// với SourceType = ExchangeFee, SourceRefId = ExchangeContractId.
     /// </summary>
-    internal class ExchangeContractCompletedEventHandler : INotificationHandler<ExchangeContractCompletedEvent>
+    public class ExchangeContractCompletedEventHandler : INotificationHandler<ExchangeContractCompletedEvent>
     {
         private readonly IApplicationDbContext _dbContext;
 

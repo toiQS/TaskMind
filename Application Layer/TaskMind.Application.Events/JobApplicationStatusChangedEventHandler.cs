@@ -7,7 +7,7 @@ using TaskMind.Domain.Events;
 namespace TaskMind.Applications.Events.Handlers
 {
     /// <summary>Xử lý khi trạng thái hồ sơ ứng tuyển thay đổi; thông báo cho ứng viên (mục 4.18).</summary>
-    internal class JobApplicationStatusChangedEventHandler : INotificationHandler<JobApplicationStatusChangedEvent>
+    public class JobApplicationStatusChangedEventHandler : INotificationHandler<JobApplicationStatusChangedEvent>
     {
         private readonly IApplicationDbContext _dbContext;
 

@@ -12,7 +12,7 @@ namespace TaskMind.Applications.Events.Handlers
     /// ExchangeContract.Complete() -> ExchangeContractCompletedEvent (xem ExchangeContractCompletedEventHandler),
     /// không xử lý tại đây để tránh trùng lặp trách nhiệm giữa hai aggregate.
     /// </summary>
-    internal class ProjectCompletedEventHandler : INotificationHandler<ProjectCompletedEvent>
+    public class ProjectCompletedEventHandler : INotificationHandler<ProjectCompletedEvent>
     {
         private readonly IApplicationDbContext _dbContext;
 

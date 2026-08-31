@@ -11,7 +11,7 @@ namespace TaskMind.Applications.Events.Handlers
     /// Xử lý khi User nộp hồ sơ ứng tuyển (mục 4.18). JobPosting.CompanyId trỏ tới Company, nên phải
     /// resolve qua AdminCompany để tìm đúng người nhận Notification (tương tự CompanyVerifiedEventHandler).
     /// </summary>
-    internal class JobApplicationSubmittedEventHandler : INotificationHandler<JobApplicationSubmittedEvent>
+    public class JobApplicationSubmittedEventHandler : INotificationHandler<JobApplicationSubmittedEvent>
     {
         private readonly IApplicationDbContext _dbContext;
 

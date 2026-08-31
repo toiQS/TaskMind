@@ -7,7 +7,7 @@ using TaskMind.Domain.Events;
 namespace TaskMind.Applications.Events.Handlers
 {
     /// <summary>Xử lý khi User đăng ký thành lập cơ sở đào tạo được Admin hệ thống xác minh thành công (mục 4.1.1, 4.8).</summary>
-    internal class AdminSchoolLinkedEventHandler : INotificationHandler<AdminSchoolLinkedEvent>
+    public class AdminSchoolLinkedEventHandler : INotificationHandler<AdminSchoolLinkedEvent>
     {
         private readonly IApplicationDbContext _dbContext;
 

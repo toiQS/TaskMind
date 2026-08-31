@@ -7,7 +7,7 @@ using TaskMind.Domain.Events;
 namespace TaskMind.Applications.Events.Handlers
 {
     /// <summary>Xử lý khi User được cấp tài khoản Student sau ghi danh và xác minh thành công (mục 4.1.1, 4.9).</summary>
-    internal class StudentEnrolledEventHandler : INotificationHandler<StudentEnrolledEvent>
+    public class StudentEnrolledEventHandler : INotificationHandler<StudentEnrolledEvent>
     {
         private readonly IApplicationDbContext _dbContext;
 

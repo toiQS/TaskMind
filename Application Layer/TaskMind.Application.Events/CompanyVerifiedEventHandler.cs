@@ -11,7 +11,7 @@ namespace TaskMind.Applications.Events.Handlers
     /// Xử lý khi Admin hệ thống duyệt một công ty (mục 4.4, 7.3.1). CompanyVerifiedEvent không mang
     /// LinkedUserId trực tiếp nên phải tra AdminCompany theo CompanyId để xác định người nhận Notification.
     /// </summary>
-    internal class CompanyVerifiedEventHandler : INotificationHandler<CompanyVerifiedEvent>
+    public class CompanyVerifiedEventHandler : INotificationHandler<CompanyVerifiedEvent>
     {
         private readonly IApplicationDbContext _dbContext;
 

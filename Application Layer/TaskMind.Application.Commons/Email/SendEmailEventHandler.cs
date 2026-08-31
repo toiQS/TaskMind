@@ -12,7 +12,7 @@ namespace TaskMind.Applications.Events.Handlers
     /// hệ thống (mục 4.17). Đây là "cửa ra" duy nhất của kênh email — mọi context khác chỉ cần
     /// publish SendEmailEvent, không tự dựng SMTP/HTML riêng.
     /// </summary>
-    internal class SendEmailEventHandler : INotificationHandler<SendEmailEvent>
+    public class SendEmailEventHandler : INotificationHandler<SendEmailEvent>
     {
         private readonly IEmailSender _emailSender;
 

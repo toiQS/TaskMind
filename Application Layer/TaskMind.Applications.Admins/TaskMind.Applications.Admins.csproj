@@ -7,8 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Features\Finds\**" />
+    <EmbeddedResource Remove="Features\Finds\**" />
+    <None Remove="Features\Finds\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Commons\" />
-    <Folder Include="Features\Finds\" />
     <Folder Include="Features\Users\" />
     <Folder Include="Features\Projects\" />
   </ItemGroup>

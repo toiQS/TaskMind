@@ -70,7 +70,13 @@ namespace TaskMind.Domain.Entities
             InvoiceStatus = InvoiceStatus.Paid;
             PaidAtUtc = DateTime.UtcNow;
 
-            AddDomainEvent(new InvoicePaidEvent { InvoiceId = Id, SourceRefId = SourceRefId, Amount = Amount.Amount });
+            AddDomainEvent(new InvoicePaidEvent
+            {
+                InvoiceId = Id,
+                SourceType = SourceType,      
+                SourceRefId = SourceRefId,
+                Amount = Amount.Amount
+            });
             return Result.Success();
         }
 

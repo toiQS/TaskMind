@@ -8,7 +8,7 @@ using TaskMind.Domain.Events;
 namespace TaskMind.Applications.Events.Handlers
 {
     /// <summary>Xử lý khi hệ thống hạ level kỹ năng do xác minh không đạt, mức phạt x2 (mục 4.3.1).</summary>
-    internal class SkillPenaltyAppliedEventHandler : INotificationHandler<SkillPenaltyAppliedEvent>
+    public class SkillPenaltyAppliedEventHandler : INotificationHandler<SkillPenaltyAppliedEvent>
     {
         private readonly IApplicationDbContext _dbContext;
 

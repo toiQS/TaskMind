@@ -71,49 +71,52 @@ namespace TaskMind.Infrastructor.Weblications.Datas
         // ── OVERRIDE SAVECHANGESASYNC: XỬ LÝ TẬP TRUNG TẤT CẢ LOGIC ───────
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            // 1. Quét tracker để tạo danh sách Audit Log (Trước khi lưu, trạng thái entity còn nguyên)
             Guid? userId = _sessionProvider.GetUserId();
             List<AuditEntry> auditEntries = OnBeforeSaveChanges(userId);
 
-            // 2. Gom toàn bộ Domain Events từ các AggregateRoot trước khi lưu xuống DB
-            List<AggregateRoot> aggregates = ChangeTracker.Entries<AggregateRoot>()
-                .Where(e => e.Entity.DomainEvents != null && e.Entity.DomainEvents.Any())
-                .Select(e => e.Entity)
-                .ToList();
-
-            List<DomainEvent> domainEvents = aggregates.SelectMany(e => e.DomainEvents).ToList();
-
-            // Clear sạch event trong entity để tránh bị phát lặp lại ở lần Save sau
-            foreach (AggregateRoot? aggregate in aggregates)
-            {
-                aggregate.ClearDomainEvents();
-            }
-
-            // 3. Thực hiện Lưu Dữ Liệu Nghiệp Vụ chính xuống database cứng lần 1
+            // 1) Lưu nghiệp vụ chính lần đầu
             int result = await base.SaveChangesAsync(cancellationToken);
 
-            // 4. Cập nhật khóa ngoại của thực thể "Tạo mới" (được sinh tự động sau câu lệnh Save trên) và lưu Audit Trail
+            // 2) Lưu Audit Trail
             await OnAfterSaveChanges(auditEntries, cancellationToken);
 
-            // 5. Phát tán các Domain Events đi khắp hệ thống (Gửi thông báo, Realtime SignalR, Sync Elastic...)
-            foreach (DomainEvent? domainEvent in domainEvents)
+            // 3) Publish domain event theo VÒNG LẶP: mỗi round có thể sinh thêm aggregate mới
+            //    (ví dụ: CompanyVerifiedEventHandler tạo Notification -> Notification.Create lại
+            //    raise NotificationCreatedEvent -> cần 1 round nữa để publish tiếp -> SendEmailEvent).
+            while (true)
             {
-                try
-                {
-                    await _publisher.Publish(domainEvent, cancellationToken);
-                    _logger.LogInformation("Successfully published domain event {EventType}", domainEvent.GetType().Name);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Failed to publish domain event {EventType}", domainEvent.GetType().Name);
+                List<AggregateRoot> aggregates = ChangeTracker.Entries<AggregateRoot>()
+                    .Where(e => e.Entity.DomainEvents.Any())
+                    .Select(e => e.Entity)
+                    .ToList();
 
-                    // Nếu gửi Event lỗi, nạp lại event vào entity để Handler lớp ngoài có thể bắt và xử lý retry
-                    foreach (AggregateRoot? aggregateRoot in aggregates)
+                if (aggregates.Count == 0)
+                    break;
+
+                List<DomainEvent> domainEvents = aggregates.SelectMany(e => e.DomainEvents).ToList();
+
+                foreach (AggregateRoot aggregate in aggregates)
+                    aggregate.ClearDomainEvents();
+
+                foreach (DomainEvent domainEvent in domainEvents)
+                {
+                    try
                     {
-                        aggregateRoot.AddDomainEvent(domainEvent);
+                        await _publisher.Publish(domainEvent, cancellationToken);
+                        _logger.LogInformation("Successfully published domain event {EventType}", domainEvent.GetType().Name);
                     }
-                    throw;
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to publish domain event {EventType}", domainEvent.GetType().Name);
+                        foreach (AggregateRoot aggregate in aggregates)
+                            aggregate.AddDomainEvent(domainEvent);
+                        throw;
+                    }
                 }
+
+                // Lưu các entity mới mà handler vừa Add (vd: Notification) TRƯỚC khi lặp lại vòng kế tiếp,
+                // để domain event tiếp theo (NotificationCreatedEvent) được ghi nhận đúng.
+                result += await base.SaveChangesAsync(cancellationToken);
             }
 
             return result;

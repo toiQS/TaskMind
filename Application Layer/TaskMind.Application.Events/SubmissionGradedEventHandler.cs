@@ -12,7 +12,7 @@ namespace TaskMind.Applications.Events.Handlers
     /// thực hiện được vì IApplicationDbContext hiện thiếu DbSet&lt;TestPaper&gt;/DbSet&lt;Certificate&gt;
     /// để tra cứu và gọi Certificate.Issue(...) — cần bổ sung 2 DbSet này trước.
     /// </summary>
-    internal class SubmissionGradedEventHandler : INotificationHandler<SubmissionGradedEvent>
+    public class SubmissionGradedEventHandler : INotificationHandler<SubmissionGradedEvent>
     {
         private readonly IApplicationDbContext _dbContext;
 

@@ -7,7 +7,7 @@ using TaskMind.Domain.Events;
 namespace TaskMind.Applications.Events.Handlers
 {
     /// <summary>Xử lý khi hệ thống cấp chứng chỉ điện tử cho User (mục 4.20).</summary>
-    internal class CertificateIssuedEventHandler : INotificationHandler<CertificateIssuedEvent>
+    public class CertificateIssuedEventHandler : INotificationHandler<CertificateIssuedEvent>
     {
         private readonly IApplicationDbContext _dbContext;
 

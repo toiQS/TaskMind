@@ -12,7 +12,7 @@ namespace TaskMind.Applications.Events.Handlers
     /// tra Profile.Email tương ứng RecipientAccountId rồi publish SendEmailEvent (mục 4.17: "Thông báo
     /// qua email và trong ứng dụng").
     /// </summary>
-    internal class NotificationCreatedEventHandler : INotificationHandler<NotificationCreatedEvent>
+    public class NotificationCreatedEventHandler : INotificationHandler<NotificationCreatedEvent>
     {
         private readonly IApplicationDbContext _dbContext;
         private readonly IPublisher _publisher;

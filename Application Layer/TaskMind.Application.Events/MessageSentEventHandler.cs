@@ -7,7 +7,7 @@ using TaskMind.Domain.Events;
 namespace TaskMind.Applications.Events.Handlers
 {
     /// <summary>Xử lý khi một Message mới được gửi trong Chat; tạo Notification tới các thành viên còn lại (mục 4.22, 4.17).</summary>
-    internal class MessageSentEventHandler : INotificationHandler<MessageSentEvent>
+    public class MessageSentEventHandler : INotificationHandler<MessageSentEvent>
     {
         private readonly IApplicationDbContext _dbContext;
 
