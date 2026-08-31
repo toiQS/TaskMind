@@ -4,7 +4,7 @@ using TaskMind.Domain.Entities;
 using TaskMind.Domain.Enums;
 using TaskMind.Domain.Events;
 
-namespace TaskMind.Applications.Events.Handlers
+namespace TaskMind.Applications.Events
 {
     /// <summary>Xử lý khi trạng thái hồ sơ ứng tuyển thay đổi; thông báo cho ứng viên (mục 4.18).</summary>
     public class JobApplicationStatusChangedEventHandler : INotificationHandler<JobApplicationStatusChangedEvent>

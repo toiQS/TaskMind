@@ -5,7 +5,7 @@ using TaskMind.Domain.Entities;
 using TaskMind.Domain.Enums;
 using TaskMind.Domain.Events;
 
-namespace TaskMind.Applications.Events.Handlers
+namespace TaskMind.Applications.Events
 {
     /// <summary>Xử lý khi một Student chuyển từ cơ sở đào tạo này sang cơ sở đào tạo khác.</summary>
     public class StudentTransferredEventHandler : INotificationHandler<StudentTransferredEvent>

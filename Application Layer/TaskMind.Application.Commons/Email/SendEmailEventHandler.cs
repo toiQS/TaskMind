@@ -2,10 +2,9 @@
 using MediatR;
 using System.Net;
 using TaskMind.Applications.Commons;
-using TaskMind.Applications.Commons.Emails;
 using TaskMind.Domain.Events;
 
-namespace TaskMind.Applications.Events.Handlers
+namespace TaskMind.Applications.Commons.Email
 {
     /// <summary>
     /// Thực thi việc gửi email qua IEmailSender, áp dụng biểu mẫu chung EmailTemplate cho mọi email

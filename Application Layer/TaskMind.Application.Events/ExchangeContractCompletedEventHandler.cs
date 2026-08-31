@@ -5,7 +5,7 @@ using TaskMind.Domain.Entities;
 using TaskMind.Domain.Enums;
 using TaskMind.Domain.Events;
 
-namespace TaskMind.Applications.Events.Handlers
+namespace TaskMind.Applications.Events
 {
     /// <summary>
     /// Xử lý khi một ExchangeContract hoàn tất (mục 4.13, 4.14, 7.3.6): tạo Invoice khấu trừ phí dịch vụ

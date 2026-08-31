@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Events;
 
-namespace TaskMind.Applications.Events.Handlers
+namespace TaskMind.Applications.Events
 {
     /// <summary>
     /// Xử lý khi một Notification được tạo (mục 5.3, 4.17). Notification trong ứng dụng đã được lưu

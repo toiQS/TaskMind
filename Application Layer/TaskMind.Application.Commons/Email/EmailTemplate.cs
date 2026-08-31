@@ -1,5 +1,5 @@
 ﻿// Application Layer/TaskMind.Application.Commons/Emails/EmailTemplate.cs
-namespace TaskMind.Applications.Commons.Emails
+namespace TaskMind.Applications.Commons.Email
 {
     /// <summary>Nội dung khai báo cho một email, sẽ được EmailTemplate bọc vào layout chung (mục 4.17).</summary>
     public class EmailContent

@@ -4,7 +4,7 @@ using TaskMind.Domain.Entities;
 using TaskMind.Domain.Enums;
 using TaskMind.Domain.Events;
 
-namespace TaskMind.Applications.Events.Handlers
+namespace TaskMind.Applications.Events
 {
     /// <summary>Xử lý khi User được cấp tài khoản Student sau ghi danh và xác minh thành công (mục 4.1.1, 4.9).</summary>
     public class StudentEnrolledEventHandler : INotificationHandler<StudentEnrolledEvent>

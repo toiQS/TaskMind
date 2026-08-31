@@ -4,7 +4,7 @@ using TaskMind.Domain.Entities;
 using TaskMind.Domain.Enums;
 using TaskMind.Domain.Events;
 
-namespace TaskMind.Applications.Events.Handlers
+namespace TaskMind.Applications.Events
 {
     /// <summary>Xử lý khi User được cấp tài khoản Staff sau khi Company mời và xác minh thành công (mục 4.1.1, 4.5).</summary>
     public class StaffJoinedEventHandler : INotificationHandler<StaffJoinedEvent>

@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System.Text.Json;
-using TaskMind.Domain.Commons.Cores;
+using TaskMind.Domain.Entities;
 
 namespace TaskMind.Infrastructor.Applications.Datas
 {

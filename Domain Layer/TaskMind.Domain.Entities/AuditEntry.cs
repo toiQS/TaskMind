@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
-using TaskMind.Domain.Commons.Cores;
 using TaskMind.Domain.Enums;
 
 namespace TaskMind.Domain.Entities

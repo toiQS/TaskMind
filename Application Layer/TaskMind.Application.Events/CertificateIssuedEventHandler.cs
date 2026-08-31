@@ -4,7 +4,7 @@ using TaskMind.Domain.Entities;
 using TaskMind.Domain.Enums;
 using TaskMind.Domain.Events;
 
-namespace TaskMind.Applications.Events.Handlers
+namespace TaskMind.Applications.Events
 {
     /// <summary>Xử lý khi hệ thống cấp chứng chỉ điện tử cho User (mục 4.20).</summary>
     public class CertificateIssuedEventHandler : INotificationHandler<CertificateIssuedEvent>

@@ -5,7 +5,7 @@ using TaskMind.Domain.Entities;
 using TaskMind.Domain.Enums;
 using TaskMind.Domain.Events;
 
-namespace TaskMind.Applications.Events.Handlers
+namespace TaskMind.Applications.Events
 {
     /// <summary>
     /// Xử lý khi Admin hệ thống duyệt một công ty (mục 4.4, 7.3.1). CompanyVerifiedEvent không mang

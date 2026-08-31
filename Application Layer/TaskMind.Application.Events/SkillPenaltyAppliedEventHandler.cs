@@ -5,7 +5,7 @@ using TaskMind.Domain.Entities;
 using TaskMind.Domain.Enums;
 using TaskMind.Domain.Events;
 
-namespace TaskMind.Applications.Events.Handlers
+namespace TaskMind.Applications.Events
 {
     /// <summary>Xử lý khi hệ thống hạ level kỹ năng do xác minh không đạt, mức phạt x2 (mục 4.3.1).</summary>
     public class SkillPenaltyAppliedEventHandler : INotificationHandler<SkillPenaltyAppliedEvent>

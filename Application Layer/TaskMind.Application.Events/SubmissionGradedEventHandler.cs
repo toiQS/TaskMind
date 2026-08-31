@@ -4,7 +4,7 @@ using TaskMind.Domain.Entities;
 using TaskMind.Domain.Enums;
 using TaskMind.Domain.Events;
 
-namespace TaskMind.Applications.Events.Handlers
+namespace TaskMind.Applications.Events
 {
     /// <summary>
     /// Xử lý khi một Submission được chấm điểm (mục 4.6, 4.11, 7.3.4). Gửi Notification kết quả; việc

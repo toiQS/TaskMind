@@ -5,7 +5,7 @@ using TaskMind.Domain.Entities;
 using TaskMind.Domain.Enums;
 using TaskMind.Domain.Events;
 
-namespace TaskMind.Applications.Events.Handlers
+namespace TaskMind.Applications.Events
 {
     /// <summary>
     /// Xử lý khi yêu cầu nâng level kỹ năng bị từ chối (mục 4.3.1). Sự kiện này thường kéo theo

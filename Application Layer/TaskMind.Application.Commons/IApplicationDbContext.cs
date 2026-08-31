@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TaskMind.Domain.Commons.Cores;
 using TaskMind.Domain.Entities;
 
 namespace TaskMind.Applications.Commons

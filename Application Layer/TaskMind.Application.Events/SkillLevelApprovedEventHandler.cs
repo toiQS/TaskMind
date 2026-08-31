@@ -5,7 +5,7 @@ using TaskMind.Domain.Entities;
 using TaskMind.Domain.Enums;
 using TaskMind.Domain.Events;
 
-namespace TaskMind.Applications.Events.Handlers
+namespace TaskMind.Applications.Events
 {
     /// <summary>Xử lý khi yêu cầu nâng level kỹ năng được duyệt (mục 4.3.1).</summary>
     public class SkillLevelApprovedEventHandler : INotificationHandler<SkillLevelApprovedEvent>

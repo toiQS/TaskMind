@@ -5,7 +5,7 @@ using TaskMind.Domain.Entities;
 using TaskMind.Domain.Enums;
 using TaskMind.Domain.Events;
 
-namespace TaskMind.Applications.Events.Handlers
+namespace TaskMind.Applications.Events
 {
     /// <summary>Xử lý khi Admin hệ thống duyệt một cơ sở đào tạo (mục 4.8, 7.3.1) — tương tự CompanyVerifiedEventHandler.</summary>
     public class SchoolVerifiedEventHandler : INotificationHandler<SchoolVerifiedEvent>

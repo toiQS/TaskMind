@@ -4,7 +4,7 @@ using TaskMind.Domain.Entities;
 using TaskMind.Domain.Enums;
 using TaskMind.Domain.Events;
 
-namespace TaskMind.Applications.Events.Handlers
+namespace TaskMind.Applications.Events
 {
     /// <summary>Xử lý khi User đăng ký thành lập cơ sở đào tạo được Admin hệ thống xác minh thành công (mục 4.1.1, 4.8).</summary>
     public class AdminSchoolLinkedEventHandler : INotificationHandler<AdminSchoolLinkedEvent>

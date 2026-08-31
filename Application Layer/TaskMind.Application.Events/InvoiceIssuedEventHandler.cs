@@ -4,7 +4,7 @@ using TaskMind.Applications.Commons;
 using TaskMind.Domain.Entities;
 using TaskMind.Domain.Enums;
 
-namespace TaskMind.Applications.Events.Handlers
+namespace TaskMind.Applications.Events
 {
     /// <summary>
     /// Xử lý khi một Invoice được xuất (mục 4.14, 4.17). SourceRefId tham chiếu đa hình theo SourceType

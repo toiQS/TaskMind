@@ -4,7 +4,7 @@ using TaskMind.Domain.Entities;
 using TaskMind.Domain.Enums;
 using TaskMind.Domain.Events;
 
-namespace TaskMind.Applications.Events.Handlers
+namespace TaskMind.Applications.Events
 {
     /// <summary>Xử lý khi một Message mới được gửi trong Chat; tạo Notification tới các thành viên còn lại (mục 4.22, 4.17).</summary>
     public class MessageSentEventHandler : INotificationHandler<MessageSentEvent>

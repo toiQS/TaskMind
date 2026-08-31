@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TaskMind.Domain.Enums;
 
-namespace TaskMind.Domain.Commons.Cores
+namespace TaskMind.Domain.Entities
 {
     [Index(nameof(EntityName), nameof(PrimaryKey))]
     [Index(nameof(UserId), nameof(DateUtc))]
