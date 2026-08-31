@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace TaskMind.Applications.Admins.Dtos
+﻿namespace TaskMind.Applications.Admins.Dtos
 {
     public class RegisterResultDto
     {

@@ -1,8 +1,5 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using TaskMind.Applications.Admins.Dtos;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Enums;
@@ -10,7 +7,7 @@ using TaskMind.Domain.Enums;
 
 namespace TaskMind.Applications.Admins.Features.Jobs
 {
-    public class GetDashbroadQuery()  : IRequest<ServiceResult<DashboardRecruitmentStatsDto>>
+    public class GetDashbroadQuery() : IRequest<ServiceResult<DashboardRecruitmentStatsDto>>
     {
 
     }
@@ -34,7 +31,7 @@ namespace TaskMind.Applications.Admins.Features.Jobs
 
             var skills = await _dbContext.Skills.ToListAsync(cancellationToken);
 
-            foreach(var skill in skills)
+            foreach (var skill in skills)
             {
                 var jobPostingsCount = await _dbContext.JobPostings.CountAsync(j => j.RequiredSkillIds.Contains(skill.Id) && j.PostingStatus == JobPostingStatus.Open, cancellationToken);
                 statsDto.JobPostingsByStatus.Add(new NodeChatDto

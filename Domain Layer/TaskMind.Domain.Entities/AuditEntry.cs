@@ -1,7 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using TaskMind.Domain.Commons.Cores;
 using TaskMind.Domain.Enums;
 

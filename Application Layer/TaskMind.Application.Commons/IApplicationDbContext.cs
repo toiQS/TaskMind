@@ -1,8 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Text;
 using TaskMind.Domain.Commons.Cores;
 using TaskMind.Domain.Entities;
 
@@ -10,7 +6,7 @@ namespace TaskMind.Applications.Commons
 {
     public interface IApplicationDbContext
     {
-     
+
         public DbSet<AuditTrail> AuditTrails { get; }
         public DbSet<Admin> Admins { get; }
         public DbSet<AdminCompany> AdminCompanies { get; }
@@ -27,7 +23,7 @@ namespace TaskMind.Applications.Commons
         public DbSet<SkillProfile> SkillProfiles { get; }
         public DbSet<Staff> Staffs { get; }
         public DbSet<Student> Students { get; }
-        public DbSet<Teacher> Teachers { get; } 
+        public DbSet<Teacher> Teachers { get; }
         public DbSet<User> Users { get; }
         public DbSet<Chat> Chats { get; }
         public DbSet<JobApplication> JobApplications { get; }

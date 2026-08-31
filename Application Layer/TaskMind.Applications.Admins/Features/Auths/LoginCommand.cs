@@ -1,13 +1,6 @@
-﻿using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualBasic;
-using System;
-using System.Collections.Generic;
-using System.Security.Principal;
-using System.Text;
+﻿using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Admins.Dtos;
 using TaskMind.Applications.Commons;
-using TaskMind.Domain.Entities;
 using TaskMind.Domain.Enums;
 
 namespace TaskMind.Applications.Admins.Features.Auths
@@ -48,10 +41,11 @@ namespace TaskMind.Applications.Admins.Features.Auths
                 })
                 .Where(x => x.Role == AccountRole.Admin && x.Email == command.Email.Trim()).FirstOrDefaultAsync(cancellationToken);
 
-            if(user == null)
+            if (user == null)
             {
                 return ServiceResult<LoginResultDto>.NotFound("User not found.");
-            };
+            }
+            ;
 
             // Không phân biệt rõ "sai email" hay "sai mật khẩu" trong thông báo lỗi (chống dò quét tài khoản).
             if (user == null || !BCrypt.Net.BCrypt.Verify(command.Password, user.PasswordHash))
@@ -64,14 +58,14 @@ namespace TaskMind.Applications.Admins.Features.Auths
                 return ServiceResult<LoginResultDto>.Forbidden("Tài khoản đang bị tạm khoá.");
 
 
-            
+
             var dto = new LoginResultDto
             {
                 AccountId = user.Id,
                 Email = user.Email,
                 FullName = user.FirstName,
                 Role = user.Role.ToString(),
-                
+
             };
             return ServiceResult<LoginResultDto>.Success(dto, "Đăng nhập thành công");
         }

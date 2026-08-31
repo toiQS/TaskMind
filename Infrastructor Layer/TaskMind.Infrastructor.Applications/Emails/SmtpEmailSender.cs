@@ -1,8 +1,8 @@
 ﻿// Infrastructor Layer/TaskMind.Infrastructor.Applications/Emails/SmtpEmailSender.cs
-using System.Net;
-using System.Net.Mail;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Net;
+using System.Net.Mail;
 using TaskMind.Applications.Commons;
 
 namespace TaskMind.Infrastructor.Applications.Emails

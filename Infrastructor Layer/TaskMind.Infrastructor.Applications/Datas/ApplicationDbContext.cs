@@ -61,11 +61,11 @@ namespace TaskMind.Infrastructor.Applications.Datas
 
         public DbSet<User> Users { get; set; }
 
-        public DbSet<Chat> Chats {  get; set; }
+        public DbSet<Chat> Chats { get; set; }
 
-        public DbSet<JobApplication> JobApplications {  get; set; }
+        public DbSet<JobApplication> JobApplications { get; set; }
 
-        public DbSet<JobPosting> JobPostings {  get; set; }
+        public DbSet<JobPosting> JobPostings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -220,5 +220,5 @@ namespace TaskMind.Infrastructor.Applications.Datas
             _ = await base.SaveChangesAsync(cancellationToken);
         }
     }
-    
+
 }

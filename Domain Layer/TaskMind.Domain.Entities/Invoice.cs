@@ -73,7 +73,7 @@ namespace TaskMind.Domain.Entities
             AddDomainEvent(new InvoicePaidEvent
             {
                 InvoiceId = Id,
-                SourceType = SourceType,      
+                SourceType = SourceType,
                 SourceRefId = SourceRefId,
                 Amount = Amount.Amount
             });

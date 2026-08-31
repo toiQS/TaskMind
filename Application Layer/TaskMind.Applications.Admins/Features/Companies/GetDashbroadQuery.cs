@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace TaskMind.Applications.Admins.Features.Companies
+﻿namespace TaskMind.Applications.Admins.Features.Companies
 {
     public class GetDashbroadQuery
     {

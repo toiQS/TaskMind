@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Entities;
 using TaskMind.Domain.Enums;
-using TaskMind.Domain.Events;
 
 namespace TaskMind.Applications.Events.Handlers
 {

@@ -1,8 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using TaskMind.Domain.Entities;
 
 namespace TaskMind.Infrastructor.Applications.Datas
@@ -14,7 +11,7 @@ namespace TaskMind.Infrastructor.Applications.Datas
             builder.OwnsOne(x => x.Profile, p =>
             {
                 p.WithOwner();
-                p.OwnsOne(pp => pp.Address); 
+                p.OwnsOne(pp => pp.Address);
             });
 
             builder.OwnsOne(x => x.Security);

@@ -3,7 +3,7 @@
 namespace TaskMind.Applications.Commons
 {
     public enum ResultStatus
-    {   
+    {
         [Description("None")]
         None,
 
