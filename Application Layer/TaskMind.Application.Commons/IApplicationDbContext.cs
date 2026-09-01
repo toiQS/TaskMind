@@ -5,7 +5,6 @@ namespace TaskMind.Applications.Commons
 {
     public interface IApplicationDbContext
     {
-
         public DbSet<AuditTrail> AuditTrails { get; }
         public DbSet<Admin> Admins { get; }
         public DbSet<AdminCompany> AdminCompanies { get; }
@@ -33,6 +32,10 @@ namespace TaskMind.Applications.Commons
         public DbSet<Certificate> Certificates { get; }
         public DbSet<TestPaper> TestPapers { get; }
         public DbSet<Submission> Submissions { get; }
+
+        // [MỚI] cần cho mục 4.3.2 / 4.3.3
+        public DbSet<CompanySkillReflectionRequest> CompanySkillReflectionRequests { get; }
+        public DbSet<SkillHistoryEntry> SkillHistoryEntries { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }

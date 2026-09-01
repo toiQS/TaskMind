@@ -71,6 +71,8 @@ namespace TaskMind.Infrastructor.Applications.Datas
         public DbSet<Certificate> Certificates { get; }
         public DbSet<TestPaper> TestPapers { get; }
         public DbSet<Submission> Submissions { get; }
+        public DbSet<CompanySkillReflectionRequest> CompanySkillReflectionRequests { get; set; }
+        public DbSet<SkillHistoryEntry> SkillHistoryEntries { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

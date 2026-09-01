@@ -29,17 +29,28 @@ namespace TaskMind.Applications.Admins.Features.Jobs
                 TotalJobsClosers = totalJobsClosers
             };
 
-            var skills = await _dbContext.Skills.ToListAsync(cancellationToken);
+            // Gộp thành 1 truy vấn thay vì N+1
+            var openPostings = await _dbContext.JobPostings
+                .AsNoTracking()
+                .Where(j => j.PostingStatus == JobPostingStatus.Open)
+                .Select(j => j.RequiredSkillIds)
+                .ToListAsync(cancellationToken);
 
-            foreach (var skill in skills)
+            var skillCounts = openPostings
+                .SelectMany(ids => ids)
+                .GroupBy(id => id)
+                .ToDictionary(g => g.Key, g => g.Count());
+
+            var skills = await _dbContext.Skills
+                .AsNoTracking()
+                .Where(s => skillCounts.Keys.Contains(s.Id))
+                .ToListAsync(cancellationToken);
+
+            statsDto.JobPostingsByStatus = skills.Select(s => new NodeChatDto
             {
-                var jobPostingsCount = await _dbContext.JobPostings.CountAsync(j => j.RequiredSkillIds.Contains(skill.Id) && j.PostingStatus == JobPostingStatus.Open, cancellationToken);
-                statsDto.JobPostingsByStatus.Add(new NodeChatDto
-                {
-                    Name = skill.Name,
-                    Value = jobPostingsCount
-                });
-            }
+                Name = s.SkillName, 
+                Value = skillCounts.TryGetValue(s.Id, out var c) ? c : 0
+            }).ToList();
 
             return ServiceResult<DashboardRecruitmentStatsDto>.Success(statsDto);
         }

@@ -43,12 +43,11 @@ namespace TaskMind.Applications.Admins.Features.Jobs
                 .ToListAsync(cancellationToken);
 
             var applications = await _dbContext.JobApplications
-                .AsNoTracking()
-                .Include(a => a.GetType()) // placeholder tránh warning; xem ghi chú bên dưới
-                .Where(a => a.JobPostingId == posting.Id)
-                .OrderByDescending(a => a.AppliedAtUtc)
-                .Take(10)
-                .ToListAsync(cancellationToken);
+    .AsNoTracking()
+    .Where(a => a.JobPostingId == posting.Id)   // đã xoá dòng .Include(a => a.GetType())
+    .OrderByDescending(a => a.AppliedAtUtc)
+    .Take(10)
+    .ToListAsync(cancellationToken);
 
             var userIds = applications.Select(a => a.UserId).Distinct().ToList();
             var users = await _dbContext.Users
