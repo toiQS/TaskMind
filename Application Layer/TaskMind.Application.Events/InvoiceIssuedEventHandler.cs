@@ -3,24 +3,21 @@ using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Entities;
 using TaskMind.Domain.Enums;
+using TaskMind.Domain.Events;
 
 namespace TaskMind.Applications.Events
 {
-    /// <summary>
-    /// Xử lý khi một Invoice được xuất (mục 4.14, 4.17). SourceRefId tham chiếu đa hình theo SourceType
-    /// (mục 8 - vấn đề mở) nên phải resolve người nhận Notification tuỳ từng trường hợp:
-    /// CompanySubscription -> AdminCompany, SchoolSubscription -> AdminSchool, ExchangeFee -> PartyA của ExchangeContract.
-    /// </summary>
-    public class InvoicePaidEventHandler : INotificationHandler<InvoicePaidEvent>
+    /// <summary>Xử lý khi một Invoice được xuất (mục 4.14, 4.17) — gửi thông báo "hoá đơn mới".</summary>
+    public class InvoiceIssuedEventHandler : INotificationHandler<InvoiceIssuedEvent>
     {
         private readonly IApplicationDbContext _dbContext;
 
-        public InvoicePaidEventHandler(IApplicationDbContext dbContext)
+        public InvoiceIssuedEventHandler(IApplicationDbContext dbContext)
         {
             _dbContext = dbContext;
         }
 
-        public async Task Handle(InvoicePaidEvent notification, CancellationToken cancellationToken)
+        public async Task Handle(InvoiceIssuedEvent notification, CancellationToken cancellationToken)
         {
             Guid? recipientAccountId = notification.SourceType switch
             {
@@ -44,14 +41,12 @@ namespace TaskMind.Applications.Events
 
             var notifResult = Notification.Create(
                 recipientAccountId.Value,
-                "Hoá đơn đã thanh toán",
-                $"Hoá đơn của bạn trị giá {notification.Amount:N0} đã được thanh toán thành công.",
-                NotificationType.Success);
+                "Hoá đơn mới",
+                $"Bạn có hoá đơn mới trị giá {notification.Amount:N0} {notification.Currency}, vui lòng thanh toán đúng hạn.",
+                NotificationType.System);
 
             if (notifResult.IsSuccess)
                 _dbContext.Notifications.Add(notifResult.Data!);
-
-            // TODO: AuditLog.Record(Guid.Empty, "PaymentIssued", nameof(Invoice), notification.InvoiceId)
         }
     }
 }

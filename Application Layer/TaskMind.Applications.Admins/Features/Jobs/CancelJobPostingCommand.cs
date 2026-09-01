@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
+using TaskMind.Domain.Entities;
+using TaskMind.Domain.Enums;
 
 namespace TaskMind.Applications.Admins.Features.Jobs
 {
@@ -42,11 +44,28 @@ namespace TaskMind.Applications.Admins.Features.Jobs
             if (!result.IsSuccess)
                 return ServiceResult.Failure(result.Message);
 
-            // TODO: AuditLog.Record(command.ApproverAdminId, "JobPostingCancelledByAdmin", nameof(JobPosting), posting.Id)
-            // TODO: gửi Notification cho Company khi bổ sung tài liệu chi tiết luồng kiểm duyệt.
+            var auditResult = AuditLog.Record(command.ApproverAdminId, "JobPostingCancelledByAdmin", nameof(JobPosting), posting.Id);
+            if (auditResult.IsSuccess)
+                _dbContext.AuditLogs.Add(auditResult.Data!);
+
+            var adminCompany = await _dbContext.AdminCompanies
+                .AsNoTracking()
+                .FirstOrDefaultAsync(ac => ac.CompanyId == posting.CompanyId, cancellationToken);
+
+            if (adminCompany != null)
+            {
+                var notifResult = Notification.Create(
+                    adminCompany.LinkedUserId,
+                    "Tin tuyển dụng đã bị huỷ",
+                    $"Tin tuyển dụng \"{posting.Title}\" đã bị Admin hệ thống huỷ do vi phạm chính sách nền tảng." +
+                    (string.IsNullOrWhiteSpace(command.Reason) ? "" : $" Lý do: {command.Reason}"),
+                    NotificationType.Warning);
+
+                if (notifResult.IsSuccess)
+                    _dbContext.Notifications.Add(notifResult.Data!);
+            }
 
             await _dbContext.SaveChangesAsync(cancellationToken);
-
             return ServiceResult.Success("Huỷ tin tuyển dụng thành công");
         }
     }

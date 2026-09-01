@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
+using TaskMind.Domain.Entities;
 
 namespace TaskMind.Applications.Admins.Features.Projects
 {
@@ -42,7 +43,9 @@ namespace TaskMind.Applications.Admins.Features.Projects
             if (!result.IsSuccess)
                 return ServiceResult.Failure(result.Message);
 
-            // TODO: AuditLog.Record(command.ApproverAdminId, "ProjectMemberRemovedByAdmin", nameof(Project), project.Id, command.Reason)
+            var auditResult = AuditLog.Record(command.ApproverAdminId, "ProjectMemberRemovedByAdmin", nameof(Project), project.Id);
+            if (auditResult.IsSuccess)
+                _dbContext.AuditLogs.Add(auditResult.Data!);
 
             await _dbContext.SaveChangesAsync(cancellationToken);
 

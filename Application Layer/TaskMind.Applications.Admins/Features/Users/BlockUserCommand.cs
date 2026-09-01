@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
+using TaskMind.Domain.Entities;
 using TaskMind.Domain.Enums;
 
 namespace TaskMind.Applications.Admins.Features.Users
@@ -8,11 +9,13 @@ namespace TaskMind.Applications.Admins.Features.Users
     public class BlockUserCommand : ServiceResult
     {
         public Guid UserId { get; }
+        public Guid ApproverAdminId { get; }   // [MỚI]
         public string? Reason { get; }
 
-        public BlockUserCommand(Guid userId, string? reason = null)
+        public BlockUserCommand(Guid userId, Guid approverAdminId, string? reason = null)
         {
             UserId = userId;
+            ApproverAdminId = approverAdminId;
             Reason = reason;
         }
     }
@@ -39,7 +42,9 @@ namespace TaskMind.Applications.Admins.Features.Users
 
             user.UpdateStatus(EntityStatus.Blocked);
 
-            // TODO: AuditLog.Record(adminId, "UserBlocked", nameof(User), user.Id)
+            var auditResult = AuditLog.Record(command.ApproverAdminId, "UserBlocked", nameof(User), user.Id);
+            if (auditResult.IsSuccess)
+                _dbContext.AuditLogs.Add(auditResult.Data!);
 
             await _dbContext.SaveChangesAsync(cancellationToken);
 
