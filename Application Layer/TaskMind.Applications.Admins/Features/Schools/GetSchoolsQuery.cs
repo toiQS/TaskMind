@@ -1,10 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// GetSchoolsQuery.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Admins.Dtos;
 using TaskMind.Applications.Commons;
 
 namespace TaskMind.Applications.Admins.Features.Schools
 {
-    public class GetSchoolsQuery : ServiceResult<PagedResult<SchoolListItemDto>>
+    public class GetSchoolsQuery : IRequest<ServiceResult<PagedResult<SchoolListItemDto>>>
     {
         public GetSchoolsFilter Filter { get; }
 
@@ -14,7 +16,7 @@ namespace TaskMind.Applications.Admins.Features.Schools
         }
     }
 
-    public class GetSchoolsHandler
+    public class GetSchoolsHandler : IRequestHandler<GetSchoolsQuery, ServiceResult<PagedResult<SchoolListItemDto>>>
     {
         private readonly IApplicationDbContext _dbContext;
 

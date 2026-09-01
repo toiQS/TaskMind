@@ -1,12 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// ForcePauseProjectCommand.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Entities;
 using TaskMind.Domain.Enums;
 
 namespace TaskMind.Applications.Admins.Features.Projects
 {
-    /// <summary>Admin buộc tạm dừng một dự án vi phạm chính sách nền tảng (khác Owner tự Pause).</summary>
-    public class ForcePauseProjectCommand : ServiceResult
+    public class ForcePauseProjectCommand : IRequest<ServiceResult>
     {
         public Guid ProjectId { get; }
         public Guid ApproverAdminId { get; }
@@ -20,7 +21,7 @@ namespace TaskMind.Applications.Admins.Features.Projects
         }
     }
 
-    public class ForcePauseProjectHandler
+    public class ForcePauseProjectHandler : IRequestHandler<ForcePauseProjectCommand, ServiceResult>
     {
         private readonly IApplicationDbContext _dbContext;
 

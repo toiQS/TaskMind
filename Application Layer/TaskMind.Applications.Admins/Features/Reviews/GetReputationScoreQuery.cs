@@ -1,11 +1,12 @@
-﻿// Application Layer/TaskMind.Applications.Admins/Features/Reviews/GetReputationScoreQuery.cs
+﻿// GetReputationScoreQuery.cs
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Enums;
 
 namespace TaskMind.Applications.Admins.Features.Reviews
 {
-    public class GetReputationScoreQuery : ServiceResult<ReputationScoreDto>
+    public class GetReputationScoreQuery : IRequest<ServiceResult<ReputationScoreDto>>
     {
         public ReviewTargetType TargetType { get; }
         public Guid TargetRefId { get; }
@@ -23,7 +24,7 @@ namespace TaskMind.Applications.Admins.Features.Reviews
         public int ReviewCount { get; set; }
     }
 
-    public class GetReputationScoreHandler
+    public class GetReputationScoreHandler : IRequestHandler<GetReputationScoreQuery, ServiceResult<ReputationScoreDto>>
     {
         private readonly IApplicationDbContext _dbContext;
         public GetReputationScoreHandler(IApplicationDbContext dbContext) => _dbContext = dbContext;

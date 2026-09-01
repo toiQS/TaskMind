@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// GetJobApplicationsQuery.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Admins.Dtos;
 using TaskMind.Applications.Commons;
 
 namespace TaskMind.Applications.Admins.Features.Jobs
 {
-    /// <summary>Admin xem toàn bộ hồ sơ ứng tuyển trên nền tảng (mục 4.18), lọc theo tin tuyển dụng/ứng viên/trạng thái.</summary>
-    public class GetJobApplicationsQuery : ServiceResult<PagedResult<JobApplicationDetailDto>>
+    public class GetJobApplicationsQuery : IRequest<ServiceResult<PagedResult<JobApplicationDetailDto>>>
     {
         public GetJobApplicationsFilter Filter { get; }
 
@@ -15,7 +16,7 @@ namespace TaskMind.Applications.Admins.Features.Jobs
         }
     }
 
-    public class GetJobApplicationsHandler
+    public class GetJobApplicationsHandler : IRequestHandler<GetJobApplicationsQuery, ServiceResult<PagedResult<JobApplicationDetailDto>>>
     {
         private readonly IApplicationDbContext _dbContext;
 
@@ -61,7 +62,6 @@ namespace TaskMind.Applications.Admins.Features.Jobs
                     x.application.UserId,
                     x.application.ApplicationStatus,
                     x.application.AppliedAtUtc,
-                    //x.company.Id.GetHashCode(), // placeholder, xem ghi chú
                     CompanyId = x.company.Id,
                     CompanyName = x.company.CompanyName
                 })

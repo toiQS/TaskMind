@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// GetJobPostingsQuery.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Admins.Dtos;
 using TaskMind.Applications.Commons;
 
 namespace TaskMind.Applications.Admins.Features.Jobs
 {
-    /// <summary>Admin xem toàn bộ tin tuyển dụng trên nền tảng (mọi công ty) để giám sát/kiểm duyệt (mục 4.18).</summary>
-    public class GetJobPostingsQuery : ServiceResult<PagedResult<JobPostingListItemDto>>
+    public class GetJobPostingsQuery : IRequest<ServiceResult<PagedResult<JobPostingListItemDto>>>
     {
         public GetJobPostingsFilter Filter { get; }
 
@@ -15,7 +16,7 @@ namespace TaskMind.Applications.Admins.Features.Jobs
         }
     }
 
-    public class GetJobPostingsHandler
+    public class GetJobPostingsHandler : IRequestHandler<GetJobPostingsQuery, ServiceResult<PagedResult<JobPostingListItemDto>>>
     {
         private readonly IApplicationDbContext _dbContext;
 
@@ -53,7 +54,7 @@ namespace TaskMind.Applications.Admins.Features.Jobs
             var totalCount = await postingsQuery.CountAsync(cancellationToken);
 
             var page1 = await postingsQuery
-                .OrderByDescending(x => x.posting.Id) // JobPosting không có CreatedAtUtc (AggregateRoot thường, không phải Auditable)
+                .OrderByDescending(x => x.posting.Id)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .Select(x => new

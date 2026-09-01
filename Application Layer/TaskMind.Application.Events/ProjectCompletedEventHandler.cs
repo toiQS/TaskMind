@@ -32,7 +32,7 @@ namespace TaskMind.Applications.Events
                     NotificationType.System);
 
                 if (notifResult.IsSuccess)
-                    _dbContext.Notifications.Add(notifResult.Data!);    
+                    _dbContext.Notifications.Add(notifResult.Data!);
             }
 
             // TODO: cập nhật SkillProfile của từng thành viên — cần cơ chế map ProjectRole -> Skill liên quan,

@@ -1,9 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// ChangeSchoolMembershipPackageCommand.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 
 namespace TaskMind.Applications.Admins.Features.Schools
 {
-    public class ChangeSchoolMembershipPackageCommand : ServiceResult
+    public class ChangeSchoolMembershipPackageCommand : IRequest<ServiceResult>
     {
         public Guid SchoolId { get; }
         public string Package { get; }
@@ -15,7 +17,7 @@ namespace TaskMind.Applications.Admins.Features.Schools
         }
     }
 
-    public class ChangeSchoolMembershipPackageHandler
+    public class ChangeSchoolMembershipPackageHandler : IRequestHandler<ChangeSchoolMembershipPackageCommand, ServiceResult>
     {
         private readonly IApplicationDbContext _dbContext;
 

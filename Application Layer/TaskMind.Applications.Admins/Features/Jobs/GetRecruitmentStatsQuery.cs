@@ -1,16 +1,17 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// GetRecruitmentStatsQuery.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Admins.Dtos;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Enums;
 
 namespace TaskMind.Applications.Admins.Features.Jobs
 {
-    /// <summary>Admin xem thống kê tổng quan tuyển dụng toàn nền tảng (mục 4.18) — có thể ghép vào Dashboard (mục 4.14) khi cần.</summary>
-    public class GetRecruitmentStatsQuery : ServiceResult<RecruitmentStatsDto>
+    public class GetRecruitmentStatsQuery : IRequest<ServiceResult<RecruitmentStatsDto>>
     {
     }
 
-    public class GetRecruitmentStatsHandler
+    public class GetRecruitmentStatsHandler : IRequestHandler<GetRecruitmentStatsQuery, ServiceResult<RecruitmentStatsDto>>
     {
         private readonly IApplicationDbContext _dbContext;
 

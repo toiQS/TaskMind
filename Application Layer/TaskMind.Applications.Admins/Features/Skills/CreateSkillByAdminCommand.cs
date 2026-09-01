@@ -1,12 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// CreateSkillByAdminCommand.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Entities;
 using TaskMind.Domain.Enums;
 
 namespace TaskMind.Applications.Admins.Features.Skills
 {
-    /// <summary>Admin tạo trực tiếp một kỹ năng mới vào danh mục chuẩn hoá, được duyệt ngay (mục 4.16).</summary>
-    public class CreateSkillByAdminCommand : ServiceResult<Guid>
+    public class CreateSkillByAdminCommand : IRequest<ServiceResult<Guid>>
     {
         public string SkillName { get; }
         public SkillCategory Category { get; }
@@ -18,7 +19,7 @@ namespace TaskMind.Applications.Admins.Features.Skills
         }
     }
 
-    public class CreateSkillByAdminHandler
+    public class CreateSkillByAdminHandler : IRequestHandler<CreateSkillByAdminCommand, ServiceResult<Guid>>
     {
         private readonly IApplicationDbContext _dbContext;
 

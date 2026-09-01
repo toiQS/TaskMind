@@ -1,12 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// GetProjectsQuery.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Admins.Dtos;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Enums;
 
 namespace TaskMind.Applications.Admins.Features.Projects
 {
-    /// <summary>Admin xem toàn bộ dự án trên nền tảng (Company/School/OpenSource) để giám sát (mục 4.7, 4.12, 4.13).</summary>
-    public class GetProjectsQuery : ServiceResult<PagedResult<ProjectListItemDto>>
+    public class GetProjectsQuery : IRequest<ServiceResult<PagedResult<ProjectListItemDto>>>
     {
         public GetProjectsFilter Filter { get; }
 
@@ -16,7 +17,7 @@ namespace TaskMind.Applications.Admins.Features.Projects
         }
     }
 
-    public class GetProjectsHandler
+    public class GetProjectsHandler : IRequestHandler<GetProjectsQuery, ServiceResult<PagedResult<ProjectListItemDto>>>
     {
         private readonly IApplicationDbContext _dbContext;
 
@@ -69,7 +70,6 @@ namespace TaskMind.Applications.Admins.Features.Projects
                 })
                 .ToListAsync(cancellationToken);
 
-            // Resolve tên Company/School cho OwningEntityId (tham chiếu đa hình theo SourceType)
             var companyIds = page1.Where(p => p.SourceType == ProjectSourceType.Company && p.OwningEntityId.HasValue)
                 .Select(p => p.OwningEntityId!.Value).Distinct().ToList();
             var schoolIds = page1.Where(p => p.SourceType == ProjectSourceType.School && p.OwningEntityId.HasValue)

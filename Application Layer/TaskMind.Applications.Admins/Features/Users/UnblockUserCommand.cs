@@ -1,10 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// UnblockUserCommand.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Enums;
 
 namespace TaskMind.Applications.Admins.Features.Users
 {
-    public class UnblockUserCommand : ServiceResult
+    public class UnblockUserCommand : IRequest<ServiceResult>
     {
         public Guid UserId { get; }
 
@@ -14,7 +16,7 @@ namespace TaskMind.Applications.Admins.Features.Users
         }
     }
 
-    public class UnblockUserHandler
+    public class UnblockUserHandler : IRequestHandler<UnblockUserCommand, ServiceResult>
     {
         private readonly IApplicationDbContext _dbContext;
 

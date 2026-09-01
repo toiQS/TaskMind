@@ -1,15 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// CancelJobPostingCommand.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Entities;
 using TaskMind.Domain.Enums;
 
 namespace TaskMind.Applications.Admins.Features.Jobs
 {
-    /// <summary>
-    /// Admin buộc huỷ một tin tuyển dụng vi phạm chính sách nền tảng (kiểm duyệt cấp hệ thống,
-    /// khác với Company tự đóng tin qua JobPosting.Close()). Dùng chung JobPosting.Cancel().
-    /// </summary>
-    public class CancelJobPostingCommand : ServiceResult
+    public class CancelJobPostingCommand : IRequest<ServiceResult>
     {
         public Guid JobPostingId { get; }
         public Guid ApproverAdminId { get; }
@@ -23,7 +21,7 @@ namespace TaskMind.Applications.Admins.Features.Jobs
         }
     }
 
-    public class CancelJobPostingHandler
+    public class CancelJobPostingHandler : IRequestHandler<CancelJobPostingCommand, ServiceResult>
     {
         private readonly IApplicationDbContext _dbContext;
 

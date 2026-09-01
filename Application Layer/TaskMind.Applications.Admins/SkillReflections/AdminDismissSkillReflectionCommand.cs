@@ -1,12 +1,12 @@
-﻿// Application Layer/TaskMind.Applications.Admins/Features/SkillReflections/AdminDismissSkillReflectionCommand.cs
+﻿// AdminDismissSkillReflectionCommand.cs
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Entities;
 
 namespace TaskMind.Applications.Admins.Features.SkillReflections
 {
-    /// <summary>Admin hệ thống từ chối xử lý đề xuất hạ cấp ngay từ đầu — bằng chứng chưa thoả đáng (mục 4.3.2).</summary>
-    public class AdminDismissSkillReflectionCommand : ServiceResult
+    public class AdminDismissSkillReflectionCommand : IRequest<ServiceResult>
     {
         public Guid RequestId { get; }
         public Guid ApproverAdminId { get; }
@@ -19,7 +19,7 @@ namespace TaskMind.Applications.Admins.Features.SkillReflections
         }
     }
 
-    public class AdminDismissSkillReflectionHandler
+    public class AdminDismissSkillReflectionHandler : IRequestHandler<AdminDismissSkillReflectionCommand, ServiceResult>
     {
         private readonly IApplicationDbContext _dbContext;
         public AdminDismissSkillReflectionHandler(IApplicationDbContext dbContext) => _dbContext = dbContext;

@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// GetReviewsQuery.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Admins.Dtos;
 using TaskMind.Applications.Commons;
 
 namespace TaskMind.Applications.Admins.Features.Reviews
 {
-    /// <summary>Admin xem đánh giá đa hình (User/Company/School) để kiểm duyệt (mục 4.19).</summary>
-    public class GetReviewsQuery : ServiceResult<PagedResult<ReviewListItemDto>>
+    public class GetReviewsQuery : IRequest<ServiceResult<PagedResult<ReviewListItemDto>>>
     {
         public GetReviewsFilter Filter { get; }
 
@@ -15,7 +16,7 @@ namespace TaskMind.Applications.Admins.Features.Reviews
         }
     }
 
-    public class GetReviewsHandler
+    public class GetReviewsHandler : IRequestHandler<GetReviewsQuery, ServiceResult<PagedResult<ReviewListItemDto>>>
     {
         private readonly IApplicationDbContext _dbContext;
 

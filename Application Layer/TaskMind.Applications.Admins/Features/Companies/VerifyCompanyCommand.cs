@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// VerifyCompanyCommand.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Entities;
 
 namespace TaskMind.Applications.Admins.Features.Companies
 {
-    /// <summary>Admin hệ thống duyệt một công ty đăng ký (mục 4.4) — kích hoạt CompanyVerifiedEvent qua Company.Verify().</summary>
-    public class VerifyCompanyCommand : ServiceResult
+    public class VerifyCompanyCommand : IRequest<ServiceResult>
     {
         public Guid CompanyId { get; }
         public Guid ApproverAdminId { get; }
@@ -17,7 +18,7 @@ namespace TaskMind.Applications.Admins.Features.Companies
         }
     }
 
-    public class VerifyCompanyHandler
+    public class VerifyCompanyHandler : IRequestHandler<VerifyCompanyCommand, ServiceResult>
     {
         private readonly IApplicationDbContext _dbContext;
 
@@ -38,7 +39,6 @@ namespace TaskMind.Applications.Admins.Features.Companies
             if (!result.IsSuccess)
                 return ServiceResult.Failure(result.Message);
 
-            // thay TODO bằng:
             var auditResult = AuditLog.Record(command.ApproverAdminId, "CompanyVerified", nameof(Company), company.Id);
             if (auditResult.IsSuccess)
                 _dbContext.AuditLogs.Add(auditResult.Data!);

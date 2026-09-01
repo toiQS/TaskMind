@@ -1,10 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// ChangeCompanyMembershipPackageCommand.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 
 namespace TaskMind.Applications.Admins.Features.Companies
 {
-    /// <summary>Admin đổi gói tham gia hệ thống của công ty (mục 4.4, liên kết mục 4.14 nguồn thu CompanySubscription).</summary>
-    public class ChangeCompanyMembershipPackageCommand : ServiceResult
+    public class ChangeCompanyMembershipPackageCommand : IRequest<ServiceResult>
     {
         public Guid CompanyId { get; }
         public string Package { get; }
@@ -16,7 +17,7 @@ namespace TaskMind.Applications.Admins.Features.Companies
         }
     }
 
-    public class ChangeCompanyMembershipPackageHandler
+    public class ChangeCompanyMembershipPackageHandler : IRequestHandler<ChangeCompanyMembershipPackageCommand, ServiceResult>
     {
         private readonly IApplicationDbContext _dbContext;
 

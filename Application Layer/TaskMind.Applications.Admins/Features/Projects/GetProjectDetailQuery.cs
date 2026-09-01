@@ -1,11 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// GetProjectDetailQuery.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Admins.Dtos;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Enums;
 
 namespace TaskMind.Applications.Admins.Features.Projects
 {
-    public class GetProjectDetailQuery : ServiceResult<ProjectDetailDto>
+    public class GetProjectDetailQuery : IRequest<ServiceResult<ProjectDetailDto>>
     {
         public Guid ProjectId { get; }
 
@@ -15,7 +17,7 @@ namespace TaskMind.Applications.Admins.Features.Projects
         }
     }
 
-    public class GetProjectDetailHandler
+    public class GetProjectDetailHandler : IRequestHandler<GetProjectDetailQuery, ServiceResult<ProjectDetailDto>>
     {
         private readonly IApplicationDbContext _dbContext;
 
@@ -87,10 +89,6 @@ namespace TaskMind.Applications.Admins.Features.Projects
             return ServiceResult<ProjectDetailDto>.Success(dto, "Lấy chi tiết dự án thành công");
         }
 
-        /// <summary>
-        /// ProjectMember.AccountId tham chiếu đa hình tới User/Staff/Student/Teacher (mục 3, mục 8 - vấn đề mở:
-        /// không thể dùng FK thông thường). Tra cứu tuần tự qua từng bảng vì mỗi AccountId chỉ khớp đúng 1 bảng.
-        /// </summary>
         private async Task<Dictionary<Guid, (string AccountType, string Email, string FullName)>> ResolveAccountProfiles(
             List<Guid> accountIds, CancellationToken cancellationToken)
         {

@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// MarkInvoiceAsPaidCommand.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Entities;
 
 namespace TaskMind.Applications.Admins.Features.Invoices
 {
-    /// <summary>Admin xác nhận hoá đơn đã thanh toán (đối soát thủ công, mục 4.14 — chưa có cổng thanh toán tự động, mục 5.1).</summary>
-    public class MarkInvoiceAsPaidCommand : ServiceResult
+    public class MarkInvoiceAsPaidCommand : IRequest<ServiceResult>
     {
         public Guid InvoiceId { get; }
         public Guid ApproverAdminId { get; }
@@ -17,7 +18,7 @@ namespace TaskMind.Applications.Admins.Features.Invoices
         }
     }
 
-    public class MarkInvoiceAsPaidHandler
+    public class MarkInvoiceAsPaidHandler : IRequestHandler<MarkInvoiceAsPaidCommand, ServiceResult>
     {
         private readonly IApplicationDbContext _dbContext;
 

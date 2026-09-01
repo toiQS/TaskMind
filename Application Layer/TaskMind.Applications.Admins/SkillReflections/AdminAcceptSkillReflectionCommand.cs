@@ -1,12 +1,12 @@
-﻿// Application Layer/TaskMind.Applications.Admins/Features/SkillReflections/AdminAcceptSkillReflectionCommand.cs
+﻿// AdminAcceptSkillReflectionCommand.cs
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Entities;
 
 namespace TaskMind.Applications.Admins.Features.SkillReflections
 {
-    /// <summary>Admin hệ thống chấp nhận xử lý đề xuất hạ cấp (Down) do công ty gửi (mục 4.3.2).</summary>
-    public class AdminAcceptSkillReflectionCommand : ServiceResult
+    public class AdminAcceptSkillReflectionCommand : IRequest<ServiceResult>
     {
         public Guid RequestId { get; }
         public Guid ApproverAdminId { get; }
@@ -17,7 +17,7 @@ namespace TaskMind.Applications.Admins.Features.SkillReflections
         }
     }
 
-    public class AdminAcceptSkillReflectionHandler
+    public class AdminAcceptSkillReflectionHandler : IRequestHandler<AdminAcceptSkillReflectionCommand, ServiceResult>
     {
         private readonly IApplicationDbContext _dbContext;
         public AdminAcceptSkillReflectionHandler(IApplicationDbContext dbContext) => _dbContext = dbContext;

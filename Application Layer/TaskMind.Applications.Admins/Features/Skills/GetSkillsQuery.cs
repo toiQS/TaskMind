@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// GetSkillsQuery.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Admins.Dtos;
 using TaskMind.Applications.Commons;
 
 namespace TaskMind.Applications.Admins.Features.Skills
 {
-    /// <summary>Admin xem danh mục kỹ năng, lọc theo trạng thái duyệt (mục 4.16) — dùng chung cho cả xem toàn bộ và xem hàng chờ duyệt.</summary>
-    public class GetSkillsQuery : ServiceResult<PagedResult<SkillListItemDto>>
+    public class GetSkillsQuery : IRequest<ServiceResult<PagedResult<SkillListItemDto>>>
     {
         public GetSkillsFilter Filter { get; }
 
@@ -15,7 +16,7 @@ namespace TaskMind.Applications.Admins.Features.Skills
         }
     }
 
-    public class GetSkillsHandler
+    public class GetSkillsHandler : IRequestHandler<GetSkillsQuery, ServiceResult<PagedResult<SkillListItemDto>>>
     {
         private readonly IApplicationDbContext _dbContext;
 
@@ -47,7 +48,7 @@ namespace TaskMind.Applications.Admins.Features.Skills
             var totalCount = await skillsQuery.CountAsync(cancellationToken);
 
             var items = await skillsQuery
-                .OrderBy(s => s.IsApproved) // chờ duyệt (false) lên trước
+                .OrderBy(s => s.IsApproved)
                 .ThenBy(s => s.SkillName)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)

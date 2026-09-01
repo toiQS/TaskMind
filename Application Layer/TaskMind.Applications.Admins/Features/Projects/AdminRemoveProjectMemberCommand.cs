@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// AdminRemoveProjectMemberCommand.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Entities;
 
 namespace TaskMind.Applications.Admins.Features.Projects
 {
-    /// <summary>Admin buộc loại một thành viên khỏi dự án (kiểm duyệt), dùng chung Project.RemoveMember() với Owner.</summary>
-    public class AdminRemoveProjectMemberCommand : ServiceResult
+    public class AdminRemoveProjectMemberCommand : IRequest<ServiceResult>
     {
         public Guid ProjectId { get; }
         public Guid AccountId { get; }
@@ -21,7 +22,7 @@ namespace TaskMind.Applications.Admins.Features.Projects
         }
     }
 
-    public class AdminRemoveProjectMemberHandler
+    public class AdminRemoveProjectMemberHandler : IRequestHandler<AdminRemoveProjectMemberCommand, ServiceResult>
     {
         private readonly IApplicationDbContext _dbContext;
 

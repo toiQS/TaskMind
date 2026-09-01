@@ -1,11 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// GetCompanyDetailQuery.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Admins.Dtos;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Enums;
 
 namespace TaskMind.Applications.Admins.Features.Companies
 {
-    public class GetCompanyDetailQuery : ServiceResult<CompanyDetailDto>
+    public class GetCompanyDetailQuery : IRequest<ServiceResult<CompanyDetailDto>>
     {
         public Guid CompanyId { get; }
 
@@ -15,7 +17,7 @@ namespace TaskMind.Applications.Admins.Features.Companies
         }
     }
 
-    public class GetCompanyDetailHandler
+    public class GetCompanyDetailHandler : IRequestHandler<GetCompanyDetailQuery, ServiceResult<CompanyDetailDto>>
     {
         private readonly IApplicationDbContext _dbContext;
 

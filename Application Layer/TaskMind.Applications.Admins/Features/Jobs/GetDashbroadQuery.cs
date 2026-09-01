@@ -48,7 +48,7 @@ namespace TaskMind.Applications.Admins.Features.Jobs
 
             statsDto.JobPostingsByStatus = skills.Select(s => new NodeChatDto
             {
-                Name = s.SkillName, 
+                Name = s.SkillName,
                 Value = skillCounts.TryGetValue(s.Id, out var c) ? c : 0
             }).ToList();
 

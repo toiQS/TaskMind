@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// GetInvoicesQuery.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Admins.Dtos;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Enums;
@@ -14,8 +16,7 @@ namespace TaskMind.Applications.Admins.Features.Invoices
         public int PageSize { get; set; } = 20;
     }
 
-    /// <summary>Admin xem/lọc hoá đơn (mục 4.14) — chi tiết hơn RecentInvoices trong Dashboard.</summary>
-    public class GetInvoicesQuery : ServiceResult<PagedResult<RecentInvoiceDto>>
+    public class GetInvoicesQuery : IRequest<ServiceResult<PagedResult<RecentInvoiceDto>>>
     {
         public GetInvoicesFilter Filter { get; }
 
@@ -25,7 +26,7 @@ namespace TaskMind.Applications.Admins.Features.Invoices
         }
     }
 
-    public class GetInvoicesHandler
+    public class GetInvoicesHandler : IRequestHandler<GetInvoicesQuery, ServiceResult<PagedResult<RecentInvoiceDto>>>
     {
         private readonly IApplicationDbContext _dbContext;
 

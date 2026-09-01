@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// SendMessageCommand.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Admins.Dtos;
 using TaskMind.Applications.Commons;
 
 namespace TaskMind.Applications.Admins.Features.Chats
 {
-    /// <summary>Gửi tin nhắn văn bản trong một nhóm trò chuyện (mục 4.22), phát sinh MessageSentEvent qua Chat.SendMessage.</summary>
-    public class SendMessageCommand : ServiceResult<MessageDto>
+    public class SendMessageCommand : IRequest<ServiceResult<MessageDto>>
     {
         public Guid ChatId { get; }
         public Guid SenderAccountId { get; }
@@ -19,7 +20,7 @@ namespace TaskMind.Applications.Admins.Features.Chats
         }
     }
 
-    public class SendMessageHandler
+    public class SendMessageHandler : IRequestHandler<SendMessageCommand, ServiceResult<MessageDto>>
     {
         private readonly IApplicationDbContext _dbContext;
 

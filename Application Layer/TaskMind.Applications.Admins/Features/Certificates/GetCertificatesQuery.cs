@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// GetCertificatesQuery.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Admins.Dtos;
 using TaskMind.Applications.Commons;
 
 namespace TaskMind.Applications.Admins.Features.Certificates
 {
-    /// <summary>Admin tra cứu/xác minh chứng chỉ điện tử đã cấp (mục 4.20).</summary>
-    public class GetCertificatesQuery : ServiceResult<PagedResult<CertificateListItemDto>>
+    public class GetCertificatesQuery : IRequest<ServiceResult<PagedResult<CertificateListItemDto>>>
     {
         public GetCertificatesFilter Filter { get; }
 
@@ -15,7 +16,7 @@ namespace TaskMind.Applications.Admins.Features.Certificates
         }
     }
 
-    public class GetCertificatesHandler
+    public class GetCertificatesHandler : IRequestHandler<GetCertificatesQuery, ServiceResult<PagedResult<CertificateListItemDto>>>
     {
         private readonly IApplicationDbContext _dbContext;
 

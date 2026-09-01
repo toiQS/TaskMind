@@ -1,10 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// SuspendCompanyCommand.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 
 namespace TaskMind.Applications.Admins.Features.Companies
 {
-    /// <summary>Admin tạm ngưng hoạt động một công ty (vi phạm chính sách, tranh chấp...).</summary>
-    public class SuspendCompanyCommand : ServiceResult
+    public class SuspendCompanyCommand : IRequest<ServiceResult>
     {
         public Guid CompanyId { get; }
         public string? Reason { get; }
@@ -16,7 +17,7 @@ namespace TaskMind.Applications.Admins.Features.Companies
         }
     }
 
-    public class SuspendCompanyHandler
+    public class SuspendCompanyHandler : IRequestHandler<SuspendCompanyCommand, ServiceResult>
     {
         private readonly IApplicationDbContext _dbContext;
 

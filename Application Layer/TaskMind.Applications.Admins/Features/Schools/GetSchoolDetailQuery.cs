@@ -1,11 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// GetSchoolDetailQuery.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Admins.Dtos;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Enums;
 
 namespace TaskMind.Applications.Admins.Features.Schools
 {
-    public class GetSchoolDetailQuery : ServiceResult<SchoolDetailDto>
+    public class GetSchoolDetailQuery : IRequest<ServiceResult<SchoolDetailDto>>
     {
         public Guid SchoolId { get; }
 
@@ -15,7 +17,7 @@ namespace TaskMind.Applications.Admins.Features.Schools
         }
     }
 
-    public class GetSchoolDetailHandler
+    public class GetSchoolDetailHandler : IRequestHandler<GetSchoolDetailQuery, ServiceResult<SchoolDetailDto>>
     {
         private readonly IApplicationDbContext _dbContext;
 

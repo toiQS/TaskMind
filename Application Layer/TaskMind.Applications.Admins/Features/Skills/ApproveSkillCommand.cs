@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// ApproveSkillCommand.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Entities;
 
 namespace TaskMind.Applications.Admins.Features.Skills
 {
-    /// <summary>Admin duyệt một kỹ năng do công ty/cơ sở đào tạo đề xuất (mục 4.16).</summary>
-    public class ApproveSkillCommand : ServiceResult
+    public class ApproveSkillCommand : IRequest<ServiceResult>
     {
         public Guid SkillId { get; }
         public Guid ApproverAdminId { get; }
@@ -17,7 +18,7 @@ namespace TaskMind.Applications.Admins.Features.Skills
         }
     }
 
-    public class ApproveSkillHandler
+    public class ApproveSkillHandler : IRequestHandler<ApproveSkillCommand, ServiceResult>
     {
         private readonly IApplicationDbContext _dbContext;
 

@@ -1,9 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// ReactivateCompanyCommand.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 
 namespace TaskMind.Applications.Admins.Features.Companies
 {
-    public class ReactivateCompanyCommand : ServiceResult
+    public class ReactivateCompanyCommand : IRequest<ServiceResult>
     {
         public Guid CompanyId { get; }
 
@@ -13,7 +15,7 @@ namespace TaskMind.Applications.Admins.Features.Companies
         }
     }
 
-    public class ReactivateCompanyHandler
+    public class ReactivateCompanyHandler : IRequestHandler<ReactivateCompanyCommand, ServiceResult>
     {
         private readonly IApplicationDbContext _dbContext;
 

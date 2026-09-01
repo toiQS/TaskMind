@@ -1,14 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// ApproveSkillLevelUpRequestCommand.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Entities;
 
 namespace TaskMind.Applications.Admins.Features.Skills
 {
-    /// <summary>
-    /// Duyệt yêu cầu nâng cấp độ kỹ năng (mục 4.3.1). Cập nhật cả SkillLevelUpRequest.Approve()
-    /// (raise SkillLevelApprovedEvent) lẫn SkillProfile.ApplyLevelUp(...) để đồng bộ UserSkillRecord.
-    /// </summary>
-    public class ApproveSkillLevelUpRequestCommand : ServiceResult
+    public class ApproveSkillLevelUpRequestCommand : IRequest<ServiceResult>
     {
         public Guid RequestId { get; }
         public Guid ApproverAdminId { get; }
@@ -20,7 +18,7 @@ namespace TaskMind.Applications.Admins.Features.Skills
         }
     }
 
-    public class ApproveSkillLevelUpRequestHandler
+    public class ApproveSkillLevelUpRequestHandler : IRequestHandler<ApproveSkillLevelUpRequestCommand, ServiceResult>
     {
         private readonly IApplicationDbContext _dbContext;
 

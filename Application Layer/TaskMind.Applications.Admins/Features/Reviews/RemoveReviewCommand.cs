@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// RemoveReviewCommand.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Entities;
 
 namespace TaskMind.Applications.Admins.Features.Reviews
 {
-    /// <summary>Admin gỡ một đánh giá vi phạm (spam/xúc phạm) — Review không có Status nên xoá cứng, có ghi AuditLog.</summary>
-    public class RemoveReviewCommand : ServiceResult
+    public class RemoveReviewCommand : IRequest<ServiceResult>
     {
         public Guid ReviewId { get; }
         public Guid ApproverAdminId { get; }
@@ -19,7 +20,7 @@ namespace TaskMind.Applications.Admins.Features.Reviews
         }
     }
 
-    public class RemoveReviewHandler
+    public class RemoveReviewHandler : IRequestHandler<RemoveReviewCommand, ServiceResult>
     {
         private readonly IApplicationDbContext _dbContext;
 

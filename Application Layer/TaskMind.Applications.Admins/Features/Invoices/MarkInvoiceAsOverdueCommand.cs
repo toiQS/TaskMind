@@ -1,9 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// MarkInvoiceAsOverdueCommand.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 
 namespace TaskMind.Applications.Admins.Features.Invoices
 {
-    public class MarkInvoiceAsOverdueCommand : ServiceResult
+    public class MarkInvoiceAsOverdueCommand : IRequest<ServiceResult>
     {
         public Guid InvoiceId { get; }
 
@@ -13,7 +15,7 @@ namespace TaskMind.Applications.Admins.Features.Invoices
         }
     }
 
-    public class MarkInvoiceAsOverdueHandler
+    public class MarkInvoiceAsOverdueHandler : IRequestHandler<MarkInvoiceAsOverdueCommand, ServiceResult>
     {
         private readonly IApplicationDbContext _dbContext;
 

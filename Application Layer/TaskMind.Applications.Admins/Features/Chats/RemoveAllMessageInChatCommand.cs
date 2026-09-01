@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// RemoveAllMessageInChatCommand.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Enums;
 
 namespace TaskMind.Applications.Admins.Features.Chats
 {
-    /// <summary>Admin thu hồi toàn bộ tin nhắn trong một nhóm trò chuyện (kiểm duyệt) — dùng Message.Recall() để giữ lịch sử thay vì xoá cứng.</summary>
-    public class RemoveAllMessageInChatCommand : ServiceResult
+    public class RemoveAllMessageInChatCommand : IRequest<ServiceResult>
     {
         public Guid ChatId { get; }
 
@@ -15,7 +16,7 @@ namespace TaskMind.Applications.Admins.Features.Chats
         }
     }
 
-    public class RemoveAllMessageInChatHandler
+    public class RemoveAllMessageInChatHandler : IRequestHandler<RemoveAllMessageInChatCommand, ServiceResult>
     {
         private readonly IApplicationDbContext _dbContext;
 

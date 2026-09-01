@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// GetSkillLevelUpRequestsQuery.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Admins.Dtos;
 using TaskMind.Applications.Commons;
 
 namespace TaskMind.Applications.Admins.Features.Skills
 {
-    /// <summary>Admin/Approver xem hàng chờ duyệt nâng cấp độ kỹ năng (mục 4.3.1).</summary>
-    public class GetSkillLevelUpRequestsQuery : ServiceResult<PagedResult<SkillLevelUpRequestListItemDto>>
+    public class GetSkillLevelUpRequestsQuery : IRequest<ServiceResult<PagedResult<SkillLevelUpRequestListItemDto>>>
     {
         public GetSkillLevelUpRequestsFilter Filter { get; }
 
@@ -15,7 +16,7 @@ namespace TaskMind.Applications.Admins.Features.Skills
         }
     }
 
-    public class GetSkillLevelUpRequestsHandler
+    public class GetSkillLevelUpRequestsHandler : IRequestHandler<GetSkillLevelUpRequestsQuery, ServiceResult<PagedResult<SkillLevelUpRequestListItemDto>>>
     {
         private readonly IApplicationDbContext _dbContext;
 
@@ -44,7 +45,7 @@ namespace TaskMind.Applications.Admins.Features.Skills
             var totalCount = await requestsQuery.CountAsync(cancellationToken);
 
             var page1 = await requestsQuery
-                .OrderBy(r => r.RequestStatus) // PendingEndorsement/PendingAssessment lên trước
+                .OrderBy(r => r.RequestStatus)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .Select(r => new

@@ -1,14 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// RejectSkillLevelUpRequestCommand.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Entities;
 
 namespace TaskMind.Applications.Admins.Features.Skills
 {
-    /// <summary>
-    /// Từ chối yêu cầu nâng cấp độ kỹ năng (mục 4.3.1). Sau khi Reject() raise SkillLevelUpRejectedEvent,
-    /// áp dụng luôn SkillProfile.ApplyPenaltyDowngrade (x2) theo đúng quy tắc cảnh báo chính thức.
-    /// </summary>
-    public class RejectSkillLevelUpRequestCommand : ServiceResult
+    public class RejectSkillLevelUpRequestCommand : IRequest<ServiceResult>
     {
         public Guid RequestId { get; }
         public Guid ApproverAdminId { get; }
@@ -22,7 +20,7 @@ namespace TaskMind.Applications.Admins.Features.Skills
         }
     }
 
-    public class RejectSkillLevelUpRequestHandler
+    public class RejectSkillLevelUpRequestHandler : IRequestHandler<RejectSkillLevelUpRequestCommand, ServiceResult>
     {
         private readonly IApplicationDbContext _dbContext;
 

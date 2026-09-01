@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// GetCompaniesQuery.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Admins.Dtos;
 using TaskMind.Applications.Commons;
 
 namespace TaskMind.Applications.Admins.Features.Companies
 {
-    /// <summary>Admin xem danh sách công ty, lọc theo trạng thái duyệt/hoạt động (mục 4.4).</summary>
-    public class GetCompaniesQuery : ServiceResult<PagedResult<CompanyListItemDto>>
+    public class GetCompaniesQuery : IRequest<ServiceResult<PagedResult<CompanyListItemDto>>>
     {
         public GetCompaniesFilter Filter { get; }
 
@@ -15,7 +16,7 @@ namespace TaskMind.Applications.Admins.Features.Companies
         }
     }
 
-    public class GetCompaniesHandler
+    public class GetCompaniesHandler : IRequestHandler<GetCompaniesQuery, ServiceResult<PagedResult<CompanyListItemDto>>>
     {
         private readonly IApplicationDbContext _dbContext;
 

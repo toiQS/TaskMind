@@ -1,12 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// GetChatsQuery.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Admins.Dtos;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Enums;
 
 namespace TaskMind.Applications.Admins.Features.Chats
 {
-    /// <summary>Admin xem danh sách nhóm trò chuyện (toàn hệ thống, hoặc lọc theo một AccountId) phục vụ giám sát/hỗ trợ (mục 4.22).</summary>
-    public class GetChatsQuery : ServiceResult<List<ChatSummaryDto>>
+    public class GetChatsQuery : IRequest<ServiceResult<List<ChatSummaryDto>>>
     {
         public Guid? MemberAccountId { get; }
 
@@ -16,7 +17,7 @@ namespace TaskMind.Applications.Admins.Features.Chats
         }
     }
 
-    public class GetChatsHandler
+    public class GetChatsHandler : IRequestHandler<GetChatsQuery, ServiceResult<List<ChatSummaryDto>>>
     {
         private readonly IApplicationDbContext _dbContext;
 

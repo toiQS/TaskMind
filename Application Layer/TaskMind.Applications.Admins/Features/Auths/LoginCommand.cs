@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿// LoginCommand.cs
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Admins.Dtos;
 using TaskMind.Applications.Commons;
@@ -6,13 +7,13 @@ using TaskMind.Domain.Enums;
 
 namespace TaskMind.Applications.Admins.Features.Auths
 {
-    public class LoginCommand(string email, string password) : ServiceResult<LoginResultDto>
+    public class LoginCommand(string email, string password) : IRequest<ServiceResult<LoginResultDto>>
     {
         public string Email { get; } = email;
         public string Password { get; } = password;
     }
 
-    public class LoginHandler : ServiceResult<LoginResultDto>
+    public class LoginHandler : IRequestHandler<LoginCommand, ServiceResult<LoginResultDto>>
     {
         private readonly IApplicationDbContext _dbContext;
         public LoginHandler(IApplicationDbContext dbContext)
@@ -22,12 +23,11 @@ namespace TaskMind.Applications.Admins.Features.Auths
 
         public async Task<ServiceResult<LoginResultDto>> Handle(LoginCommand command, CancellationToken cancellationToken)
         {
-            // Validate the command
             if (string.IsNullOrWhiteSpace(command.Email) || string.IsNullOrWhiteSpace(command.Password))
             {
                 return ServiceResult<LoginResultDto>.Failure("Email and password are required.");
             }
-            // Check if the user exists in the database
+
             var user = await _dbContext.Admins
                 .Include(x => x.Profile)
                 .Include(x => x.Security)
@@ -46,9 +46,7 @@ namespace TaskMind.Applications.Admins.Features.Auths
             {
                 return ServiceResult<LoginResultDto>.NotFound("User not found.");
             }
-            ;
 
-            // Không phân biệt rõ "sai email" hay "sai mật khẩu" trong thông báo lỗi (chống dò quét tài khoản).
             if (user == null || !BCrypt.Net.BCrypt.Verify(command.Password, user.PasswordHash))
                 return ServiceResult<LoginResultDto>.Unauthorized("Email hoặc mật khẩu không chính xác.");
 
@@ -58,15 +56,12 @@ namespace TaskMind.Applications.Admins.Features.Auths
             if (user.Status == EntityStatus.Paused)
                 return ServiceResult<LoginResultDto>.Forbidden("Tài khoản đang bị tạm khoá.");
 
-
-
             var dto = new LoginResultDto
             {
                 AccountId = user.Id,
                 Email = user.Email,
                 FullName = user.FirstName,
                 Role = user.Role.ToString(),
-
             };
             return ServiceResult<LoginResultDto>.Success(dto, "Đăng nhập thành công");
         }

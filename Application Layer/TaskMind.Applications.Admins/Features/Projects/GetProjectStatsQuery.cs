@@ -1,15 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// GetProjectStatsQuery.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Admins.Dtos;
 using TaskMind.Applications.Commons;
 
 namespace TaskMind.Applications.Admins.Features.Projects
 {
-    /// <summary>Admin xem thống kê tổng quan dự án toàn nền tảng (chi tiết hơn phần ProjectsByStatus của Dashboard).</summary>
-    public class GetProjectStatsQuery : ServiceResult<ProjectStatsDto>
+    public class GetProjectStatsQuery : IRequest<ServiceResult<ProjectStatsDto>>
     {
     }
 
-    public class GetProjectStatsHandler
+    public class GetProjectStatsHandler : IRequestHandler<GetProjectStatsQuery, ServiceResult<ProjectStatsDto>>
     {
         private readonly IApplicationDbContext _dbContext;
 

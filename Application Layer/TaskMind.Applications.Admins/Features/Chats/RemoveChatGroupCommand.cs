@@ -1,10 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// RemoveChatGroupCommand.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 
 namespace TaskMind.Applications.Admins.Features.Chats
 {
-    /// <summary>Admin xoá một nhóm trò chuyện (mục 4.22) - dùng cho mục đích kiểm duyệt/dọn dẹp.</summary>
-    public class RemoveChatGroupCommand : ServiceResult
+    public class RemoveChatGroupCommand : IRequest<ServiceResult>
     {
         public Guid ChatId { get; }
 
@@ -14,7 +15,7 @@ namespace TaskMind.Applications.Admins.Features.Chats
         }
     }
 
-    public class RemoveChatGroupHandler
+    public class RemoveChatGroupHandler : IRequestHandler<RemoveChatGroupCommand, ServiceResult>
     {
         private readonly IApplicationDbContext _dbContext;
 

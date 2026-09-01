@@ -1,15 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// BlockUserCommand.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Entities;
 using TaskMind.Domain.Enums;
 
 namespace TaskMind.Applications.Admins.Features.Users
 {
-    /// <summary>Admin khoá (cấm) một tài khoản User do vi phạm (mục 4.1: quản lý trạng thái tài khoản).</summary>
-    public class BlockUserCommand : ServiceResult
+    public class BlockUserCommand : IRequest<ServiceResult>
     {
         public Guid UserId { get; }
-        public Guid ApproverAdminId { get; }   // [MỚI]
+        public Guid ApproverAdminId { get; }
         public string? Reason { get; }
 
         public BlockUserCommand(Guid userId, Guid approverAdminId, string? reason = null)
@@ -20,7 +21,7 @@ namespace TaskMind.Applications.Admins.Features.Users
         }
     }
 
-    public class BlockUserHandler
+    public class BlockUserHandler : IRequestHandler<BlockUserCommand, ServiceResult>
     {
         private readonly IApplicationDbContext _dbContext;
 

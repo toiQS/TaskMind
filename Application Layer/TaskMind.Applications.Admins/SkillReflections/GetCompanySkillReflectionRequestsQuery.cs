@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// GetCompanySkillReflectionRequestsQuery.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Admins.Dtos;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Enums;
@@ -28,13 +30,14 @@ namespace TaskMind.Applications.Admins.Features.SkillReflections
         public DateTimeOffset CreatedAtUtc { get; set; }
     }
 
-    public class GetCompanySkillReflectionRequestsQuery : ServiceResult<PagedResult<CompanySkillReflectionRequestListItemDto>>
+    public class GetCompanySkillReflectionRequestsQuery : IRequest<ServiceResult<PagedResult<CompanySkillReflectionRequestListItemDto>>>
     {
         public GetCompanySkillReflectionRequestsFilter Filter { get; }
         public GetCompanySkillReflectionRequestsQuery(GetCompanySkillReflectionRequestsFilter filter) => Filter = filter;
     }
 
     public class GetCompanySkillReflectionRequestsHandler
+        : IRequestHandler<GetCompanySkillReflectionRequestsQuery, ServiceResult<PagedResult<CompanySkillReflectionRequestListItemDto>>>
     {
         private readonly IApplicationDbContext _dbContext;
         public GetCompanySkillReflectionRequestsHandler(IApplicationDbContext dbContext) => _dbContext = dbContext;
@@ -52,7 +55,6 @@ namespace TaskMind.Applications.Admins.Features.SkillReflections
             if (filter.ReflectionType.HasValue) q = q.Where(r => r.ReflectionType == filter.ReflectionType.Value);
             if (filter.CompanyId.HasValue) q = q.Where(r => r.CompanyId == filter.CompanyId.Value);
 
-            // Ưu tiên Down đang PendingAdminReview lên trước — đây là hàng chờ Admin xử lý
             var totalCount = await q.CountAsync(cancellationToken);
 
             var page1 = await q

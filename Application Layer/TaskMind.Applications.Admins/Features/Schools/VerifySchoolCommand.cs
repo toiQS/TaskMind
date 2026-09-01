@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// VerifySchoolCommand.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Entities;
 
 namespace TaskMind.Applications.Admins.Features.Schools
 {
-    /// <summary>Admin hệ thống duyệt một cơ sở đào tạo đăng ký (mục 4.8) — kích hoạt SchoolVerifiedEvent.</summary>
-    public class VerifySchoolCommand : ServiceResult
+    public class VerifySchoolCommand : IRequest<ServiceResult>
     {
         public Guid SchoolId { get; }
         public Guid ApproverAdminId { get; }
@@ -17,7 +18,7 @@ namespace TaskMind.Applications.Admins.Features.Schools
         }
     }
 
-    public class VerifySchoolHandler
+    public class VerifySchoolHandler : IRequestHandler<VerifySchoolCommand, ServiceResult>
     {
         private readonly IApplicationDbContext _dbContext;
 

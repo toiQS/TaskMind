@@ -1,14 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// RejectSkillCommand.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 
 namespace TaskMind.Applications.Admins.Features.Skills
 {
-    /// <summary>
-    /// Admin từ chối một kỹ năng đang chờ duyệt (mục 4.16). Domain.Skill không có method Reject riêng
-    /// (chỉ SkillCatalog.Reject có, nhưng ta không dùng SkillCatalog ở tầng Application này) — nên
-    /// kiểm tra bất biến "chỉ xoá được kỹ năng chưa duyệt" trực tiếp ở Handler rồi xoá khỏi DbSet.
-    /// </summary>
-    public class RejectSkillCommand : ServiceResult
+    public class RejectSkillCommand : IRequest<ServiceResult>
     {
         public Guid SkillId { get; }
 
@@ -18,7 +15,7 @@ namespace TaskMind.Applications.Admins.Features.Skills
         }
     }
 
-    public class RejectSkillHandler
+    public class RejectSkillHandler : IRequestHandler<RejectSkillCommand, ServiceResult>
     {
         private readonly IApplicationDbContext _dbContext;
 

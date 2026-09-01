@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// ForceCancelProjectCommand.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Entities;
 
 namespace TaskMind.Applications.Admins.Features.Projects
 {
-    /// <summary>Admin buộc huỷ một dự án vi phạm nghiêm trọng (gian lận, khiếu nại...).</summary>
-    public class ForceCancelProjectCommand : ServiceResult
+    public class ForceCancelProjectCommand : IRequest<ServiceResult>
     {
         public Guid ProjectId { get; }
         public Guid ApproverAdminId { get; }
@@ -19,7 +20,7 @@ namespace TaskMind.Applications.Admins.Features.Projects
         }
     }
 
-    public class ForceCancelProjectHandler 
+    public class ForceCancelProjectHandler : IRequestHandler<ForceCancelProjectCommand, ServiceResult>
     {
         private readonly IApplicationDbContext _dbContext;
 

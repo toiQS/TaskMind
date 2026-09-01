@@ -1,10 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// LinkRelatedSkillCommand.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 
 namespace TaskMind.Applications.Admins.Features.Skills
 {
-    /// <summary>Admin liên kết hai kỹ năng có liên quan với nhau trong danh mục (mục 4.16).</summary>
-    public class LinkRelatedSkillCommand : ServiceResult
+    public class LinkRelatedSkillCommand : IRequest<ServiceResult>
     {
         public Guid SkillId { get; }
         public Guid RelatedSkillId { get; }
@@ -16,7 +17,7 @@ namespace TaskMind.Applications.Admins.Features.Skills
         }
     }
 
-    public class LinkRelatedSkillHandler
+    public class LinkRelatedSkillHandler : IRequestHandler<LinkRelatedSkillCommand, ServiceResult>
     {
         private readonly IApplicationDbContext _dbContext;
 

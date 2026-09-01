@@ -1,9 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// ReactivateSchoolCommand.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 
 namespace TaskMind.Applications.Admins.Features.Schools
 {
-    public class ReactivateSchoolCommand : ServiceResult
+    public class ReactivateSchoolCommand : IRequest<ServiceResult>
     {
         public Guid SchoolId { get; }
 
@@ -13,7 +15,7 @@ namespace TaskMind.Applications.Admins.Features.Schools
         }
     }
 
-    public class ReactivateSchoolHandler
+    public class ReactivateSchoolHandler : IRequestHandler<ReactivateSchoolCommand, ServiceResult>
     {
         private readonly IApplicationDbContext _dbContext;
 

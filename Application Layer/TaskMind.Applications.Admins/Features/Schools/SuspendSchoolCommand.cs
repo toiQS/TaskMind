@@ -1,9 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// SuspendSchoolCommand.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 
 namespace TaskMind.Applications.Admins.Features.Schools
 {
-    public class SuspendSchoolCommand : ServiceResult
+    public class SuspendSchoolCommand : IRequest<ServiceResult>
     {
         public Guid SchoolId { get; }
 
@@ -13,7 +15,7 @@ namespace TaskMind.Applications.Admins.Features.Schools
         }
     }
 
-    public class SuspendSchoolHandler
+    public class SuspendSchoolHandler : IRequestHandler<SuspendSchoolCommand, ServiceResult>
     {
         private readonly IApplicationDbContext _dbContext;
 

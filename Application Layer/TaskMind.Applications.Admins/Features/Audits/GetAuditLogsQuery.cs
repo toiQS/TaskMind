@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// GetAuditLogsQuery.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Admins.Dtos;
 using TaskMind.Applications.Commons;
 
 namespace TaskMind.Applications.Admins.Features.Audits
 {
-    /// <summary>Admin tra cứu nhật ký hoạt động (mục 4.21) — phục vụ truy vết khi có tranh chấp/sự cố.</summary>
-    public class GetAuditLogsQuery : ServiceResult<PagedResult<AuditLogListItemDto>>
+    public class GetAuditLogsQuery : IRequest<ServiceResult<PagedResult<AuditLogListItemDto>>>
     {
         public GetAuditLogsFilter Filter { get; }
 
@@ -15,7 +16,7 @@ namespace TaskMind.Applications.Admins.Features.Audits
         }
     }
 
-    public class GetAuditLogsHandler
+    public class GetAuditLogsHandler : IRequestHandler<GetAuditLogsQuery, ServiceResult<PagedResult<AuditLogListItemDto>>>
     {
         private readonly IApplicationDbContext _dbContext;
 
