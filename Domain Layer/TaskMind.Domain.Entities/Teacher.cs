@@ -9,15 +9,23 @@ namespace TaskMind.Domain.Entities
     /// Teacher là tài khoản phái sinh từ User (mục 2.1, 4.1.1), được cấp khi User được một
     /// cơ sở đào tạo (School) mời và xác minh thành công (mục 4.9). LinkedUserId trỏ về đúng
     /// tài khoản User gốc.
+    ///
+    /// [CẬP NHẬT - v2.1, mục 2.1.1] Áp dụng cùng nguyên tắc vòng đời như Staff: mỗi lần gia nhập là
+    /// một bản ghi Teacher hoàn toàn mới; khi rời cơ sở đào tạo, bản ghi chuyển IsActive = false VĨNH
+    /// VIỄN (không còn Reactivate) và được giữ lại làm dữ liệu lịch sử. LeftAtUtc cùng CreatedAtUtc
+    /// xác định khoảng thời gian công tác.
     /// </summary>
     [Index(nameof(SchoolId), nameof(IsActive))]
-    [Index(nameof(LinkedUserId), IsUnique = true)]
+    [Index(nameof(LinkedUserId), nameof(IsActive))]
     public class Teacher : Account
     {
         public Guid LinkedUserId { get; private set; }
         public Guid SchoolId { get; private set; }
         public virtual School School { get; private set; } = default!;
         public bool IsActive { get; private set; } = true;
+
+        /// <summary>Thời điểm rời cơ sở đào tạo — đóng băng vĩnh viễn bản ghi này (mục 2.1.1). [MỚI - v2.1]</summary>
+        public DateTimeOffset? LeftAtUtc { get; private set; }
 
         private Teacher() : base() { }
 
@@ -27,6 +35,7 @@ namespace TaskMind.Domain.Entities
             SchoolId = schoolId;
         }
 
+        /// <summary>Cấp một bản ghi Teacher MỚI cho một lượt gia nhập cơ sở đào tạo (mục 2.1.1).</summary>
         public static Result<Teacher> Create(
             string citizenId,
             string email,
@@ -54,17 +63,23 @@ namespace TaskMind.Domain.Entities
             return Result<Teacher>.Success(teacher);
         }
 
+        /// <summary>Rời cơ sở đào tạo: đóng băng bản ghi VĨNH VIỄN (mục 2.1.1). KHÔNG có Reactivate().</summary>
         public Result Deactivate()
         {
             if (!IsActive) return Result.Failure("Giảng viên đã ở trạng thái ngừng hoạt động.");
-            IsActive = false;
-            return Result.Success();
-        }
 
-        public Result Reactivate()
-        {
-            if (IsActive) return Result.Failure("Giảng viên đang hoạt động.");
-            IsActive = true;
+            IsActive = false;
+            LeftAtUtc = DateTimeOffset.UtcNow;
+
+            AddDomainEvent(new TeacherLeftEvent
+            {
+                TeacherAccountId = Id,
+                LinkedUserId = LinkedUserId,
+                SchoolId = SchoolId,
+                JoinedAtUtc = CreatedAtUtc,
+                LeftAtUtc = LeftAtUtc.Value
+            });
+
             return Result.Success();
         }
     }
