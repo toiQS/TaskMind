@@ -21,9 +21,16 @@ namespace TaskMind.Domain.Entities
         public bool IsVerified { get; private set; }
         public string MembershipPackage { get; private set; } = "Starter";
 
+        /// <summary>
+        /// [MỚI - fix] User gốc đã đứng ra đăng ký thành lập cơ sở đào tạo này (mục 2.1, 4.1.1, 4.8).
+        /// Trước đây trường này không tồn tại nên khi Admin duyệt (Verify()), hệ thống không có cách
+        /// nào biết phải cấp tài khoản AdminSchool cho User nào — dẫn tới luồng 7.3.1 bị đứt đoạn.
+        /// </summary>
+        public Guid RequestedByUserId { get; private set; }
+
         private School() { }
 
-        private School(string schoolName, string field, string email, string phone, Address address)
+        private School(string schoolName, string field, string email, string phone, Address address, Guid requestedByUserId)
         {
             SchoolName = schoolName;
             Field = field;
@@ -32,9 +39,10 @@ namespace TaskMind.Domain.Entities
             Address = address;
             JoinDate = DateTime.UtcNow;
             IsVerified = false;
+            RequestedByUserId = requestedByUserId;
         }
 
-        public static Result<School> Create(string schoolName, string field, string email, string phone, Address? address = null)
+        public static Result<School> Create(string schoolName, string field, string email, string phone, Guid requestedByUserId, Address? address = null)
         {
             if (string.IsNullOrWhiteSpace(schoolName))
                 return Result<School>.Failure("Tên cơ sở đào tạo không được để trống.");
@@ -42,9 +50,11 @@ namespace TaskMind.Domain.Entities
                 return Result<School>.Failure("Lĩnh vực đào tạo không được để trống.");
             if (string.IsNullOrWhiteSpace(email))
                 return Result<School>.Failure("Email không được để trống.");
+            if (requestedByUserId == Guid.Empty)
+                return Result<School>.Failure("Phải xác định User đứng ra đăng ký thành lập cơ sở đào tạo.");
 
             var school = new School(schoolName.Trim(), field.Trim(), email.Trim(),
-                phone?.Trim() ?? string.Empty, address ?? new Address());
+                phone?.Trim() ?? string.Empty, address ?? new Address(), requestedByUserId);
 
             return Result<School>.Success(school);
         }

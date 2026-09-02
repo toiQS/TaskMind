@@ -27,9 +27,16 @@ namespace TaskMind.Domain.Entities
         /// <summary>Mã gói tham gia hệ thống, liên kết mục 4.13 - Quản lý lợi nhuận (Nguồn thu 2).</summary>
         public string MembershipPackage { get; private set; } = "Starter";
 
+        /// <summary>
+        /// [MỚI - fix] User gốc đã đứng ra đăng ký thành lập công ty này (mục 2.1, 4.1.1, 4.4).
+        /// Trước đây trường này không tồn tại nên khi Admin duyệt (Verify()), hệ thống không có cách
+        /// nào biết phải cấp tài khoản AdminCompany cho User nào — dẫn tới luồng 7.3.1 bị đứt đoạn.
+        /// </summary>
+        public Guid RequestedByUserId { get; private set; }
+
         private Company() { }
 
-        private Company(string companyName, string taxCode, string field, string email, string phone, Address address)
+        private Company(string companyName, string taxCode, string field, string email, string phone, Address address, Guid requestedByUserId)
         {
             CompanyName = companyName;
             TaxCode = taxCode;
@@ -39,9 +46,10 @@ namespace TaskMind.Domain.Entities
             Address = address;
             JoinDate = DateTime.UtcNow;
             IsVerified = false;
+            RequestedByUserId = requestedByUserId;
         }
 
-        public static Result<Company> Create(string companyName, string taxCode, string field, string email, string phone, Address? address = null)
+        public static Result<Company> Create(string companyName, string taxCode, string field, string email, string phone, Guid requestedByUserId, Address? address = null)
         {
             if (string.IsNullOrWhiteSpace(companyName))
                 return Result<Company>.Failure("Tên công ty không được để trống.");
@@ -49,9 +57,11 @@ namespace TaskMind.Domain.Entities
                 return Result<Company>.Failure("Mã số thuế không hợp lệ.");
             if (string.IsNullOrWhiteSpace(email))
                 return Result<Company>.Failure("Email không được để trống.");
+            if (requestedByUserId == Guid.Empty)
+                return Result<Company>.Failure("Phải xác định User đứng ra đăng ký thành lập công ty.");
 
             var company = new Company(companyName.Trim(), taxCode.Trim(), field?.Trim() ?? string.Empty,
-                email.Trim(), phone?.Trim() ?? string.Empty, address ?? new Address());
+                email.Trim(), phone?.Trim() ?? string.Empty, address ?? new Address(), requestedByUserId);
 
             return Result<Company>.Success(company);
         }
