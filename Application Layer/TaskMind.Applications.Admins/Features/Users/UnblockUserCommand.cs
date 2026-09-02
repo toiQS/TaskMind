@@ -1,7 +1,10 @@
-﻿// UnblockUserCommand.cs
+// UnblockUserCommand.cs
+// [CẬP NHẬT - fix] Thêm ApproverAdminId + AuditLog + Notification — trước đây BlockUserCommand có
+// AuditLog nhưng UnblockUserCommand (thao tác đối xứng) lại không có gì.
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
+using TaskMind.Domain.Entities;
 using TaskMind.Domain.Enums;
 
 namespace TaskMind.Applications.Admins.Features.Users
@@ -9,10 +12,12 @@ namespace TaskMind.Applications.Admins.Features.Users
     public class UnblockUserCommand : IRequest<ServiceResult>
     {
         public Guid UserId { get; }
+        public Guid ApproverAdminId { get; }
 
-        public UnblockUserCommand(Guid userId)
+        public UnblockUserCommand(Guid userId, Guid approverAdminId)
         {
             UserId = userId;
+            ApproverAdminId = approverAdminId;
         }
     }
 
@@ -37,6 +42,20 @@ namespace TaskMind.Applications.Admins.Features.Users
                 return ServiceResult.Failure("Tài khoản hiện không ở trạng thái bị cấm.");
 
             user.UpdateStatus(EntityStatus.Active);
+
+            var auditResult = AuditLog.Record(command.ApproverAdminId, "UserUnblocked", nameof(User), user.Id);
+            if (auditResult.IsSuccess)
+                _dbContext.AuditLogs.Add(auditResult.Data!);
+
+            var notifResult = Notification.Create(
+                user.Id,
+                "Tài khoản đã được mở khoá",
+                "Tài khoản của bạn đã được Admin hệ thống mở khoá và có thể hoạt động bình thường trở lại.",
+                NotificationType.Success);
+
+            if (notifResult.IsSuccess)
+                _dbContext.Notifications.Add(notifResult.Data!);
+
             await _dbContext.SaveChangesAsync(cancellationToken);
 
             return ServiceResult.Success("Mở khoá tài khoản thành công");

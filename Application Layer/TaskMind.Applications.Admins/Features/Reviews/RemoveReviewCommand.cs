@@ -1,8 +1,11 @@
-﻿// RemoveReviewCommand.cs
+// RemoveReviewCommand.cs
+// [CẬP NHẬT - fix] Bổ sung Notification cho người viết đánh giá — trước đây chỉ có AuditLog, người
+// viết review không hề biết đánh giá của mình đã bị Admin gỡ.
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Entities;
+using TaskMind.Domain.Enums;
 
 namespace TaskMind.Applications.Admins.Features.Reviews
 {
@@ -37,11 +40,23 @@ namespace TaskMind.Applications.Admins.Features.Reviews
             if (review == null)
                 return ServiceResult.NotFound("Không tìm thấy đánh giá.");
 
+            var reviewerAccountId = review.ReviewerAccountId;
+
             _dbContext.Reviews.Remove(review);
 
             var auditResult = AuditLog.Record(command.ApproverAdminId, "ReviewRemovedByAdmin", nameof(Review), review.Id);
             if (auditResult.IsSuccess)
                 _dbContext.AuditLogs.Add(auditResult.Data!);
+
+            var notifResult = Notification.Create(
+                reviewerAccountId,
+                "Đánh giá của bạn đã bị gỡ",
+                "Một đánh giá bạn đã viết đã bị Admin hệ thống gỡ bỏ do vi phạm chính sách nền tảng." +
+                (string.IsNullOrWhiteSpace(command.Reason) ? "" : $" Lý do: {command.Reason}"),
+                NotificationType.Warning);
+
+            if (notifResult.IsSuccess)
+                _dbContext.Notifications.Add(notifResult.Data!);
 
             await _dbContext.SaveChangesAsync(cancellationToken);
 

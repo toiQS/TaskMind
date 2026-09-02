@@ -1,6 +1,7 @@
-﻿// RegisterCompanyCommand.cs — [MỚI - fix] trước đây không tồn tại command nào cho User đăng ký
-// thành lập công ty; Company.Create() cũng không có cách nào lưu lại User đã đăng ký (mục 4.1.1, 4.4,
-// 7.3.1). Đây là điều kiện tiên quyết để VerifyCompanyCommand có thể tự động cấp AdminCompany.
+// RegisterCompanyCommand.cs
+// [CẬP NHẬT - fix] Bổ sung AuditLog: đăng ký thành lập công ty là một sự kiện đáng ghi vết (mục 4.21),
+// dùng chính RequestedByUserId làm ActorAccountId vì đây là hành động do User tự thực hiện, không phải
+// Admin.
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
@@ -65,6 +66,11 @@ namespace TaskMind.Applications.Admins.Features.Companies
                 return ServiceResult<Guid>.Failure(companyResult.Message);
 
             _dbContext.Companies.Add(companyResult.Data!);
+
+            var auditResult = AuditLog.Record(command.RequestedByUserId, "CompanyRegistered", nameof(Company), companyResult.Data!.Id);
+            if (auditResult.IsSuccess)
+                _dbContext.AuditLogs.Add(auditResult.Data!);
+
             await _dbContext.SaveChangesAsync(cancellationToken);
 
             return ServiceResult<Guid>.Success(companyResult.Data!.Id,

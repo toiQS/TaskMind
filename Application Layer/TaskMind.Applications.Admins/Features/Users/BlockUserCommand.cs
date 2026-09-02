@@ -1,4 +1,7 @@
-﻿// BlockUserCommand.cs
+// BlockUserCommand.cs
+// [CẬP NHẬT - fix] Bổ sung Notification cho user bị khoá — trước đây chỉ có AuditLog, người dùng
+// không hề biết tài khoản của mình đã bị khoá (không nhất quán với luồng SkillPenaltyAppliedEventHandler
+// tự khoá tài khoản, vốn có gửi Notification "Tài khoản bị tạm khoá").
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
@@ -46,6 +49,16 @@ namespace TaskMind.Applications.Admins.Features.Users
             var auditResult = AuditLog.Record(command.ApproverAdminId, "UserBlocked", nameof(User), user.Id);
             if (auditResult.IsSuccess)
                 _dbContext.AuditLogs.Add(auditResult.Data!);
+
+            var notifResult = Notification.Create(
+                user.Id,
+                "Tài khoản đã bị khoá",
+                "Tài khoản của bạn đã bị Admin hệ thống khoá do vi phạm chính sách nền tảng." +
+                (string.IsNullOrWhiteSpace(command.Reason) ? "" : $" Lý do: {command.Reason}"),
+                NotificationType.Warning);
+
+            if (notifResult.IsSuccess)
+                _dbContext.Notifications.Add(notifResult.Data!);
 
             await _dbContext.SaveChangesAsync(cancellationToken);
 

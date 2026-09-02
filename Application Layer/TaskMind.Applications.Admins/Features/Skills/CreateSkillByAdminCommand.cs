@@ -1,4 +1,6 @@
-﻿// CreateSkillByAdminCommand.cs
+// CreateSkillByAdminCommand.cs
+// [CẬP NHẬT - fix] Thêm ApproverAdminId + AuditLog — tạo kỹ năng gốc trong danh mục chuẩn hoá (mục
+// 4.16) là một thao tác quản trị nên cần truy vết như ApproveSkillCommand.
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
@@ -11,11 +13,13 @@ namespace TaskMind.Applications.Admins.Features.Skills
     {
         public string SkillName { get; }
         public SkillCategory Category { get; }
+        public Guid ApproverAdminId { get; }
 
-        public CreateSkillByAdminCommand(string skillName, SkillCategory category)
+        public CreateSkillByAdminCommand(string skillName, SkillCategory category, Guid approverAdminId)
         {
             SkillName = skillName;
             Category = category;
+            ApproverAdminId = approverAdminId;
         }
     }
 
@@ -41,6 +45,11 @@ namespace TaskMind.Applications.Admins.Features.Skills
                 return ServiceResult<Guid>.Failure(skillResult.Message);
 
             _dbContext.Skills.Add(skillResult.Data!);
+
+            var auditResult = AuditLog.Record(command.ApproverAdminId, "SkillCreatedByAdmin", nameof(Skill), skillResult.Data!.Id);
+            if (auditResult.IsSuccess)
+                _dbContext.AuditLogs.Add(auditResult.Data!);
+
             await _dbContext.SaveChangesAsync(cancellationToken);
 
             return ServiceResult<Guid>.Success(skillResult.Data!.Id, "Tạo kỹ năng thành công");

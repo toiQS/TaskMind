@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using TaskMind.Domain.Commons.Cores;
 using TaskMind.Domain.Commons.Result;
 using TaskMind.Domain.Enums;
@@ -108,6 +108,35 @@ namespace TaskMind.Domain.Entities
                 PenaltyMultiplier = 2
             });
 
+            return Result.Success();
+        }
+
+        /// <summary>
+        /// [MỚI - fix, mục 4.3.2] Áp dụng kết quả một đề xuất phản ánh kỹ năng do CÔNG TY chủ động
+        /// khởi xướng (CompanySkillReflectionRequest), SAU KHI đã xác minh qua bài kiểm tra hệ thống.
+        /// Cố tình KHÔNG dùng lại ApplyLevelUp ở trên vì ApplyLevelUp luôn phát sinh
+        /// SkillLevelApprovedEvent — sai ngữ nghĩa cho trường hợp Down (hạ cấp không phải một "phê
+        /// duyệt nâng cấp"). Việc gửi Notification cho luồng này do SkillReflectionAppliedEvent đảm
+        /// nhiệm riêng (xem SkillReflectionAppliedEventHandler), nên phương thức này không phát sinh
+        /// thêm domain event nào khác.
+        /// </summary>
+        public Result ApplyCompanyReflectionResult(Guid skillId, SkillLevel resultLevel, bool isNewSkill)
+        {
+            var record = _records.FirstOrDefault(r => r.SkillId == skillId);
+
+            if (isNewSkill)
+            {
+                if (record != null)
+                    return Result.Failure("Kỹ năng đã tồn tại trong hồ sơ, không thể bổ sung lại như kỹ năng mới.");
+
+                _records.Add(UserSkillRecord.Create(skillId, resultLevel));
+                return Result.Success();
+            }
+
+            if (record == null)
+                return Result.Failure("Không tìm thấy kỹ năng trong hồ sơ.");
+
+            record.SetLevel(resultLevel);
             return Result.Success();
         }
     }

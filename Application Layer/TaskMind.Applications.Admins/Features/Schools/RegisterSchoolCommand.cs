@@ -1,5 +1,5 @@
-﻿// RegisterSchoolCommand.cs — [MỚI - fix] tương tự RegisterCompanyCommand, cho phía cơ sở đào tạo
-// (mục 4.1.1, 4.8, 7.3.1).
+// RegisterSchoolCommand.cs
+// [CẬP NHẬT - fix] Bổ sung AuditLog, tương tự RegisterCompanyCommand.
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
@@ -57,6 +57,11 @@ namespace TaskMind.Applications.Admins.Features.Schools
                 return ServiceResult<Guid>.Failure(schoolResult.Message);
 
             _dbContext.Schools.Add(schoolResult.Data!);
+
+            var auditResult = AuditLog.Record(command.RequestedByUserId, "SchoolRegistered", nameof(School), schoolResult.Data!.Id);
+            if (auditResult.IsSuccess)
+                _dbContext.AuditLogs.Add(auditResult.Data!);
+
             await _dbContext.SaveChangesAsync(cancellationToken);
 
             return ServiceResult<Guid>.Success(schoolResult.Data!.Id,

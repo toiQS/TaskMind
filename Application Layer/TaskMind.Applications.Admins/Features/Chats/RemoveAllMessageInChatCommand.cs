@@ -1,7 +1,10 @@
-﻿// RemoveAllMessageInChatCommand.cs
+// RemoveAllMessageInChatCommand.cs
+// [CẬP NHẬT - fix] Thêm ApproverAdminId + AuditLog, tương tự RemoveChatGroupCommand — thu hồi toàn bộ
+// tin nhắn trong một nhóm là thao tác kiểm duyệt cần truy vết.
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
+using TaskMind.Domain.Entities;
 using TaskMind.Domain.Enums;
 
 namespace TaskMind.Applications.Admins.Features.Chats
@@ -9,10 +12,12 @@ namespace TaskMind.Applications.Admins.Features.Chats
     public class RemoveAllMessageInChatCommand : IRequest<ServiceResult>
     {
         public Guid ChatId { get; }
+        public Guid ApproverAdminId { get; }
 
-        public RemoveAllMessageInChatCommand(Guid chatId)
+        public RemoveAllMessageInChatCommand(Guid chatId, Guid approverAdminId)
         {
             ChatId = chatId;
+            ApproverAdminId = approverAdminId;
         }
     }
 
@@ -38,6 +43,10 @@ namespace TaskMind.Applications.Admins.Features.Chats
             {
                 message.Recall();
             }
+
+            var auditResult = AuditLog.Record(command.ApproverAdminId, "ChatMessagesRemovedByAdmin", nameof(Chat), chat.Id);
+            if (auditResult.IsSuccess)
+                _dbContext.AuditLogs.Add(auditResult.Data!);
 
             await _dbContext.SaveChangesAsync(cancellationToken);
 
