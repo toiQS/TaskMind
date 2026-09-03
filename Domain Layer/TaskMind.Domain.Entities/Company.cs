@@ -83,8 +83,13 @@ namespace TaskMind.Domain.Entities
             return Result.Success();
         }
 
+        // [CẬP NHẬT - fix] Thêm guard idempotency, đối xứng với Suspend() — trước đây gọi thẳng
+        // UpdateStatus(Active) bất kể trạng thái hiện tại, khiến ReactivateCompanyCommand luôn báo
+        // "thành công" kể cả khi công ty vốn đã Active, không phản ánh đúng ý định của Admin.
         public Result Reactivate()
         {
+            if (Status == Enums.EntityStatus.Active)
+                return Result.Failure("Công ty hiện đã ở trạng thái hoạt động.");
             UpdateStatus(Enums.EntityStatus.Active);
             return Result.Success();
         }

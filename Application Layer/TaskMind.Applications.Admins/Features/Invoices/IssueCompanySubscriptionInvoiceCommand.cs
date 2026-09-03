@@ -2,6 +2,10 @@
 // trước đây hoàn toàn không có cách nào phát sinh Invoice — chỉ có ExchangeFee được tự động sinh qua
 // ExchangeContractCompletedEventHandler. Command này cho Admin (hoặc một scheduled job sau này —
 // xem mục 5.1) chủ động sinh hoá đơn phí tham gia định kỳ cho công ty.
+//
+// [CẬP NHẬT - fix] Bổ sung ApproverAdminId + AuditLog — đối xứng với MarkInvoiceAsPaidCommand/
+// MarkInvoiceAsOverdueCommand (đều ghi AuditLog), trong khi hành động PHÁT SINH hoá đơn (nguồn gốc
+// của toàn bộ luồng thanh toán) lại không được truy vết ai đã chủ động tạo ra nó.
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
@@ -16,12 +20,14 @@ namespace TaskMind.Applications.Admins.Features.Invoices
         public Guid CompanyId { get; }
         public decimal Amount { get; }
         public string Currency { get; }
+        public Guid ApproverAdminId { get; }
 
-        public IssueCompanySubscriptionInvoiceCommand(Guid companyId, decimal amount, string currency = "VND")
+        public IssueCompanySubscriptionInvoiceCommand(Guid companyId, decimal amount, Guid approverAdminId, string currency = "VND")
         {
             CompanyId = companyId;
             Amount = amount;
             Currency = currency;
+            ApproverAdminId = approverAdminId;
         }
     }
 
@@ -47,6 +53,11 @@ namespace TaskMind.Applications.Admins.Features.Invoices
                 return ServiceResult<Guid>.Failure(invoiceResult.Message);
 
             _dbContext.Invoices.Add(invoiceResult.Data!);
+
+            var auditResult = AuditLog.Record(command.ApproverAdminId, "CompanySubscriptionInvoiceIssued", nameof(Invoice), invoiceResult.Data!.Id);
+            if (auditResult.IsSuccess)
+                _dbContext.AuditLogs.Add(auditResult.Data!);
+
             await _dbContext.SaveChangesAsync(cancellationToken);
 
             // Invoice.Create() đã tự phát sinh InvoiceIssuedEvent → InvoiceIssuedEventHandler lo phần Notification.

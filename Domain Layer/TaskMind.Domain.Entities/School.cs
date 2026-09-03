@@ -74,8 +74,11 @@ namespace TaskMind.Domain.Entities
             return Result.Success();
         }
 
+        // [CẬP NHẬT - fix] Thêm guard idempotency, đối xứng với Suspend() — cùng lý do như Company.Reactivate().
         public Result Reactivate()
         {
+            if (Status == EntityStatus.Active)
+                return Result.Failure("Cơ sở đào tạo hiện đã ở trạng thái hoạt động.");
             UpdateStatus(EntityStatus.Active);
             return Result.Success();
         }
