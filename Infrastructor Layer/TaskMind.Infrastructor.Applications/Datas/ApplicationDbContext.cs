@@ -27,44 +27,27 @@ namespace TaskMind.Infrastructor.Applications.Datas
             _logger = logger;
         }
 
+        // ... (giữ nguyên toàn bộ DbSet<> như cũ) ...
         public DbSet<AuditTrail> AuditTrails { get; set; }
         public DbSet<Admin> Admins { get; set; }
-
         public DbSet<AdminCompany> AdminCompanies { get; set; }
-
         public DbSet<AdminSchool> AdminSchools { get; set; }
-
         public DbSet<Company> Companies { get; set; }
-
         public DbSet<ExchangeContract> ExchangeContracts { get; set; }
-
         public DbSet<Invoice> Invoices { get; set; }
-
         public DbSet<Notification> Notifications { get; set; }
-
         public DbSet<Project> Projects { get; set; }
-
         public DbSet<ProjectMember> ProjectMembers { get; set; }
-
         public DbSet<School> Schools { get; set; }
-
         public DbSet<Skill> Skills { get; set; }
-
         public DbSet<SkillLevelUpRequest> SkillLevelUpRequests { get; set; }
-
         public DbSet<SkillProfile> SkillProfiles { get; set; }
-
         public DbSet<Staff> Staffs { get; set; }
         public DbSet<Student> Students { get; set; }
-
         public DbSet<Teacher> Teachers { get; set; }
-
         public DbSet<User> Users { get; set; }
-
         public DbSet<Chat> Chats { get; set; }
-
         public DbSet<JobApplication> JobApplications { get; set; }
-
         public DbSet<JobPosting> JobPostings { get; set; }
         public DbSet<AuditLog> AuditLogs { get; }
         public DbSet<Review> Reviews { get; }
@@ -81,7 +64,29 @@ namespace TaskMind.Infrastructor.Applications.Datas
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
         }
 
+        // [CẬP NHẬT - fix] Toàn bộ quy trình (lưu nghiệp vụ + audit trail + N vòng publish event, mỗi
+        // vòng có thể tạo thêm aggregate mới) giờ chạy trong MỘT transaction DB duy nhất. Trước đây
+        // mỗi base.SaveChangesAsync() bên trong vòng lặp tự commit ngay lập tức — nếu publish domain
+        // event ở vòng sau lỗi (ví dụ handler ném exception do bug/timeout), dữ liệu nghiệp vụ chính
+        // và các Notification/AuditLog đã sinh ở các vòng trước đó vẫn nằm lại trong DB dù toàn bộ
+        // thao tác coi như thất bại (throw ra ngoài) — không đảm bảo atomicity.
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            await using var transaction = await Database.BeginTransactionAsync(cancellationToken);
+            try
+            {
+                var result = await SaveChangesInternalAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+                return result;
+            }
+            catch
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                throw;
+            }
+        }
+
+        private async Task<int> SaveChangesInternalAsync(CancellationToken cancellationToken)
         {
             Guid? userId = _sessionProvider.GetUserId();
             List<AuditEntry> auditEntries = OnBeforeSaveChanges(userId);
@@ -92,9 +97,7 @@ namespace TaskMind.Infrastructor.Applications.Datas
             // 2) Lưu Audit Trail
             await OnAfterSaveChanges(auditEntries, cancellationToken);
 
-            // 3) Publish domain event theo VÒNG LẶP: mỗi round có thể sinh thêm aggregate mới
-            //    (ví dụ: CompanyVerifiedEventHandler tạo Notification -> Notification.Create lại
-            //    raise NotificationCreatedEvent -> cần 1 round nữa để publish tiếp -> SendEmailEvent).
+            // 3) Publish domain event theo VÒNG LẶP: mỗi round có thể sinh thêm aggregate mới.
             while (true)
             {
                 List<AggregateRoot> aggregates = ChangeTracker.Entries<AggregateRoot>()
@@ -105,29 +108,33 @@ namespace TaskMind.Infrastructor.Applications.Datas
                 if (aggregates.Count == 0)
                     break;
 
-                List<DomainEvent> domainEvents = aggregates.SelectMany(e => e.DomainEvents).ToList();
+                // [MỚI - fix] Giữ nguyên map aggregate -> event của chính nó thay vì gộp phẳng rồi
+                // sau đó (khi lỗi) gán NHẦM event vào MỌI aggregate không liên quan như code cũ.
+                var eventsByAggregate = aggregates.ToDictionary(a => a, a => a.DomainEvents.ToList());
 
                 foreach (AggregateRoot aggregate in aggregates)
                     aggregate.ClearDomainEvents();
 
-                foreach (DomainEvent domainEvent in domainEvents)
+                foreach (var (aggregate, events) in eventsByAggregate)
                 {
-                    try
+                    foreach (DomainEvent domainEvent in events)
                     {
-                        await _publisher.Publish(domainEvent, cancellationToken);
-                        _logger.LogInformation("Successfully published domain event {EventType}", domainEvent.GetType().Name);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Failed to publish domain event {EventType}", domainEvent.GetType().Name);
-                        foreach (AggregateRoot aggregate in aggregates)
-                            aggregate.AddDomainEvent(domainEvent);
-                        throw;
+                        try
+                        {
+                            await _publisher.Publish(domainEvent, cancellationToken);
+                            _logger.LogInformation("Successfully published domain event {EventType}", domainEvent.GetType().Name);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Failed to publish domain event {EventType}", domainEvent.GetType().Name);
+                            // Không cố "khôi phục" event vào aggregate nữa — transaction bên ngoài sẽ
+                            // rollback toàn bộ, nên trạng thái in-memory không cần nhất quán tiếp.
+                            throw;
+                        }
                     }
                 }
 
-                // Lưu các entity mới mà handler vừa Add (vd: Notification) TRƯỚC khi lặp lại vòng kế tiếp,
-                // để domain event tiếp theo (NotificationCreatedEvent) được ghi nhận đúng.
+                // Lưu các entity mới mà handler vừa Add (vd: Notification) trước khi lặp vòng kế tiếp.
                 result += await base.SaveChangesAsync(cancellationToken);
             }
 
@@ -139,6 +146,17 @@ namespace TaskMind.Infrastructor.Applications.Datas
         {
             ChangeTracker.DetectChanges();
             List<AuditEntry> auditEntries = [];
+
+            // [MỚI - fix] Ngoài PasswordHash, loại thêm RefreshToken (bí mật phiên đăng nhập) và
+            // CitizenId (số định danh công dân — dữ liệu cá nhân nhạy cảm, tài liệu mục 2.2 yêu cầu
+            // mã hoá/giới hạn truy cập) khỏi audit trail — trước đây cả hai bị dump nguyên văn vào
+            // cột jsonb của audit_trails.
+            var sensitiveFieldNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "PasswordHash",
+                "RefreshToken",
+                "CitizenId"
+            };
 
             foreach (EntityEntry entry in ChangeTracker.Entries())
             {
@@ -164,7 +182,7 @@ namespace TaskMind.Infrastructor.Applications.Datas
                         continue;
                     }
 
-                    if (prop.Metadata.Name.Equals("PasswordHash"))
+                    if (sensitiveFieldNames.Contains(prop.Metadata.Name))
                     {
                         continue;
                     }
@@ -197,7 +215,6 @@ namespace TaskMind.Infrastructor.Applications.Datas
             return auditEntries.Where(x => x.TrailType != TrailType.None).ToList();
         }
 
-        // Hàm xử lý điền ID cho các bản ghi vừa Insert mới và ghi đống log vào DB
         private async Task OnAfterSaveChanges(List<AuditEntry> auditEntries, CancellationToken cancellationToken)
         {
             if (auditEntries == null || !auditEntries.Any())
@@ -209,7 +226,6 @@ namespace TaskMind.Infrastructor.Applications.Datas
             {
                 if (entry.TrailType == TrailType.Create)
                 {
-                    // Lấy lại Id thực tế mà database vừa sinh tự động ra để gắn vào log
                     foreach (PropertyEntry prop in entry.Entry.Properties)
                     {
                         if (prop.Metadata.IsPrimaryKey())
@@ -223,9 +239,7 @@ namespace TaskMind.Infrastructor.Applications.Datas
                 _ = AuditTrails.Add(entry.ToAuditTrail());
             }
 
-            // Lưu dữ liệu của bảng Audit Trails xuống DB
             _ = await base.SaveChangesAsync(cancellationToken);
         }
     }
-
 }

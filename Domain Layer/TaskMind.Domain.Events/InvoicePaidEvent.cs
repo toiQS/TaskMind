@@ -1,11 +1,14 @@
-﻿// InvoicePaidEvent.cs
+﻿// Domain Layer/TaskMind.Domain.Events/InvoicePaidEvent.cs
 using TaskMind.Domain.Commons.Events;
 using TaskMind.Domain.Enums;
 
-public class InvoicePaidEvent : DomainEvent
+namespace TaskMind.Domain.Events   // [MỚI - fix] trước đây thiếu namespace, class rơi vào global namespace
 {
-    public Guid InvoiceId { get; init; }
-    public InvoiceSourceType SourceType { get; init; }   // [MỚI]
-    public Guid SourceRefId { get; init; }
-    public decimal Amount { get; init; }
+    public class InvoicePaidEvent : DomainEvent
+    {
+        public Guid InvoiceId { get; init; }
+        public InvoiceSourceType SourceType { get; init; }
+        public Guid SourceRefId { get; init; }
+        public decimal Amount { get; init; }
+    }
 }

@@ -1,7 +1,8 @@
-﻿// LinkReflectionVerificationSubmissionCommand.cs — [MỚI - fix] CompanySkillReflectionRequest
-// .LinkVerificationSubmission() tồn tại ở domain nhưng trước đây không command nào gọi tới.
-// Sau khi liên kết, SubmissionGradedEventHandler (đã cập nhật) sẽ TỰ ĐỘNG gọi ApplyVerificationResult
-// khi Submission này được chấm điểm — không cần thêm thao tác thủ công nào khác.
+﻿// LinkReflectionVerificationSubmissionCommand.cs
+// [CẬP NHẬT - fix bảo mật] Trước đây chỉ check Submission tồn tại (AnyAsync), không xác minh
+// Submission đó có thực sự thuộc đúng UserId của đề xuất và đúng TestPaper đã gán hay không —
+// cho phép link nhầm/link cố ý bài làm của người khác để "hợp thức hoá" một đề xuất hạ/nâng cấp
+// kỹ năng, phá vỡ nguyên tắc xác minh khách quan (mục 4.3.2).
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
@@ -36,10 +37,20 @@ namespace TaskMind.Applications.Admins.Features.SkillReflections
             if (request == null)
                 return ServiceResult.NotFound("Không tìm thấy đề xuất phản ánh kỹ năng.");
 
-            var submissionExists = await _dbContext.Submissions.AsNoTracking()
-                .AnyAsync(s => s.Id == command.SubmissionId, cancellationToken);
-            if (!submissionExists)
+            var submission = await _dbContext.Submissions
+                .AsNoTracking()
+                .FirstOrDefaultAsync(s => s.Id == command.SubmissionId, cancellationToken);
+            if (submission == null)
                 return ServiceResult.NotFound("Không tìm thấy bài làm.");
+
+            // [MỚI - fix] Bài làm phải của đúng người bị đánh giá trong đề xuất.
+            if (submission.UserId != request.UserId)
+                return ServiceResult.Failure("Bài làm không thuộc về nhân sự trong đề xuất phản ánh kỹ năng này.");
+
+            // [MỚI - fix] Nếu đề xuất đã được gán TestPaper cụ thể, bài làm phải làm đúng bài đó —
+            // tránh trường hợp lấy một bài làm hợp lệ nhưng không đúng phạm vi/level đã xác định.
+            if (request.AssignedTestPaperId.HasValue && submission.TestPaperId != request.AssignedTestPaperId.Value)
+                return ServiceResult.Failure("Bài làm không khớp với bài kiểm tra đã gán cho đề xuất này.");
 
             var result = request.LinkVerificationSubmission(command.SubmissionId);
             if (!result.IsSuccess)

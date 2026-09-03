@@ -1,12 +1,11 @@
 ﻿// ApproveSkillLevelUpRequestCommand.cs
 // [CẬP NHẬT - fix]
-//  1) request.Approve() không còn tự phát sinh SkillLevelApprovedEvent (xem SkillLevelUpRequest.cs) —
-//     trước đây cả nó lẫn profile.ApplyLevelUp() cùng raise một event, khiến
-//     SkillLevelApprovedEventHandler chạy 2 lần / gửi trùng Notification + email cho cùng một lần duyệt.
-//  2) Thêm fallback Notification cho trường hợp hiếm SkillProfile == null (không tìm thấy hồ sơ kỹ
-//     năng) — nếu không, sau khi bỏ event ở (1), user sẽ không nhận được bất kỳ thông báo nào.
-//  3) Ghi SkillHistoryEntry (mục 4.3.3) — trước đây hoàn toàn không được ghi ở luồng này dù entity/
-//     DbSet đã sẵn sàng.
+//  ... (giữ các fix cũ) ...
+//  4) [MỚI] Nhánh fallback khi profile == null trước đây vẫn ghi SkillHistoryEntry với
+//     Outcome = Applied / LevelAfter = newLevel dù thực chất KHÔNG có gì được áp dụng lên hồ sơ nào
+//     cả (vì không có profile để sửa) — sai lệch dữ liệu lịch sử theo đúng loại lỗi mà
+//     SkillReflectionAppliedEventHandler đã né. Giờ tự động khởi tạo SkillProfile mới nếu thiếu,
+//     rồi mới ApplyLevelUp thật sự lên nó — nhất quán với cách SkillReflectionAppliedEventHandler xử lý.
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
@@ -53,21 +52,40 @@ namespace TaskMind.Applications.Admins.Features.Skills
             var profile = await _dbContext.SkillProfiles
                 .FirstOrDefaultAsync(p => p.UserId == request.UserId, cancellationToken);
 
+            // [MỚI - fix] Thay vì fallback gửi Notification "khống" khi thiếu profile, tự khởi tạo
+            // SkillProfile mới rồi áp dụng thật — đảm bảo Notification/SkillLevelApprovedEvent phản
+            // ánh đúng một thay đổi đã thực sự xảy ra trên hồ sơ.
+            if (profile == null)
+            {
+                var profileResult = SkillProfile.Create(request.UserId);
+                if (profileResult.IsSuccess)
+                {
+                    profile = profileResult.Data!;
+                    _dbContext.SkillProfiles.Add(profile);
+
+                    // Kỹ năng chưa từng được khai báo trong hồ sơ mới tạo -> không thể ApplyLevelUp
+                    // trực tiếp (ApplyLevelUp yêu cầu record đã tồn tại). Khai báo trước ở CurrentLevel
+                    // của request rồi mới nâng lên newLevel, giữ đúng ngữ nghĩa "đã nâng cấp".
+                    profile.DeclareSkill(request.SkillId, request.CurrentLevel);
+                }
+            }
+
+            bool appliedSuccessfully = false;
             if (profile != null)
             {
-                // Nguồn phát SkillLevelApprovedEvent DUY NHẤT — SkillLevelApprovedEventHandler sẽ lo
-                // phần Notification/email cho user.
-                profile.ApplyLevelUp(request.SkillId, newLevel);
+                var applyResult = profile.ApplyLevelUp(request.SkillId, newLevel);
+                appliedSuccessfully = applyResult.IsSuccess;
             }
-            else
+
+            if (!appliedSuccessfully)
             {
-                // [MỚI - fix] Fallback hiếm gặp: không tìm thấy SkillProfile nên không có event nào
-                // được phát sinh — vẫn phải báo cho user biết yêu cầu đã được duyệt.
+                // Trường hợp cực hiếm (không tạo được profile) — vẫn báo cho user biết yêu cầu được
+                // duyệt nhưng có sự cố kỹ thuật, không ghi lịch sử là đã áp dụng.
                 var fallbackNotif = Notification.Create(
                     request.UserId,
-                    "Nâng cấp độ kỹ năng thành công",
-                    $"Yêu cầu nâng cấp kỹ năng của bạn đã được duyệt lên mức {newLevel}.",
-                    NotificationType.Success);
+                    "Yêu cầu nâng cấp độ kỹ năng đã được duyệt",
+                    "Yêu cầu của bạn đã được duyệt nhưng hệ thống gặp sự cố khi cập nhật hồ sơ kỹ năng. Vui lòng liên hệ hỗ trợ.",
+                    NotificationType.Warning);
 
                 if (fallbackNotif.IsSuccess)
                     _dbContext.Notifications.Add(fallbackNotif.Data!);
@@ -77,18 +95,19 @@ namespace TaskMind.Applications.Admins.Features.Skills
             if (auditResult.IsSuccess)
                 _dbContext.AuditLogs.Add(auditResult.Data!);
 
-            // [MỚI - fix, mục 4.3.3] Ghi nhận lịch sử thay đổi kỹ năng.
+            // [MỚI - fix] Chỉ ghi Outcome = Applied khi THỰC SỰ áp dụng thành công lên profile.
             var responsibleAccountId = request.ApproverAccountId != Guid.Empty ? request.ApproverAccountId : command.ApproverAdminId;
             var historyResult = SkillHistoryEntry.Record(
                 userId: request.UserId,
                 skillId: request.SkillId,
                 changeSource: SkillChangeSource.UserInitiated,
                 responsibleAccountId: responsibleAccountId,
-                outcome: SkillHistoryOutcome.Applied,
+                outcome: appliedSuccessfully ? SkillHistoryOutcome.Applied : SkillHistoryOutcome.Rejected,
                 levelBefore: request.CurrentLevel,
-                levelAfter: newLevel,
+                levelAfter: appliedSuccessfully ? newLevel : null,
                 relatedSubmissionId: request.SubmissionId,
-                relatedRequestId: request.Id);
+                relatedRequestId: request.Id,
+                rejectionReason: appliedSuccessfully ? null : "Lỗi kỹ thuật: không thể khởi tạo/cập nhật hồ sơ kỹ năng.");
 
             if (historyResult.IsSuccess)
                 _dbContext.SkillHistoryEntries.Add(historyResult.Data!);

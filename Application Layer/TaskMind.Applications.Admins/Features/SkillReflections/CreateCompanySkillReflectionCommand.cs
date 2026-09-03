@@ -1,13 +1,10 @@
-﻿// CreateCompanySkillReflectionCommand.cs — [MỚI - fix] Domain đã có đủ CompanySkillReflectionRequest
-// .CreateUp/.CreateAdd/.CreateDown (mục 4.3.2) nhưng trước đây không command nào ở tầng Application
-// gọi tới — nghĩa là công ty không có cách nào thực sự khởi tạo một đề xuất phản ánh kỹ năng.
-//
-// ResponsibleAccountId KHÔNG nhận trực tiếp từ client — hệ thống tự xác định theo đúng quy tắc mục
-// 4.3.2 (tránh giả mạo trách nhiệm):
-//   - Nếu nhân sự được đánh giá KHÔNG phải Project Manager của dự án liên quan: người đứng tên là PM
-//     đang hoạt động của dự án đó.
-//   - Nếu nhân sự chính LÀ PM, dự án không còn PM đang hoạt động, hoặc không có ProjectId: người đứng
-//     tên là Admin company (LinkedUserId) của công ty.
+﻿// CreateCompanySkillReflectionCommand.cs
+// [CẬP NHẬT - fix]
+//  1) ResolveResponsibleAccountIdAsync trước đây không kiểm tra staffAccountId có thực sự là thành
+//     viên ACTIVE của ProjectId được truyền vào hay không — cho phép lấy PM của một dự án hoàn toàn
+//     không liên quan tới nhân sự bị đánh giá làm người đứng tên chịu trách nhiệm.
+//  2) Bổ sung chặn tạo trùng đề xuất: không cho tạo đề xuất mới nếu đã có đề xuất cùng
+//     (StaffAccountId, SkillId) đang ở trạng thái PendingAdminReview/PendingVerification.
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
@@ -25,11 +22,7 @@ namespace TaskMind.Applications.Admins.Features.SkillReflections
         public SkillReflectionType ReflectionType { get; }
         public Guid? ProjectId { get; }
         public string EvidenceDescription { get; }
-
-        /// <summary>Bắt buộc với Up/Add — level đề xuất/level khởi điểm.</summary>
         public SkillLevel? ProposedLevel { get; }
-
-        /// <summary>Chỉ có ý nghĩa với Down.</summary>
         public int? IncidentFrequency { get; }
 
         public CreateCompanySkillReflectionCommand(
@@ -72,6 +65,18 @@ namespace TaskMind.Applications.Admins.Features.SkillReflections
                 .AnyAsync(s => s.Id == command.SkillId, cancellationToken);
             if (!skillExists)
                 return ServiceResult<Guid>.NotFound("Không tìm thấy kỹ năng.");
+
+            // [MỚI - fix] Chặn trùng: không cho tạo đề xuất mới nếu đang có đề xuất chưa xử lý xong
+            // cho cùng cặp (Staff, Skill).
+            var hasPending = await _dbContext.CompanySkillReflectionRequests
+                .AsNoTracking()
+                .AnyAsync(r => r.StaffAccountId == command.StaffAccountId
+                             && r.SkillId == command.SkillId
+                             && (r.Status == SkillReflectionStatus.PendingAdminReview
+                                 || r.Status == SkillReflectionStatus.PendingVerification),
+                    cancellationToken);
+            if (hasPending)
+                return ServiceResult<Guid>.Failure("Đã có một đề xuất phản ánh kỹ năng khác cho nhân sự và kỹ năng này đang chờ xử lý.");
 
             var responsibleAccountId = await ResolveResponsibleAccountIdAsync(
                 command.CompanyId, command.StaffAccountId, command.ProjectId, cancellationToken);
@@ -146,18 +151,26 @@ namespace TaskMind.Applications.Admins.Features.SkillReflections
                 if (project != null)
                 {
                     var evaluatedMember = project.Members.FirstOrDefault(m => m.AccountId == staffAccountId && m.IsActive);
-                    var evaluatedIsPm = evaluatedMember?.Role == ProjectRole.ProjectManager;
 
-                    if (!evaluatedIsPm)
+                    // [MỚI - fix] Nhân sự phải thực sự là thành viên ACTIVE của dự án được dẫn chiếu —
+                    // nếu không, không được dùng dự án này làm căn cứ xác định người chịu trách nhiệm,
+                    // fallback thẳng xuống Admin company thay vì mượn PM của một dự án không liên quan.
+                    if (evaluatedMember != null)
                     {
-                        var pm = project.Members.FirstOrDefault(m => m.IsActive && m.Role == ProjectRole.ProjectManager);
-                        if (pm != null)
-                            return pm.AccountId;
+                        var evaluatedIsPm = evaluatedMember.Role == ProjectRole.ProjectManager;
+
+                        if (!evaluatedIsPm)
+                        {
+                            var pm = project.Members.FirstOrDefault(m => m.IsActive && m.Role == ProjectRole.ProjectManager);
+                            if (pm != null)
+                                return pm.AccountId;
+                        }
                     }
                 }
             }
 
-            // Nhân sự chính là PM, dự án không còn PM hoạt động, hoặc không có ProjectId -> Admin company đứng tên (mục 4.3.2).
+            // Nhân sự chính là PM, dự án không còn PM hoạt động, nhân sự không thuộc dự án được nêu,
+            // hoặc không có ProjectId -> Admin company đứng tên (mục 4.3.2).
             var adminCompany = await _dbContext.AdminCompanies
                 .AsNoTracking()
                 .FirstOrDefaultAsync(ac => ac.CompanyId == companyId, cancellationToken);
