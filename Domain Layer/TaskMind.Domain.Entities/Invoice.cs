@@ -80,11 +80,30 @@ namespace TaskMind.Domain.Entities
             return Result.Success();
         }
 
+        /// <summary>
+        /// [CẬP NHẬT - fix] Giờ phát sinh InvoiceOverdueEvent, đi theo đúng pattern domain-event như
+        /// MarkAsPaid()/Create() — trước đây không raise event nào, buộc tầng Application phải tự
+        /// copy-paste logic "tra recipientAccountId theo SourceType" (đã lặp lại ở
+        /// InvoiceIssuedEventHandler và InvoicePaidEventHandler).
+        /// </summary>
         public Result MarkAsOverdue()
         {
             if (InvoiceStatus == InvoiceStatus.Paid)
                 return Result.Failure("Hoá đơn đã thanh toán, không thể đánh dấu quá hạn.");
+            if (InvoiceStatus == InvoiceStatus.Overdue)
+                return Result.Failure("Hoá đơn đã ở trạng thái quá hạn trước đó.");
+
             InvoiceStatus = InvoiceStatus.Overdue;
+
+            AddDomainEvent(new InvoiceOverdueEvent
+            {
+                InvoiceId = Id,
+                SourceType = SourceType,
+                SourceRefId = SourceRefId,
+                Amount = Amount.Amount,
+                Currency = Amount.Currency
+            });
+
             return Result.Success();
         }
     }

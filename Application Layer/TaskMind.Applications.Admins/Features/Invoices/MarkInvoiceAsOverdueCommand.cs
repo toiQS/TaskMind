@@ -1,13 +1,13 @@
 // MarkInvoiceAsOverdueCommand.cs
-// [CẬP NHẬT - fix] Trước đây không có ApproverAdminId/AuditLog/Notification, trong khi
-// MarkInvoiceAsPaidCommand (thao tác đối xứng) đã có cả hai. Đánh dấu quá hạn ảnh hưởng trực tiếp tới
-// đối tác (Company/School/ExchangeContract) nên cần thông báo, dùng lại logic tra cứu người nhận
-// tương tự InvoiceIssuedEventHandler/InvoicePaidEventHandler.
+// [CẬP NHẬT - fix] Trước đây handler tự copy-paste toàn bộ logic "tra recipientAccountId theo
+// SourceType" (đã lặp lại ở InvoiceIssuedEventHandler và InvoicePaidEventHandler) — rủi ro quên cập
+// nhật một trong ba nơi khi có InvoiceSourceType mới. Giờ Invoice.MarkAsOverdue() tự phát sinh
+// InvoiceOverdueEvent, InvoiceOverdueEventHandler lo toàn bộ phần Notification, handler này chỉ còn
+// tập trung vào state transition + AuditLog.
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Entities;
-using TaskMind.Domain.Enums;
 
 namespace TaskMind.Applications.Admins.Features.Invoices
 {
@@ -48,35 +48,8 @@ namespace TaskMind.Applications.Admins.Features.Invoices
             if (auditResult.IsSuccess)
                 _dbContext.AuditLogs.Add(auditResult.Data!);
 
-            Guid? recipientAccountId = invoice.SourceType switch
-            {
-                InvoiceSourceType.CompanySubscription => (await _dbContext.AdminCompanies
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(ac => ac.CompanyId == invoice.SourceRefId, cancellationToken))?.LinkedUserId,
-
-                InvoiceSourceType.SchoolSubscription => (await _dbContext.AdminSchools
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(a => a.SchoolId == invoice.SourceRefId, cancellationToken))?.LinkedUserId,
-
-                InvoiceSourceType.ExchangeFee => (await _dbContext.ExchangeContracts
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(e => e.Id == invoice.SourceRefId, cancellationToken))?.PartyAAccountId,
-
-                _ => null
-            };
-
-            if (recipientAccountId is not null && recipientAccountId != Guid.Empty)
-            {
-                var notifResult = Notification.Create(
-                    recipientAccountId.Value,
-                    "Hoá đơn quá hạn thanh toán",
-                    $"Hoá đơn trị giá {invoice.Amount.Amount:N0} {invoice.Amount.Currency} của bạn đã quá hạn thanh toán. Vui lòng thanh toán sớm nhất có thể.",
-                    NotificationType.Warning);
-
-                if (notifResult.IsSuccess)
-                    _dbContext.Notifications.Add(notifResult.Data!);
-            }
-
+            // Invoice.MarkAsOverdue() đã tự phát sinh InvoiceOverdueEvent -> InvoiceOverdueEventHandler
+            // lo phần Notification, nhất quán với luồng MarkAsPaid()/InvoicePaidEventHandler.
             await _dbContext.SaveChangesAsync(cancellationToken);
 
             return ServiceResult.Success("Đánh dấu hoá đơn quá hạn thành công");

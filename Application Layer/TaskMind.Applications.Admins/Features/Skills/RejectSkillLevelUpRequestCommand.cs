@@ -1,12 +1,17 @@
 ﻿// RejectSkillLevelUpRequestCommand.cs
-// [CẬP NHẬT - fix] profile.ApplyPenaltyDowngrade(...) trước đây không kiểm tra Result trả về — nếu
-// thất bại (ví dụ không tìm thấy record kỹ năng trong hồ sơ, dữ liệu bất thường), SkillPenaltyAppliedEvent
-// không phát sinh (user không có Notification cảnh báo hạ cấp) nhưng SkillHistoryEntry vẫn ghi như
-// bình thường (dù levelAfter khi đó = null nên không sai fact, chỉ thiếu ghi nhận rõ ràng lý do).
-// Giờ kiểm tra rõ và note lại rejectionReason kỹ thuật khi việc hạ cấp thất bại.
+// [CẬP NHẬT - fix] Ghi SkillHistoryEntry (mục 4.3.3) — đề xuất bị từ chối vẫn phải lưu lại đầy đủ vào
+// lịch sử kỹ năng, không chỉ các thay đổi đã áp dụng thành công. Trước đây SkillHistoryEntry hoàn
+// toàn không được ghi ở bất kỳ luồng nào dù entity/DbSet đã sẵn sàng.
+//
+// [CẬP NHẬT - fix #2] Kiểm tra Result trả về từ profile.ApplyPenaltyDowngrade(). Trước đây nếu
+// profile != null nhưng KHÔNG có UserSkillRecord đúng SkillId (dữ liệu bất thường), penalty âm thầm
+// không được áp dụng (Result.Failure bị bỏ qua), không phát sinh SkillPenaltyAppliedEvent (nên user
+// KHÔNG nhận được Notification cảnh báo nào), nhưng SkillHistoryEntry vẫn ghi levelAfter dựa trên
+// Records rỗng — dữ liệu lịch sử sai lệch. Giờ kiểm tra rõ kết quả và phản ánh đúng thực tế.
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
+using TaskMind.Domain.Commons.Result;
 using TaskMind.Domain.Entities;
 using TaskMind.Domain.Enums;
 
@@ -51,35 +56,46 @@ namespace TaskMind.Applications.Admins.Features.Skills
                 .FirstOrDefaultAsync(p => p.UserId == request.UserId, cancellationToken);
 
             SkillLevel? levelAfter = null;
-            bool penaltyApplied = false;
-            string? technicalNote = null;
-
+            Result? penaltyResult = null;
             if (profile != null)
             {
-                var penaltyResult = profile.ApplyPenaltyDowngrade(request.SkillId);
-                penaltyApplied = penaltyResult.IsSuccess;
-
-                if (penaltyApplied)
-                {
+                penaltyResult = profile.ApplyPenaltyDowngrade(request.SkillId);
+                if (penaltyResult.IsSuccess)
                     levelAfter = profile.Records.FirstOrDefault(r => r.SkillId == request.SkillId)?.Level;
-                }
-                else
-                {
-                    // [MỚI - fix] Không nuốt lỗi âm thầm — ghi rõ lý do kỹ thuật vào lịch sử để dễ truy vết.
-                    technicalNote = $" (Lưu ý kỹ thuật: không thể áp dụng hạ cấp penalty — {penaltyResult.Message})";
-                }
             }
-            else
+
+            var penaltyApplied = penaltyResult?.IsSuccess ?? false;
+
+            // [MỚI - fix] Nếu profile tồn tại nhưng penalty áp dụng thất bại (thiếu UserSkillRecord —
+            // dữ liệu bất thường), không có SkillPenaltyAppliedEvent nào được phát sinh nên user sẽ
+            // không nhận cảnh báo hạ cấp — cần một Notification riêng để tránh im lặng.
+            if (profile != null && !penaltyApplied)
             {
-                technicalNote = " (Lưu ý kỹ thuật: không tìm thấy hồ sơ kỹ năng để áp dụng hạ cấp penalty)";
+                var failureNotif = Notification.Create(
+                    request.UserId,
+                    "Yêu cầu nâng cấp độ kỹ năng bị từ chối",
+                    $"Yêu cầu nâng cấp kỹ năng đã bị từ chối. Lý do: {command.Reason} " +
+                    "(Hệ thống gặp lỗi khi áp dụng mức phạt hạ cấp do không tìm thấy kỹ năng tương ứng trong hồ sơ — vui lòng liên hệ hỗ trợ.)",
+                    NotificationType.Warning);
+
+                if (failureNotif.IsSuccess)
+                    _dbContext.Notifications.Add(failureNotif.Data!);
             }
+            // Trường hợp penaltyApplied == true: SkillPenaltyAppliedEvent (raise trong
+            // ApplyPenaltyDowngrade) sẽ tự lo Notification cảnh báo qua SkillPenaltyAppliedEventHandler.
+            // Trường hợp profile == null: chưa từng khai báo kỹ năng nào — không có gì để phạt, giữ
+            // nguyên hành vi cũ (không gửi thêm thông báo phạt).
 
             var auditResult = AuditLog.Record(command.ApproverAdminId, "SkillLevelUpRejected", nameof(SkillLevelUpRequest), request.Id);
             if (auditResult.IsSuccess)
                 _dbContext.AuditLogs.Add(auditResult.Data!);
 
+            // [MỚI - fix, mục 4.3.3] Ghi nhận lịch sử — bao gồm cả đề xuất bị từ chối. Nếu penalty áp
+            // dụng thất bại, ghi rõ trong lý do từ chối để không đánh lừa dữ liệu lịch sử.
             var responsibleAccountId = request.ApproverAccountId != Guid.Empty ? request.ApproverAccountId : command.ApproverAdminId;
-            var baseReason = string.IsNullOrWhiteSpace(command.Reason) ? "Không đạt yêu cầu xác minh." : command.Reason;
+            var rejectionReasonForHistory = string.IsNullOrWhiteSpace(command.Reason) ? "Không đạt yêu cầu xác minh." : command.Reason;
+            if (profile != null && !penaltyApplied)
+                rejectionReasonForHistory += $" [Lỗi kỹ thuật khi áp dụng phạt hạ cấp: {penaltyResult?.Message}]";
 
             var historyResult = SkillHistoryEntry.Record(
                 userId: request.UserId,
@@ -91,7 +107,7 @@ namespace TaskMind.Applications.Admins.Features.Skills
                 levelAfter: levelAfter,
                 relatedSubmissionId: request.SubmissionId,
                 relatedRequestId: request.Id,
-                rejectionReason: baseReason + technicalNote);
+                rejectionReason: rejectionReasonForHistory);
 
             if (historyResult.IsSuccess)
                 _dbContext.SkillHistoryEntries.Add(historyResult.Data!);
