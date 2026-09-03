@@ -73,18 +73,21 @@ namespace TaskMind.Domain.Entities
             return Result.Success();
         }
 
+        /// <summary>
+        /// [CẬP NHẬT - fix] KHÔNG còn tự phát sinh SkillLevelApprovedEvent tại đây. Trước đây cả
+        /// Approve() (trên aggregate này) LẪN SkillProfile.ApplyLevelUp() đều raise cùng một
+        /// SkillLevelApprovedEvent cho cùng một lần duyệt — khi cả hai aggregate được track trong
+        /// cùng một SaveChangesAsync, vòng lặp publish domain event sẽ gom và bắn sự kiện này 2 LẦN,
+        /// khiến SkillLevelApprovedEventHandler chạy 2 lần → user nhận trùng Notification + email.
+        /// Nguồn phát sự kiện duy nhất giờ là SkillProfile.ApplyLevelUp(), vì đó mới là nơi level thực
+        /// sự thay đổi trên hồ sơ. Approve() ở đây chỉ còn đổi trạng thái của chính request.
+        /// </summary>
         public Result Approve()
         {
             if (RequestStatus is SkillLevelUpRequestStatus.Approved or SkillLevelUpRequestStatus.Rejected)
                 return Result.Failure("Yêu cầu đã được xử lý trước đó.");
 
             RequestStatus = SkillLevelUpRequestStatus.Approved;
-            AddDomainEvent(new SkillLevelApprovedEvent
-            {
-                UserId = UserId,
-                SkillId = SkillId,
-                NewLevel = (SkillLevel)Math.Min((int)SkillLevel.Expert, (int)CurrentLevel + 1)
-            });
             return Result.Success();
         }
 

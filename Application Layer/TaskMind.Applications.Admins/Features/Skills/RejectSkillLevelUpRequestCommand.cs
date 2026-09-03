@@ -1,8 +1,12 @@
 ﻿// RejectSkillLevelUpRequestCommand.cs
+// [CẬP NHẬT - fix] Ghi SkillHistoryEntry (mục 4.3.3) — đề xuất bị từ chối vẫn phải lưu lại đầy đủ vào
+// lịch sử kỹ năng, không chỉ các thay đổi đã áp dụng thành công. Trước đây SkillHistoryEntry hoàn
+// toàn không được ghi ở bất kỳ luồng nào dù entity/DbSet đã sẵn sàng.
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TaskMind.Applications.Commons;
 using TaskMind.Domain.Entities;
+using TaskMind.Domain.Enums;
 
 namespace TaskMind.Applications.Admins.Features.Skills
 {
@@ -44,11 +48,33 @@ namespace TaskMind.Applications.Admins.Features.Skills
             var profile = await _dbContext.SkillProfiles
                 .FirstOrDefaultAsync(p => p.UserId == request.UserId, cancellationToken);
 
-            profile?.ApplyPenaltyDowngrade(request.SkillId);
+            SkillLevel? levelAfter = null;
+            if (profile != null)
+            {
+                profile.ApplyPenaltyDowngrade(request.SkillId);
+                levelAfter = profile.Records.FirstOrDefault(r => r.SkillId == request.SkillId)?.Level;
+            }
 
             var auditResult = AuditLog.Record(command.ApproverAdminId, "SkillLevelUpRejected", nameof(SkillLevelUpRequest), request.Id);
             if (auditResult.IsSuccess)
                 _dbContext.AuditLogs.Add(auditResult.Data!);
+
+            // [MỚI - fix, mục 4.3.3] Ghi nhận lịch sử — bao gồm cả đề xuất bị từ chối.
+            var responsibleAccountId = request.ApproverAccountId != Guid.Empty ? request.ApproverAccountId : command.ApproverAdminId;
+            var historyResult = SkillHistoryEntry.Record(
+                userId: request.UserId,
+                skillId: request.SkillId,
+                changeSource: SkillChangeSource.UserInitiated,
+                responsibleAccountId: responsibleAccountId,
+                outcome: SkillHistoryOutcome.Rejected,
+                levelBefore: request.CurrentLevel,
+                levelAfter: levelAfter,
+                relatedSubmissionId: request.SubmissionId,
+                relatedRequestId: request.Id,
+                rejectionReason: string.IsNullOrWhiteSpace(command.Reason) ? "Không đạt yêu cầu xác minh." : command.Reason);
+
+            if (historyResult.IsSuccess)
+                _dbContext.SkillHistoryEntries.Add(historyResult.Data!);
 
             await _dbContext.SaveChangesAsync(cancellationToken);
 
