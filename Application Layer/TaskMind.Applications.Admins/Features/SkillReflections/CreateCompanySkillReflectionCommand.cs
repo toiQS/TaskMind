@@ -159,6 +159,9 @@ namespace TaskMind.Applications.Admins.Features.SkillReflections
             return ServiceResult<Guid>.Success(requestResult.Data!.Id, "Tạo đề xuất phản ánh kỹ năng thành công");
         }
 
+        // Application Layer/TaskMind.Applications.Admins/Features/SkillReflections/CreateCompanySkillReflectionCommand.cs
+        // trong ResolveResponsibleAccountIdAsync, thêm bước validate trước khi dùng PM của project làm căn cứ
+
         private async Task<Guid> ResolveResponsibleAccountIdAsync(
             Guid companyId, Guid staffAccountId, Guid? projectId, CancellationToken cancellationToken)
         {
@@ -171,27 +174,33 @@ namespace TaskMind.Applications.Admins.Features.SkillReflections
 
                 if (project != null)
                 {
-                    // [MỚI - fix #2] Tra vai trò của nhân sự theo TOÀN BỘ lịch sử thành viên dự án
-                    // (kể cả đã rời dự án — IsActive = false), không chỉ thành viên đang hoạt động.
-                    // Nếu chỉ lọc IsActive, một nhân sự từng là PM nhưng đã rời dự án trước khi bị
-                    // đánh giá sẽ bị coi nhầm là "không phải PM", dẫn tới xác định sai người đứng tên
-                    // chịu trách nhiệm theo mục 4.3.2.
                     var evaluatedMember = project.Members
                         .Where(m => m.AccountId == staffAccountId)
                         .OrderByDescending(m => m.JoinedAt)
                         .FirstOrDefault();
-                    var evaluatedIsPm = evaluatedMember?.Role == ProjectRole.ProjectManager;
 
-                    if (!evaluatedIsPm)
+                    // [MỚI - fix] Nếu nhân sự chưa từng là thành viên dự án này, dự án đó KHÔNG PHẢI căn cứ
+                    // hợp lệ cho đề xuất — trước đây code vẫn âm thầm lấy PM của dự án không liên quan làm
+                    // "người chịu trách nhiệm", gán nhầm trách nhiệm cho người không có quan hệ gì với nhân sự
+                    // bị đánh giá. Coi như projectId không hợp lệ, rơi thẳng xuống nhánh Admin company.
+                    if (evaluatedMember == null)
                     {
-                        var pm = project.Members.FirstOrDefault(m => m.IsActive && m.Role == ProjectRole.ProjectManager);
-                        if (pm != null)
-                            return pm.AccountId;
+                        // fall through to Admin company below
+                    }
+                    else
+                    {
+                        var evaluatedIsPm = evaluatedMember.Role == ProjectRole.ProjectManager;
+
+                        if (!evaluatedIsPm)
+                        {
+                            var pm = project.Members.FirstOrDefault(m => m.IsActive && m.Role == ProjectRole.ProjectManager);
+                            if (pm != null)
+                                return pm.AccountId;
+                        }
                     }
                 }
             }
 
-            // Nhân sự chính là PM, dự án không còn PM hoạt động, hoặc không có ProjectId -> Admin company đứng tên (mục 4.3.2).
             var adminCompany = await _dbContext.AdminCompanies
                 .AsNoTracking()
                 .FirstOrDefaultAsync(ac => ac.CompanyId == companyId, cancellationToken);

@@ -91,13 +91,17 @@ namespace TaskMind.Infrastructor.Applications.Datas
             Guid? userId = _sessionProvider.GetUserId();
             List<AuditEntry> auditEntries = OnBeforeSaveChanges(userId);
 
-            // 1) Lưu nghiệp vụ chính lần đầu
             int result = await base.SaveChangesAsync(cancellationToken);
-
-            // 2) Lưu Audit Trail
             await OnAfterSaveChanges(auditEntries, cancellationToken);
 
-            // 3) Publish domain event theo VÒNG LẶP: mỗi round có thể sinh thêm aggregate mới.
+            // [FIX] Giới hạn số vòng publish domain event. Nếu một handler lỡ raise lại cùng loại
+            // event (bug logic, hoặc một chuỗi event móc xích vô tình khép vòng), vòng lặp cũ có thể
+            // chạy vô hạn, giữ transaction/connection mở mãi. maxRounds = 10 dư sức cho các chuỗi
+            // event dài nhất hiện tại (vd. CompanySkillReflection: Requested -> AdminAccepted ->
+            // AssignTestPaper -> SubmissionGraded -> Applied/Rejected chỉ ~3-4 tầng).
+            const int maxRounds = 10;
+            int round = 0;
+
             while (true)
             {
                 List<AggregateRoot> aggregates = ChangeTracker.Entries<AggregateRoot>()
@@ -108,8 +112,19 @@ namespace TaskMind.Infrastructor.Applications.Datas
                 if (aggregates.Count == 0)
                     break;
 
-                // [MỚI - fix] Giữ nguyên map aggregate -> event của chính nó thay vì gộp phẳng rồi
-                // sau đó (khi lỗi) gán NHẦM event vào MỌI aggregate không liên quan như code cũ.
+                round++;
+                if (round > maxRounds)
+                {
+                    _logger.LogError(
+                        "Domain event publish loop vượt quá {MaxRounds} vòng — có khả năng một handler đang " +
+                        "raise lại event tạo vòng lặp vô hạn. Dừng để tránh treo transaction. Aggregates còn lại: {Types}",
+                        maxRounds,
+                        string.Join(", ", aggregates.Select(a => a.GetType().Name).Distinct()));
+
+                    throw new InvalidOperationException(
+                        $"Domain event publish loop exceeded {maxRounds} rounds — possible infinite event cycle.");
+                }
+
                 var eventsByAggregate = aggregates.ToDictionary(a => a, a => a.DomainEvents.ToList());
 
                 foreach (AggregateRoot aggregate in aggregates)
@@ -127,14 +142,11 @@ namespace TaskMind.Infrastructor.Applications.Datas
                         catch (Exception ex)
                         {
                             _logger.LogError(ex, "Failed to publish domain event {EventType}", domainEvent.GetType().Name);
-                            // Không cố "khôi phục" event vào aggregate nữa — transaction bên ngoài sẽ
-                            // rollback toàn bộ, nên trạng thái in-memory không cần nhất quán tiếp.
                             throw;
                         }
                     }
                 }
 
-                // Lưu các entity mới mà handler vừa Add (vd: Notification) trước khi lặp vòng kế tiếp.
                 result += await base.SaveChangesAsync(cancellationToken);
             }
 
