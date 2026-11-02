@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TaskMind.APIs.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/v1")]
 public abstract class ScaffoldControllerBase : ControllerBase
 {

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using System.Text.Json;
 
 namespace TaskMind.APIs.Controllers;
@@ -45,18 +46,22 @@ public sealed class CommunicationController : ScaffoldControllerBase
     [EndpointSummary("Withdraw Message")]
     public IActionResult WithdrawMessage(Guid groupId, Guid messageId, [FromBody] JsonElement request) => NotImplemented(nameof(WithdrawMessage));
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("admin/chat-groups/{groupId:guid}/deletion")]
     [EndpointSummary("Delete Chat Group")]
     public IActionResult DeleteChatGroup(Guid groupId, [FromBody] JsonElement request) => NotImplemented(nameof(DeleteChatGroup));
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("admin/chat-groups/{groupId:guid}/message-withdrawals")]
     [EndpointSummary("Withdraw All Group Messages")]
     public IActionResult WithdrawAllGroupMessages(Guid groupId, [FromBody] JsonElement request) => NotImplemented(nameof(WithdrawAllGroupMessages));
 
+    [Authorize(Roles = "Admin")]
     [HttpGet("admin/audit-logs")]
     [EndpointSummary("List Audit Logs")]
     public IActionResult ListAuditLogs([FromQuery] Guid? actorId, [FromQuery] string? action, [FromQuery] DateTimeOffset? from, [FromQuery] DateTimeOffset? to, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) => NotImplemented(nameof(ListAuditLogs));
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("admin/chat-groups/{groupId:guid}/access-requests")]
     [EndpointSummary("Request Administrative Chat Access")]
     public IActionResult RequestAdministrativeChatAccess(Guid groupId, [FromBody] JsonElement request) => NotImplemented(nameof(RequestAdministrativeChatAccess));

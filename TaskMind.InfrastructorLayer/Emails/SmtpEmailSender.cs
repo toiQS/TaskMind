@@ -53,6 +53,11 @@ namespace TaskMind.InfrastructorLayer.Emails
                 _logger.LogError(ex, "Gửi email tới {To} thất bại", to);
                 return false;
             }
+            catch (Exception ex) when (ex is ArgumentException or FormatException or InvalidOperationException)
+            {
+                _logger.LogError(ex, "Cấu hình hoặc nội dung email tới {To} không hợp lệ", to);
+                return false;
+            }
         }
     }
 }

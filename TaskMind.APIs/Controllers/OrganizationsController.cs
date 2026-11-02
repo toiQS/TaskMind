@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using System.Text.Json;
 
 namespace TaskMind.APIs.Controllers;
@@ -13,31 +14,38 @@ public sealed class OrganizationsController : ScaffoldControllerBase
     [EndpointSummary("Request School Registration")]
     public IActionResult RequestSchoolRegistration([FromBody] JsonElement request) => NotImplemented(nameof(RequestSchoolRegistration));
 
+    [Authorize(Roles = "Admin")]
     [HttpGet("admin/company-registration-requests")]
     [EndpointSummary("List Company Registration Requests")]
     public IActionResult ListCompanyRegistrationRequests([FromQuery] string? status, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) => NotImplemented(nameof(ListCompanyRegistrationRequests));
 
+    [Authorize(Roles = "Admin")]
     [HttpGet("admin/school-registration-requests")]
     [EndpointSummary("List School Registration Requests")]
     public IActionResult ListSchoolRegistrationRequests([FromQuery] string? status, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) => NotImplemented(nameof(ListSchoolRegistrationRequests));
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("admin/company-registration-requests/{requestId:guid}/approve")]
     [EndpointSummary("Approve Company Registration")]
     public IActionResult ApproveCompanyRegistration(Guid requestId, [FromBody] JsonElement request) => NotImplemented(nameof(ApproveCompanyRegistration));
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("admin/company-registration-requests/{requestId:guid}/reject")]
     [EndpointSummary("Reject Company Registration")]
     public IActionResult RejectCompanyRegistration(Guid requestId, [FromBody] JsonElement request) => NotImplemented(nameof(RejectCompanyRegistration));
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("admin/school-registration-requests/{requestId:guid}/approve")]
     [EndpointSummary("Approve School Registration")]
     public IActionResult ApproveSchoolRegistration(Guid requestId, [FromBody] JsonElement request) => NotImplemented(nameof(ApproveSchoolRegistration));
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("admin/school-registration-requests/{requestId:guid}/reject")]
     [EndpointSummary("Reject School Registration")]
     public IActionResult RejectSchoolRegistration(Guid requestId, [FromBody] JsonElement request) => NotImplemented(nameof(RejectSchoolRegistration));
     [HttpGet("companies/{companyId:guid}")]
     [EndpointSummary("Get Company")]
+    [AllowAnonymous]
     public IActionResult GetCompany(Guid companyId) => NotImplemented(nameof(GetCompany));
 
     [HttpPatch("companies/{companyId:guid}")]
@@ -57,6 +65,7 @@ public sealed class OrganizationsController : ScaffoldControllerBase
     public IActionResult ChangeCompanyMembership(Guid companyId, [FromBody] JsonElement request) => NotImplemented(nameof(ChangeCompanyMembership));
     [HttpGet("schools/{schoolId:guid}")]
     [EndpointSummary("Get School")]
+    [AllowAnonymous]
     public IActionResult GetSchool(Guid schoolId) => NotImplemented(nameof(GetSchool));
 
     [HttpPatch("schools/{schoolId:guid}")]

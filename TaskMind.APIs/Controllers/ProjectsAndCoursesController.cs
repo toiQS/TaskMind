@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using System.Text.Json;
 
 namespace TaskMind.APIs.Controllers;
@@ -7,6 +8,7 @@ public sealed class ProjectsAndCoursesController : ScaffoldControllerBase
 {
     [HttpGet("projects")]
     [EndpointSummary("List Projects")]
+    [AllowAnonymous]
     public IActionResult ListProjects([FromQuery] string? source, [FromQuery] string? status, [FromQuery] string? keyword, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) => NotImplemented(nameof(ListProjects));
 
     [HttpPost("projects")]
@@ -14,6 +16,7 @@ public sealed class ProjectsAndCoursesController : ScaffoldControllerBase
     public IActionResult CreateProject([FromBody] JsonElement request) => NotImplemented(nameof(CreateProject));
     [HttpGet("projects/{projectId:guid}")]
     [EndpointSummary("Get Project")]
+    [AllowAnonymous]
     public IActionResult GetProject(Guid projectId) => NotImplemented(nameof(GetProject));
 
     [HttpPatch("projects/{projectId:guid}")]
@@ -37,10 +40,12 @@ public sealed class ProjectsAndCoursesController : ScaffoldControllerBase
     public IActionResult CancelProject(Guid projectId, [FromBody] JsonElement request) => NotImplemented(nameof(CancelProject));
 
     [HttpPost("admin/projects/{projectId:guid}/force-pause")]
+    [Authorize(Roles = "Admin")]
     [EndpointSummary("Force Pause Project")]
     public IActionResult ForcePauseProject(Guid projectId, [FromBody] JsonElement request) => NotImplemented(nameof(ForcePauseProject));
 
     [HttpPost("admin/projects/{projectId:guid}/force-cancel")]
+    [Authorize(Roles = "Admin")]
     [EndpointSummary("Force Cancel Project")]
     public IActionResult ForceCancelProject(Guid projectId, [FromBody] JsonElement request) => NotImplemented(nameof(ForceCancelProject));
 
@@ -61,6 +66,7 @@ public sealed class ProjectsAndCoursesController : ScaffoldControllerBase
     public IActionResult LeaveProject(Guid projectId, Guid memberId) => NotImplemented(nameof(LeaveProject));
 
     [HttpPost("admin/projects/{projectId:guid}/members/{memberId:guid}/remove")]
+    [Authorize(Roles = "Admin")]
     [EndpointSummary("Force Remove Project Member")]
     public IActionResult ForceRemoveProjectMember(Guid projectId, Guid memberId, [FromBody] JsonElement request) => NotImplemented(nameof(ForceRemoveProjectMember));
 
@@ -74,6 +80,7 @@ public sealed class ProjectsAndCoursesController : ScaffoldControllerBase
 
     [HttpGet("schools/{schoolId:guid}/courses")]
     [EndpointSummary("List Courses")]
+    [AllowAnonymous]
     public IActionResult ListCourses(Guid schoolId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) => NotImplemented(nameof(ListCourses));
 
     [HttpPost("schools/{schoolId:guid}/courses")]
@@ -82,6 +89,7 @@ public sealed class ProjectsAndCoursesController : ScaffoldControllerBase
 
     [HttpGet("courses/{courseId:guid}")]
     [EndpointSummary("Get Course")]
+    [AllowAnonymous]
     public IActionResult GetCourse(Guid courseId) => NotImplemented(nameof(GetCourse));
 
     [HttpPatch("courses/{courseId:guid}")]

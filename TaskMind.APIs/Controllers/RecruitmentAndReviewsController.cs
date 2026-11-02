@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using System.Text.Json;
 
 namespace TaskMind.APIs.Controllers;
@@ -7,6 +8,7 @@ public sealed class RecruitmentAndReviewsController : ScaffoldControllerBase
 {
     [HttpGet("companies/{companyId:guid}/job-postings")]
     [EndpointSummary("List Company Job Postings")]
+    [AllowAnonymous]
     public IActionResult ListCompanyJobPostings(Guid companyId, [FromQuery] string? status, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) => NotImplemented(nameof(ListCompanyJobPostings));
 
     [HttpPost("companies/{companyId:guid}/job-postings")]
@@ -14,6 +16,7 @@ public sealed class RecruitmentAndReviewsController : ScaffoldControllerBase
     public IActionResult CreateJobPosting(Guid companyId, [FromBody] JsonElement request) => NotImplemented(nameof(CreateJobPosting));
     [HttpGet("job-postings/{jobPostingId:guid}")]
     [EndpointSummary("Get Job Posting")]
+    [AllowAnonymous]
     public IActionResult GetJobPosting(Guid jobPostingId) => NotImplemented(nameof(GetJobPosting));
 
     [HttpPatch("job-postings/{jobPostingId:guid}")]
@@ -32,6 +35,7 @@ public sealed class RecruitmentAndReviewsController : ScaffoldControllerBase
     [EndpointSummary("Cancel Job Posting")]
     public IActionResult CancelJobPosting(Guid jobPostingId, [FromBody] JsonElement request) => NotImplemented(nameof(CancelJobPosting));
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("admin/job-postings/{jobPostingId:guid}/cancel")]
     [EndpointSummary("Admin Cancel Job Posting")]
     public IActionResult AdminCancelJobPosting(Guid jobPostingId, [FromBody] JsonElement request) => NotImplemented(nameof(AdminCancelJobPosting));
@@ -61,14 +65,18 @@ public sealed class RecruitmentAndReviewsController : ScaffoldControllerBase
     public IActionResult CreateReview([FromBody] JsonElement request) => NotImplemented(nameof(CreateReview));
     [HttpGet("users/{userId:guid}/reviews")]
     [EndpointSummary("List User Reviews")]
+    [AllowAnonymous]
     public IActionResult ListUserReviews(Guid userId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) => NotImplemented(nameof(ListUserReviews));
     [HttpGet("companies/{companyId:guid}/reviews")]
     [EndpointSummary("List Company Reviews")]
+    [AllowAnonymous]
     public IActionResult ListCompanyReviews(Guid companyId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) => NotImplemented(nameof(ListCompanyReviews));
     [HttpGet("schools/{schoolId:guid}/reviews")]
     [EndpointSummary("List School Reviews")]
+    [AllowAnonymous]
     public IActionResult ListSchoolReviews(Guid schoolId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) => NotImplemented(nameof(ListSchoolReviews));
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("admin/reviews/{reviewId:guid}/removal")]
     [EndpointSummary("Remove Review")]
     public IActionResult RemoveReview(Guid reviewId, [FromBody] JsonElement request) => NotImplemented(nameof(RemoveReview));

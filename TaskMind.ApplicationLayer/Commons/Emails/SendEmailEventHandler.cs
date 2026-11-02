@@ -1,5 +1,6 @@
 // Application Layer/TaskMind.Application.Events/SendEmailEventHandler.cs
 using MediatR;
+using Microsoft.Extensions.Logging;
 using System.Net;
 using TaskMind.DomainLayer.TaskMind.Domain.Events;
 
@@ -13,10 +14,12 @@ namespace TaskMind.ApplicationLayer.Commons.Emails
     public class SendEmailEventHandler : INotificationHandler<SendEmailEvent>
     {
         private readonly IEmailSender _emailSender;
+        private readonly ILogger<SendEmailEventHandler> _logger;
 
-        public SendEmailEventHandler(IEmailSender emailSender)
+        public SendEmailEventHandler(IEmailSender emailSender, ILogger<SendEmailEventHandler> logger)
         {
             _emailSender = emailSender;
+            _logger = logger;
         }
 
         public async Task Handle(SendEmailEvent notification, CancellationToken cancellationToken)
@@ -29,7 +32,12 @@ namespace TaskMind.ApplicationLayer.Commons.Emails
                 BodyHtml = bodyHtml
             });
 
-            await _emailSender.SendAsync(notification.To, notification.Subject, html, cancellationToken);
+            var sent = await _emailSender.SendAsync(notification.To, notification.Subject, html, cancellationToken);
+            if (!sent)
+                _logger.LogError(
+                    "Không gửi được email domain event {EventType} tới {To}",
+                    notification.GetType().Name,
+                    notification.To);
         }
     }
 }

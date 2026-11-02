@@ -12,9 +12,13 @@ namespace TaskMind.InfrastructorLayer.Datas
             {
                 p.WithOwner();
                 p.OwnsOne(pp => pp.Address);
+                p.HasIndex(profile => profile.Email)
+                    .IsUnique()
+                    .HasFilter("\"Discriminator\" = 'User'")
+                    .HasDatabaseName("IX_Accounts_User_Email");
             });
 
-            builder.OwnsOne(x => x.Security);
+            builder.OwnsOne(x => x.Security, AccountConfigurationHelpers.ConfigureSecurity);
         }
     }
 
@@ -27,7 +31,7 @@ namespace TaskMind.InfrastructorLayer.Datas
                 p.WithOwner();
                 p.OwnsOne(pp => pp.Address);
             });
-            builder.OwnsOne(x => x.Security);
+            builder.OwnsOne(x => x.Security, AccountConfigurationHelpers.ConfigureSecurity);
         }
     }
 
@@ -40,7 +44,7 @@ namespace TaskMind.InfrastructorLayer.Datas
                 p.WithOwner();
                 p.OwnsOne(pp => pp.Address);
             });
-            builder.OwnsOne(x => x.Security);
+            builder.OwnsOne(x => x.Security, AccountConfigurationHelpers.ConfigureSecurity);
         }
     }
 
@@ -54,7 +58,7 @@ namespace TaskMind.InfrastructorLayer.Datas
                 p.WithOwner();
                 p.OwnsOne(pp => pp.Address);
             });
-            builder.OwnsOne(x => x.Security);
+            builder.OwnsOne(x => x.Security, AccountConfigurationHelpers.ConfigureSecurity);
         }
     }
 
@@ -67,7 +71,7 @@ namespace TaskMind.InfrastructorLayer.Datas
                 p.WithOwner();
                 p.OwnsOne(pp => pp.Address);
             });
-            builder.OwnsOne(x => x.Security);
+            builder.OwnsOne(x => x.Security, AccountConfigurationHelpers.ConfigureSecurity);
         }
     }
 
@@ -80,7 +84,7 @@ namespace TaskMind.InfrastructorLayer.Datas
                 p.WithOwner();
                 p.OwnsOne(pp => pp.Address);
             });
-            builder.OwnsOne(x => x.Security);
+            builder.OwnsOne(x => x.Security, AccountConfigurationHelpers.ConfigureSecurity);
         }
     }
 
@@ -93,8 +97,20 @@ namespace TaskMind.InfrastructorLayer.Datas
                 p.WithOwner();
                 p.OwnsOne(pp => pp.Address);
             });
-            builder.OwnsOne(x => x.Security);
+            builder.OwnsOne(x => x.Security, AccountConfigurationHelpers.ConfigureSecurity);
         }
     }
 
+}
+
+internal static class AccountConfigurationHelpers
+{
+    public static void ConfigureSecurity<TOwner>(
+        OwnedNavigationBuilder<TOwner, Security> security)
+        where TOwner : Account
+    {
+        security.Property(x => x.RefreshTokenHash).IsConcurrencyToken();
+        security.Property(x => x.EmailVerificationTokenHash).IsConcurrencyToken();
+        security.Property(x => x.PasswordResetTokenHash).IsConcurrencyToken();
+    }
 }

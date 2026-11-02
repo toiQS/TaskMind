@@ -7,11 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.14" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.14" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.3.1" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TaskMind.ApplicationLayer\TaskMind.ApplicationLayer.csproj" />
+    <ProjectReference Include="..\TaskMind.InfrastructorLayer\TaskMind.InfrastructorLayer.csproj" />
     <ProjectReference Include="..\TaskMind.Aspires\TaskMind.Aspires.ServiceDefaults\TaskMind.Aspires.ServiceDefaults.csproj" />
   </ItemGroup>
 

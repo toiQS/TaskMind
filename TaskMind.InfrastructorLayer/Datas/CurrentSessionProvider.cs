@@ -15,7 +15,10 @@ namespace TaskMind.InfrastructorLayer.Datas
 
         public Guid? GetUserId()
         {
-            return Guid.Empty;
+            var principal = _httpContextAccessor.HttpContext?.User;
+            var claimValue = principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? principal?.FindFirst("sub")?.Value;
+            return Guid.TryParse(claimValue, out var accountId) ? accountId : null;
         }
     }
 }

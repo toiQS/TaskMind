@@ -1,12 +1,14 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.Extensions.Logging;
 using TaskMind.ApplicationLayer.Commons;
 using TaskMind.DomainLayer.TaskMind.Domain.Commons.Cores;
 using TaskMind.DomainLayer.TaskMind.Domain.Commons.Events;
 using TaskMind.DomainLayer.TaskMind.Domain.Entities;
 using TaskMind.DomainLayer.TaskMind.Domain.Enums;
+using TaskMind.InfrastructorLayer.Security;
 
 namespace TaskMind.InfrastructorLayer.Datas
 {
@@ -63,6 +65,15 @@ namespace TaskMind.InfrastructorLayer.Datas
             base.OnModelCreating(modelBuilder);
             modelBuilder.Ignore<DomainEvent>();
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+
+            var citizenIdConverter = new ValueConverter<string, string>(
+                citizenId => CitizenIdEncryption.Encrypt(citizenId),
+                encryptedCitizenId => CitizenIdEncryption.Decrypt(encryptedCitizenId));
+            foreach (var profileType in modelBuilder.Model.GetEntityTypes()
+                         .Where(entityType => entityType.ClrType == typeof(Profile)))
+            {
+                profileType.FindProperty(nameof(Profile.CitizenId))?.SetValueConverter(citizenIdConverter);
+            }
         }
 
         // [CẬP NHẬT - fix] Toàn bộ quy trình (lưu nghiệp vụ + audit trail + N vòng publish event, mỗi
@@ -168,6 +179,9 @@ namespace TaskMind.InfrastructorLayer.Datas
             {
                 "PasswordHash",
                 "RefreshToken",
+                "RefreshTokenHash",
+                "EmailVerificationTokenHash",
+                "PasswordResetTokenHash",
                 "CitizenId"
             };
 

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using System.Text.Json;
 
 namespace TaskMind.APIs.Controllers;
@@ -7,24 +8,29 @@ public sealed class SkillsController : ScaffoldControllerBase
 {
     [HttpGet("skills")]
     [EndpointSummary("List Skills")]
+    [AllowAnonymous]
     public IActionResult ListSkills([FromQuery] string? keyword, [FromQuery] string? category, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) => NotImplemented(nameof(ListSkills));
 
     [HttpPost("skill-proposals")]
     [EndpointSummary("Propose Skill")]
     public IActionResult ProposeSkill([FromBody] JsonElement request) => NotImplemented(nameof(ProposeSkill));
 
+    [Authorize(Roles = "Admin")]
     [HttpGet("admin/skill-proposals")]
     [EndpointSummary("List Skill Proposals")]
     public IActionResult ListSkillProposals([FromQuery] string? status, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) => NotImplemented(nameof(ListSkillProposals));
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("admin/skill-proposals/{proposalId:guid}/approve")]
     [EndpointSummary("Approve Skill Proposal")]
     public IActionResult ApproveSkillProposal(Guid proposalId, [FromBody] JsonElement request) => NotImplemented(nameof(ApproveSkillProposal));
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("admin/skill-proposals/{proposalId:guid}/reject")]
     [EndpointSummary("Reject Skill Proposal")]
     public IActionResult RejectSkillProposal(Guid proposalId, [FromBody] JsonElement request) => NotImplemented(nameof(RejectSkillProposal));
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("admin/skills/{skillId:guid}/related-skills")]
     [EndpointSummary("Link Related Skills")]
     public IActionResult LinkRelatedSkills(Guid skillId, [FromBody] JsonElement request) => NotImplemented(nameof(LinkRelatedSkills));

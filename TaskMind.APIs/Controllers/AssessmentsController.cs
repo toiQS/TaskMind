@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using System.Text.Json;
 
 namespace TaskMind.APIs.Controllers;
@@ -54,5 +55,6 @@ public sealed class AssessmentsController : ScaffoldControllerBase
     public IActionResult ListMyCertificates([FromQuery] int page = 1, [FromQuery] int pageSize = 20) => NotImplemented(nameof(ListMyCertificates));
     [HttpGet("certificates/{verificationCode}/verification")]
     [EndpointSummary("Verify Certificate")]
+    [AllowAnonymous]
     public IActionResult VerifyCertificate(string verificationCode) => NotImplemented(nameof(VerifyCertificate));
 }
