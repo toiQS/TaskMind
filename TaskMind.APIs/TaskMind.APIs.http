@@ -1,0 +1,6 @@
+@TaskMind.APIs_HostAddress = http://localhost:5258
+
+GET {{TaskMind.APIs_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

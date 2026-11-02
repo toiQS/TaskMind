@@ -1,22 +1,8 @@
 <Solution>
-  <Folder Name="/Application Layer/">
-    <Project Path="Application Layer/TaskMind.Applications.Admins/TaskMind.Applications.Admins.csproj" Id="737ed3b2-f234-4603-9681-4b55913d859d" />
-    <Project Path="Application Layer/TaskMind.Applications.Users/TaskMind.Applications.Users.csproj" />
-    <Project Path="D:/Coding/TaskMind/Application Layer/TaskMind.Application.Commons/TaskMind.Applications.Commons.csproj" Id="40682e02-90fa-40f1-9eea-39981f94a272" />
-    <Project Path="D:/Coding/TaskMind/Application Layer/TaskMind.Application.Events/TaskMind.Applications.Events.csproj" Id="82dfe922-de59-4a77-b93f-1aaa8c6a047c" />
-  </Folder>
-  <Folder Name="/Domain Layer/">
-    <Project Path="D:/Coding/TaskMind/Domain Layer/TaskMind.Domain.Commons/TaskMind.Domain.Commons.csproj" Id="a7d650e1-5971-46b0-a158-2a7132e779f1" />
-    <Project Path="D:/Coding/TaskMind/Domain Layer/TaskMind.Domain.Entities/TaskMind.Domain.Entities.csproj" Id="227d841a-5a63-4f1a-bf2a-0e796f4294c7" />
-    <Project Path="D:/Coding/TaskMind/Domain Layer/TaskMind.Domain.Enums/TaskMind.Domain.Enums.csproj" Id="689df7da-dafb-463a-89a8-8b2728c82c16" />
-    <Project Path="D:/Coding/TaskMind/Domain Layer/TaskMind.Domain.Events/TaskMind.Domain.Events.csproj" Id="485fc62c-557c-4f59-aad4-3be4067028b2" />
-  </Folder>
-  <Folder Name="/Hosting Layer/">
-    <Project Path="D:/Coding/TaskMind/Hosting Layer/TaskMind/TaskMind.AppHost/TaskMind.AppHost.csproj" Id="6d425461-d431-48f3-8313-efb8eb7a2e26" />
-    <Project Path="D:/Coding/TaskMind/Hosting Layer/TaskMind/TaskMind.ServiceDefaults/TaskMind.ServiceDefaults.csproj" />
-  </Folder>
-  <Folder Name="/Infrastructor Layer/">
-    <Project Path="D:/Coding/TaskMind/Infrastructor Layer/TaskMind.Infrastructor.Applications/TaskMind.Infrastructor.Applications.csproj" Id="c6e82156-6205-4062-930d-f190a347a605" />
-    <Project Path="D:/Coding/TaskMind/Infrastructor Layer/TaskMind.Infrastructor.Weblications/TaskMind.Infrastructor.Weblications.csproj" Id="60ce2c57-d634-4850-9d7c-5c953cf23814" />
-  </Folder>
+  <Project Path="TaskMind.APIs/TaskMind.APIs.csproj" />
+  <Project Path="TaskMind.ApplicationLayer/TaskMind.ApplicationLayer.csproj" Id="b75b0d07-21c3-4f79-888c-092a8c710d36" />
+  <Project Path="TaskMind.Aspires/TaskMind.Aspires.AppHost/TaskMind.Aspires.AppHost.csproj" Id="69f6e426-8104-40fd-aa83-37b97a0cecce" />
+  <Project Path="TaskMind.Aspires/TaskMind.Aspires.ServiceDefaults/TaskMind.Aspires.ServiceDefaults.csproj" />
+  <Project Path="TaskMind.DomainLayer/TaskMind.DomainLayer.csproj" Id="9faa4cd9-adae-46b5-8649-204e9ad8ade9" />
+  <Project Path="TaskMind.InfrastructorLayer/TaskMind.InfrastructorLayer.csproj" Id="c54e2846-dfb2-455b-90f4-e3144a7db78a" />
 </Solution>
