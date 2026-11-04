@@ -1,15 +1,33 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using MediatR;
 using System.Text.Json;
+using TaskMind.ApplicationLayer.Commons;
+using TaskMind.ApplicationLayer.Features.Skills;
 
 namespace TaskMind.APIs.Controllers;
 
 public sealed class SkillsController : ScaffoldControllerBase
 {
+    private readonly ISender _sender;
+
+    public SkillsController(ISender sender)
+    {
+        _sender = sender;
+    }
+
     [HttpGet("skills")]
     [EndpointSummary("List Skills")]
     [AllowAnonymous]
-    public IActionResult ListSkills([FromQuery] string? keyword, [FromQuery] string? category, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) => NotImplemented(nameof(ListSkills));
+    public async Task<IActionResult> ListSkills(
+        [FromQuery] string? keyword,
+        [FromQuery] string? category,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default) =>
+        ToActionResult(await _sender.Send(
+            new GetSkillCatalogQuery(keyword, category, page, pageSize),
+            cancellationToken));
 
     [HttpPost("skill-proposals")]
     [EndpointSummary("Propose Skill")]
@@ -37,11 +55,15 @@ public sealed class SkillsController : ScaffoldControllerBase
 
     [HttpGet("me/skills")]
     [EndpointSummary("List My Skills")]
-    public IActionResult ListMySkills() => NotImplemented(nameof(ListMySkills));
+    public async Task<IActionResult> ListMySkills(CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new GetMySkillsQuery(), cancellationToken));
 
     [HttpPost("me/skills")]
     [EndpointSummary("Add My Skill")]
-    public IActionResult AddMySkill([FromBody] JsonElement request) => NotImplemented(nameof(AddMySkill));
+    public async Task<IActionResult> AddMySkill(
+        [FromBody] AddMySkillCommand request,
+        CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(request, cancellationToken));
 
     [HttpGet("me/skill-history")]
     [EndpointSummary("Get My Skill History")]
@@ -98,4 +120,10 @@ public sealed class SkillsController : ScaffoldControllerBase
     [HttpPost("skill-reflection-requests/{requestId:guid}/dismiss")]
     [EndpointSummary("Dismiss Skill Reflection Request")]
     public IActionResult DismissSkillReflectionRequest(Guid requestId, [FromBody] JsonElement request) => NotImplemented(nameof(DismissSkillReflectionRequest));
+
+    private IActionResult ToActionResult<T>(ServiceResult<T> result)
+    {
+        var response = ApiResponse.FromServiceResult(result);
+        return StatusCode(response.StatusCode, response);
+    }
 }
