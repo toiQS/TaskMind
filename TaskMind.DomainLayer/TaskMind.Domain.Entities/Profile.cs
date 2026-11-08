@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 using TaskMind.DomainLayer.TaskMind.Domain.Commons.ObjectValues;
 using TaskMind.DomainLayer.TaskMind.Domain.Commons.Result;
 
@@ -7,9 +6,8 @@ namespace TaskMind.DomainLayer.TaskMind.Domain.Entities
 {
     public class Profile
     {
-        [Key, ForeignKey(nameof(Account))]
+        [Key]
         public Guid Id { get; private set; }
-        public virtual Account Account { get; private set; } = default!;
 
         public string FirstName { get; private set; } = string.Empty;
         public string LastName { get; private set; } = string.Empty;
@@ -89,6 +87,55 @@ namespace TaskMind.DomainLayer.TaskMind.Domain.Entities
             if (address != null)
             {
                 Address = address;
+            }
+
+            return Result.Success();
+        }
+
+        public Result UpdateProfile(
+            string? firstName,
+            string? lastName,
+            string? nickName,
+            string? bio,
+            string? imageUrl,
+            string? phoneNumber,
+            string? street,
+            string? city,
+            string? country)
+        {
+            if (firstName is not null && string.IsNullOrWhiteSpace(firstName))
+                return Result.Failure("First name cannot be empty.");
+            if (lastName is not null && string.IsNullOrWhiteSpace(lastName))
+                return Result.Failure("Last name cannot be empty.");
+            if (nickName is not null && string.IsNullOrWhiteSpace(nickName))
+                return Result.Failure("Nickname cannot be empty.");
+
+            if (imageUrl is not null && !string.IsNullOrWhiteSpace(imageUrl))
+            {
+                if (!Uri.TryCreate(imageUrl.Trim(), UriKind.Absolute, out var imageUri) ||
+                    imageUri.Scheme is not ("http" or "https"))
+                    return Result.Failure("ImageUrl must be an absolute HTTP or HTTPS URL.");
+            }
+
+            if (firstName is not null)
+                FirstName = firstName.Trim();
+            if (lastName is not null)
+                LastName = lastName.Trim();
+            if (nickName is not null)
+                NickName = nickName.Trim();
+            if (bio is not null)
+                Bio = bio.Trim();
+            if (imageUrl is not null)
+                ImageUrl = imageUrl.Trim();
+            if (phoneNumber is not null)
+                PhoneNumber = phoneNumber.Trim();
+
+            if (street is not null || city is not null || country is not null)
+            {
+                Address = new Address(
+                    street?.Trim() ?? Address.Street,
+                    city?.Trim() ?? Address.City,
+                    country?.Trim() ?? Address.Country);
             }
 
             return Result.Success();

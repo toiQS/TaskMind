@@ -33,7 +33,17 @@ public sealed class GetCurrentAccountHandler :
             Email = account.Profile.Email,
             FullName = AuthRules.FullName(account),
             Role = account.Role.ToString(),
-            IsVerified = account.IsVerified
+            IsVerified = account.IsVerified,
+            NickName = account.Profile.NickName,
+            ImageUrl = account.Profile.ImageUrl,
+            Bio = account.Profile.Bio,
+            PhoneNumber = account.Profile.PhoneNumber,
+            Address = new ProfileAddressDto
+            {
+                Street = account.Profile.Address.Street,
+                City = account.Profile.Address.City,
+                Country = account.Profile.Address.Country
+            }
         });
     }
 }

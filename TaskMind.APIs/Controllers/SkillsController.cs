@@ -67,7 +67,11 @@ public sealed class SkillsController : ScaffoldControllerBase
 
     [HttpGet("me/skill-history")]
     [EndpointSummary("Get My Skill History")]
-    public IActionResult GetMySkillHistory([FromQuery] int page = 1, [FromQuery] int pageSize = 20) => NotImplemented(nameof(GetMySkillHistory));
+    public async Task<IActionResult> GetMySkillHistory(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default) =>
+        ToActionResult(await _sender.Send(new GetMySkillHistoryQuery(page, pageSize), cancellationToken));
 
     [HttpPost("me/skill-level-up-requests")]
     [EndpointSummary("Create Skill Level Up Request")]

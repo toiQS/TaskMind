@@ -113,12 +113,16 @@ public sealed class AuthController : ScaffoldControllerBase
     [Authorize]
     [HttpPatch("me/profile")]
     [EndpointSummary("Update Current Profile")]
-    public IActionResult UpdateCurrentProfile() => NotImplemented(nameof(UpdateCurrentProfile));
+    public async Task<IActionResult> UpdateCurrentProfile(
+        [FromBody] UpdateCurrentProfileCommand request,
+        CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(request, cancellationToken));
 
     [AllowAnonymous]
     [HttpGet("users/{userId:guid}")]
     [EndpointSummary("Get Public User")]
-    public IActionResult GetPublicUser(Guid userId) => NotImplemented(nameof(GetPublicUser));
+    public async Task<IActionResult> GetPublicUser(Guid userId, CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new GetPublicUserProfileQuery(userId), cancellationToken));
 
     private bool TryGetAccountId(out Guid accountId)
     {

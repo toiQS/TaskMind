@@ -10,7 +10,7 @@ namespace TaskMind.InfrastructorLayer.Datas
         {
             builder.OwnsOne(x => x.Profile, p =>
             {
-                p.WithOwner();
+                p.WithOwner().HasForeignKey(profile => profile.Id);
                 p.OwnsOne(pp => pp.Address);
                 p.HasIndex(profile => profile.Email)
                     .IsUnique()
@@ -28,7 +28,7 @@ namespace TaskMind.InfrastructorLayer.Datas
         {
             builder.OwnsOne(x => x.Profile, p =>
             {
-                p.WithOwner();
+                p.WithOwner().HasForeignKey(profile => profile.Id);
                 p.OwnsOne(pp => pp.Address);
             });
             builder.OwnsOne(x => x.Security, AccountConfigurationHelpers.ConfigureSecurity);
@@ -41,7 +41,7 @@ namespace TaskMind.InfrastructorLayer.Datas
         {
             builder.OwnsOne(x => x.Profile, p =>
             {
-                p.WithOwner();
+                p.WithOwner().HasForeignKey(profile => profile.Id);
                 p.OwnsOne(pp => pp.Address);
             });
             builder.OwnsOne(x => x.Security, AccountConfigurationHelpers.ConfigureSecurity);
@@ -55,7 +55,7 @@ namespace TaskMind.InfrastructorLayer.Datas
         {
             builder.OwnsOne(x => x.Profile, p =>
             {
-                p.WithOwner();
+                p.WithOwner().HasForeignKey(profile => profile.Id);
                 p.OwnsOne(pp => pp.Address);
             });
             builder.OwnsOne(x => x.Security, AccountConfigurationHelpers.ConfigureSecurity);
@@ -66,9 +66,15 @@ namespace TaskMind.InfrastructorLayer.Datas
     {
         public void Configure(EntityTypeBuilder<Staff> builder)
         {
+            builder.HasIndex(account => account.LinkedUserId)
+                .IsUnique()
+                .HasFilter(
+                    "(\"Discriminator\" IN ('Staff', 'Student', 'Teacher') AND \"IsActive\" = TRUE) " +
+                    "OR (\"Discriminator\" IN ('AdminCompany', 'AdminSchool') AND \"Status\" = 0)");
+
             builder.OwnsOne(x => x.Profile, p =>
             {
-                p.WithOwner();
+                p.WithOwner().HasForeignKey(profile => profile.Id);
                 p.OwnsOne(pp => pp.Address);
             });
             builder.OwnsOne(x => x.Security, AccountConfigurationHelpers.ConfigureSecurity);
@@ -81,7 +87,7 @@ namespace TaskMind.InfrastructorLayer.Datas
         {
             builder.OwnsOne(x => x.Profile, p =>
             {
-                p.WithOwner();
+                p.WithOwner().HasForeignKey(profile => profile.Id);
                 p.OwnsOne(pp => pp.Address);
             });
             builder.OwnsOne(x => x.Security, AccountConfigurationHelpers.ConfigureSecurity);
@@ -94,7 +100,7 @@ namespace TaskMind.InfrastructorLayer.Datas
         {
             builder.OwnsOne(x => x.Profile, p =>
             {
-                p.WithOwner();
+                p.WithOwner().HasForeignKey(profile => profile.Id);
                 p.OwnsOne(pp => pp.Address);
             });
             builder.OwnsOne(x => x.Security, AccountConfigurationHelpers.ConfigureSecurity);

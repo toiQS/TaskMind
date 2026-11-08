@@ -4,6 +4,7 @@ using Npgsql;
 using TaskMind.ApplicationLayer.Commons;
 using TaskMind.ApplicationLayer.Features.Auths.Dtos;
 using TaskMind.DomainLayer.TaskMind.Domain.Entities;
+using TaskMind.DomainLayer.TaskMind.Domain.Enums;
 
 namespace TaskMind.ApplicationLayer.Features.Auths;
 
@@ -52,6 +53,14 @@ public sealed class RegisterHandler : IRequestHandler<RegisterCommand, ServiceRe
             return ServiceResult<RegisteredAccountDto>.Failure(createResult.Message);
 
         var user = createResult.Data;
+        var welcomeNotificationResult = Notification.Create(
+            user.Id,
+            "Chào mừng đến với TaskMind",
+            "Tài khoản đã được tạo. Vui lòng xác minh email để bắt đầu sử dụng TaskMind.",
+            NotificationType.System);
+        if (!welcomeNotificationResult.IsSuccess || welcomeNotificationResult.Data is null)
+            return ServiceResult<RegisteredAccountDto>.Error(welcomeNotificationResult.Message);
+
         var rawToken = _tokenService.CreateOpaqueToken();
         var tokenResult = user.Security.IssueEmailVerificationToken(
             _tokenService.HashToken(rawToken),
@@ -60,6 +69,7 @@ public sealed class RegisterHandler : IRequestHandler<RegisterCommand, ServiceRe
             return ServiceResult<RegisteredAccountDto>.Error("Không thể tạo mã xác minh email.");
 
         _dbContext.Users.Add(user);
+        _dbContext.Notifications.Add(welcomeNotificationResult.Data);
         try
         {
             await _dbContext.SaveChangesAsync(cancellationToken);

@@ -141,6 +141,86 @@ public sealed class GetMySkillsHandler :
     }
 }
 
+public sealed record GetMySkillHistoryQuery(int Page = 1, int PageSize = 20)
+    : IRequest<ServiceResult<PagedResultDto<SkillHistoryItemDto>>>;
+
+public sealed class GetMySkillHistoryHandler :
+    IRequestHandler<GetMySkillHistoryQuery, ServiceResult<PagedResultDto<SkillHistoryItemDto>>>
+{
+    private readonly IApplicationDbContext _dbContext;
+    private readonly ICurrentSessionProvider _sessionProvider;
+
+    public GetMySkillHistoryHandler(IApplicationDbContext dbContext, ICurrentSessionProvider sessionProvider)
+    {
+        _dbContext = dbContext;
+        _sessionProvider = sessionProvider;
+    }
+
+    public async Task<ServiceResult<PagedResultDto<SkillHistoryItemDto>>> Handle(
+        GetMySkillHistoryQuery query,
+        CancellationToken cancellationToken)
+    {
+        if (query.Page < 1 || query.PageSize is < 1 or > 100)
+            return ServiceResult<PagedResultDto<SkillHistoryItemDto>>.Failure(
+                "Page phải từ 1 trở lên và PageSize phải từ 1 đến 100.");
+        var skip = ((long)query.Page - 1) * query.PageSize;
+        if (skip > int.MaxValue)
+            return ServiceResult<PagedResultDto<SkillHistoryItemDto>>.Failure("Page vượt quá giới hạn hỗ trợ.");
+
+        var accountResult = await SkillAccountResolver.ResolveAsync(_dbContext, _sessionProvider, cancellationToken);
+        if (!accountResult.IsSuccess || accountResult.Data is null)
+            return ServiceResult<PagedResultDto<SkillHistoryItemDto>>.Forbidden(accountResult.Message);
+
+        var history = _dbContext.SkillHistoryEntries
+            .AsNoTracking()
+            .Where(entry => entry.UserId == accountResult.Data.UserId);
+        var totalCount = await history.CountAsync(cancellationToken);
+        var entries = await history
+            .OrderByDescending(entry => entry.CreatedAtUtc)
+            .ThenByDescending(entry => entry.Id)
+            .Skip((int)skip)
+            .Take(query.PageSize)
+            .ToListAsync(cancellationToken);
+
+        var skillIds = entries.Select(entry => entry.SkillId).Distinct().ToArray();
+        var skillNames = await _dbContext.Skills
+            .AsNoTracking()
+            .Where(skill => skillIds.Contains(skill.Id))
+            .ToDictionaryAsync(skill => skill.Id, skill => skill.SkillName, cancellationToken);
+
+        var items = entries.Select(entry => new SkillHistoryItemDto
+        {
+            Id = entry.Id,
+            SkillId = entry.SkillId,
+            SkillName = skillNames.GetValueOrDefault(entry.SkillId),
+            ChangeSource = entry.ChangeSource.ToString(),
+            LevelBefore = entry.LevelBefore?.ToString(),
+            LevelAfter = entry.LevelAfter?.ToString(),
+            IsNewlyAdded = entry.IsNewlyAdded,
+            ResponsibleAccountId = entry.ResponsibleAccountId,
+            CompanyId = entry.CompanyId,
+            ProjectId = entry.ProjectId,
+            TenureStartUtc = entry.TenureStartUtc,
+            TenureEndUtc = entry.TenureEndUtc,
+            EvidenceDescription = entry.EvidenceDescription,
+            RelatedSubmissionId = entry.RelatedSubmissionId,
+            RelatedRequestId = entry.RelatedRequestId,
+            Outcome = entry.Outcome.ToString(),
+            RejectionReason = entry.RejectionReason,
+            CreatedAtUtc = entry.CreatedAtUtc
+        }).ToArray();
+
+        return ServiceResult<PagedResultDto<SkillHistoryItemDto>>.Success(
+            new PagedResultDto<SkillHistoryItemDto>
+            {
+                Items = items,
+                Page = query.Page,
+                PageSize = query.PageSize,
+                TotalCount = totalCount
+            });
+    }
+}
+
 internal sealed record ResolvedSkillAccount(Guid AccountId, Guid UserId);
 
 internal static class SkillAccountResolver
