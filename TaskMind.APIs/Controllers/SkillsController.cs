@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using MediatR;
 using System.Text.Json;
-using TaskMind.ApplicationLayer.Commons;
+using TaskMind.ApplicationLayer.Features.Auths;
 using TaskMind.ApplicationLayer.Features.Skills;
 
 namespace TaskMind.APIs.Controllers;
@@ -79,11 +79,21 @@ public sealed class SkillsController : ScaffoldControllerBase
 
     [HttpGet("me/skill-level-up-requests")]
     [EndpointSummary("List My Skill Level Up Requests")]
-    public IActionResult ListMySkillLevelUpRequests([FromQuery] string? status, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) => NotImplemented(nameof(ListMySkillLevelUpRequests));
+    public async Task<IActionResult> ListMySkillLevelUpRequests(
+        [FromQuery] string? status,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default) =>
+        ToActionResult(await _sender.Send(
+            new ListMySkillLevelUpRequestsQuery(status, page, pageSize),
+            cancellationToken));
 
     [HttpGet("me/skill-level-up-requests/{requestId:guid}")]
     [EndpointSummary("Get My Skill Level Up Request")]
-    public IActionResult GetMySkillLevelUpRequest(Guid requestId) => NotImplemented(nameof(GetMySkillLevelUpRequest));
+    public async Task<IActionResult> GetMySkillLevelUpRequest(
+        Guid requestId,
+        CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new GetMySkillLevelUpRequestQuery(requestId), cancellationToken));
 
     [HttpPost("me/skill-level-up-requests/{requestId:guid}/assessment-submissions")]
     [EndpointSummary("Link Skill Assessment Submission")]
@@ -125,9 +135,4 @@ public sealed class SkillsController : ScaffoldControllerBase
     [EndpointSummary("Dismiss Skill Reflection Request")]
     public IActionResult DismissSkillReflectionRequest(Guid requestId, [FromBody] JsonElement request) => NotImplemented(nameof(DismissSkillReflectionRequest));
 
-    private IActionResult ToActionResult<T>(ServiceResult<T> result)
-    {
-        var response = ApiResponse.FromServiceResult(result);
-        return StatusCode(response.StatusCode, response);
-    }
 }

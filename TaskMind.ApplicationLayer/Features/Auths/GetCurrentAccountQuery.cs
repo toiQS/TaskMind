@@ -31,6 +31,8 @@ public sealed class GetCurrentAccountHandler :
         {
             AccountId = account.Id,
             Email = account.Profile.Email,
+            FirstName = account.Profile.FirstName,
+            LastName = account.Profile.LastName,
             FullName = AuthRules.FullName(account),
             Role = account.Role.ToString(),
             IsVerified = account.IsVerified,

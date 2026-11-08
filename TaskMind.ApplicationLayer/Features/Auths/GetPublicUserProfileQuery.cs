@@ -71,6 +71,8 @@ public sealed class GetPublicUserProfileHandler :
         return ServiceResult<PublicUserProfileDto>.Success(new PublicUserProfileDto
         {
             UserId = user.Id,
+            FirstName = user.Profile.FirstName,
+            LastName = user.Profile.LastName,
             FullName = AuthRules.FullName(user),
             NickName = user.Profile.NickName,
             ImageUrl = user.Profile.ImageUrl,

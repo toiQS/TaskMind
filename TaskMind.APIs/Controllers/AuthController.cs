@@ -3,7 +3,6 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using TaskMind.ApplicationLayer.Commons;
 using TaskMind.ApplicationLayer.Features.Auths;
 
 namespace TaskMind.APIs.Controllers;
@@ -111,6 +110,16 @@ public sealed class AuthController : ScaffoldControllerBase
     }
 
     [Authorize]
+    [HttpGet("me/profile")]
+    [EndpointSummary("Get Current Profile")]
+    public async Task<IActionResult> GetCurrentProfile(CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(out var accountId))
+            return Unauthorized();
+        return ToActionResult(await _sender.Send(new GetCurrentAccountQuery(accountId), cancellationToken));
+    }
+
+    [Authorize]
     [HttpPatch("me/profile")]
     [EndpointSummary("Update Current Profile")]
     public async Task<IActionResult> UpdateCurrentProfile(
@@ -131,15 +140,4 @@ public sealed class AuthController : ScaffoldControllerBase
         return Guid.TryParse(claimValue, out accountId);
     }
 
-    private IActionResult ToActionResult(ServiceResult result)
-    {
-        var response = ApiResponse.FromServiceResult(result);
-        return StatusCode(response.StatusCode, response);
-    }
-
-    private IActionResult ToActionResult<T>(ServiceResult<T> result)
-    {
-        var response = ApiResponse.FromServiceResult(result);
-        return StatusCode(response.StatusCode, response);
-    }
 }

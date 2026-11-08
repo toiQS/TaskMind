@@ -1,11 +1,20 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using MediatR;
 using System.Text.Json;
+using TaskMind.ApplicationLayer.Features.Auths;
 
 namespace TaskMind.APIs.Controllers;
 
 public sealed class AssessmentsController : ScaffoldControllerBase
 {
+    private readonly ISender _sender;
+
+    public AssessmentsController(ISender sender)
+    {
+        _sender = sender;
+    }
+
     [HttpGet("companies/{companyId:guid}/test-papers")]
     [EndpointSummary("List Company Test Papers")]
     public IActionResult ListCompanyTestPapers(Guid companyId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) => NotImplemented(nameof(ListCompanyTestPapers));
@@ -36,7 +45,12 @@ public sealed class AssessmentsController : ScaffoldControllerBase
 
     [HttpGet("me/submissions")]
     [EndpointSummary("List My Submissions")]
-    public IActionResult ListMySubmissions([FromQuery] string? status, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) => NotImplemented(nameof(ListMySubmissions));
+    public async Task<IActionResult> ListMySubmissions(
+        [FromQuery] string? status,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default) =>
+        ToActionResult(await _sender.Send(new ListMySubmissionsQuery(status, page, pageSize), cancellationToken));
 
     [HttpGet("submissions/{submissionId:guid}")]
     [EndpointSummary("Get Submission")]
@@ -52,7 +66,11 @@ public sealed class AssessmentsController : ScaffoldControllerBase
 
     [HttpGet("me/certificates")]
     [EndpointSummary("List My Certificates")]
-    public IActionResult ListMyCertificates([FromQuery] int page = 1, [FromQuery] int pageSize = 20) => NotImplemented(nameof(ListMyCertificates));
+    public async Task<IActionResult> ListMyCertificates(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default) =>
+        ToActionResult(await _sender.Send(new ListMyCertificatesQuery(page, pageSize), cancellationToken));
     [HttpGet("certificates/{verificationCode}/verification")]
     [EndpointSummary("Verify Certificate")]
     [AllowAnonymous]

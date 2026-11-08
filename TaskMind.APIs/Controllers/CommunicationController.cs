@@ -1,22 +1,38 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using MediatR;
 using System.Text.Json;
+using TaskMind.ApplicationLayer.Features.Auths;
 
 namespace TaskMind.APIs.Controllers;
 
 public sealed class CommunicationController : ScaffoldControllerBase
 {
+    private readonly ISender _sender;
+
+    public CommunicationController(ISender sender)
+    {
+        _sender = sender;
+    }
+
     [HttpGet("me/notifications")]
     [EndpointSummary("List My Notifications")]
-    public IActionResult ListMyNotifications([FromQuery] bool? isRead, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) => NotImplemented(nameof(ListMyNotifications));
+    public async Task<IActionResult> ListMyNotifications(
+        [FromQuery] bool? isRead,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default) =>
+        ToActionResult(await _sender.Send(new ListMyNotificationsQuery(isRead, page, pageSize), cancellationToken));
 
     [HttpPost("me/notifications/{notificationId:guid}/read")]
     [EndpointSummary("Mark Notification Read")]
-    public IActionResult MarkNotificationRead(Guid notificationId) => NotImplemented(nameof(MarkNotificationRead));
+    public async Task<IActionResult> MarkNotificationRead(Guid notificationId, CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new MarkMyNotificationReadCommand(notificationId), cancellationToken));
 
     [HttpPost("me/notifications/read-all")]
     [EndpointSummary("Mark All Notifications Read")]
-    public IActionResult MarkAllNotificationsRead() => NotImplemented(nameof(MarkAllNotificationsRead));
+    public async Task<IActionResult> MarkAllNotificationsRead(CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new MarkAllMyNotificationsReadCommand(), cancellationToken));
 
     [HttpGet("chat-groups")]
     [EndpointSummary("List Chat Groups")]

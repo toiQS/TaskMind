@@ -1,11 +1,20 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using MediatR;
 using System.Text.Json;
+using TaskMind.ApplicationLayer.Features.Auths;
 
 namespace TaskMind.APIs.Controllers;
 
 public sealed class RecruitmentAndReviewsController : ScaffoldControllerBase
 {
+    private readonly ISender _sender;
+
+    public RecruitmentAndReviewsController(ISender sender)
+    {
+        _sender = sender;
+    }
+
     [HttpGet("companies/{companyId:guid}/job-postings")]
     [EndpointSummary("List Company Job Postings")]
     [AllowAnonymous]
@@ -46,7 +55,12 @@ public sealed class RecruitmentAndReviewsController : ScaffoldControllerBase
 
     [HttpGet("me/job-applications")]
     [EndpointSummary("List My Job Applications")]
-    public IActionResult ListMyJobApplications([FromQuery] string? status, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) => NotImplemented(nameof(ListMyJobApplications));
+    public async Task<IActionResult> ListMyJobApplications(
+        [FromQuery] string? status,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default) =>
+        ToActionResult(await _sender.Send(new ListMyJobApplicationsQuery(status, page, pageSize), cancellationToken));
 
     [HttpGet("job-postings/{jobPostingId:guid}/applications")]
     [EndpointSummary("List Job Applications")]

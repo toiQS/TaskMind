@@ -23,6 +23,8 @@ public sealed class CurrentAccountDto
 {
     public Guid AccountId { get; init; }
     public string Email { get; init; } = string.Empty;
+    public string FirstName { get; init; } = string.Empty;
+    public string LastName { get; init; } = string.Empty;
     public string FullName { get; init; } = string.Empty;
     public string Role { get; init; } = string.Empty;
     public bool IsVerified { get; init; }
@@ -43,6 +45,8 @@ public sealed class ProfileAddressDto
 public sealed class PublicUserProfileDto
 {
     public Guid UserId { get; init; }
+    public string FirstName { get; init; } = string.Empty;
+    public string LastName { get; init; } = string.Empty;
     public string FullName { get; init; } = string.Empty;
     public string NickName { get; init; } = string.Empty;
     public string ImageUrl { get; init; } = string.Empty;
