@@ -97,7 +97,13 @@ public sealed class SkillsController : ScaffoldControllerBase
 
     [HttpPost("me/skill-level-up-requests/{requestId:guid}/assessment-submissions")]
     [EndpointSummary("Link Skill Assessment Submission")]
-    public IActionResult LinkSkillAssessmentSubmission(Guid requestId, [FromBody] JsonElement request) => NotImplemented(nameof(LinkSkillAssessmentSubmission));
+    public async Task<IActionResult> LinkSkillAssessmentSubmission(
+        Guid requestId,
+        [FromBody] LinkSkillAssessmentSubmissionRequest request,
+        CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(
+            new LinkSkillAssessmentSubmissionCommand(requestId, request.SubmissionId),
+            cancellationToken));
 
     [HttpPost("skill-level-up-requests/{requestId:guid}/approve")]
     [EndpointSummary("Approve Skill Level Up Request")]
@@ -136,3 +142,5 @@ public sealed class SkillsController : ScaffoldControllerBase
     public IActionResult DismissSkillReflectionRequest(Guid requestId, [FromBody] JsonElement request) => NotImplemented(nameof(DismissSkillReflectionRequest));
 
 }
+
+public sealed record LinkSkillAssessmentSubmissionRequest(Guid SubmissionId);

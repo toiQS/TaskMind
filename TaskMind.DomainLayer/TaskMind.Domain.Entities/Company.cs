@@ -56,8 +56,12 @@ namespace TaskMind.DomainLayer.TaskMind.Domain.Entities
                 return Result<Company>.Failure("Tên công ty không được để trống.");
             if (string.IsNullOrWhiteSpace(taxCode) || taxCode.Trim().Length is < 10 or > 13)
                 return Result<Company>.Failure("Mã số thuế không hợp lệ.");
+            if (string.IsNullOrWhiteSpace(field))
+                return Result<Company>.Failure("Lĩnh vực hoạt động không được để trống.");
             if (string.IsNullOrWhiteSpace(email))
                 return Result<Company>.Failure("Email không được để trống.");
+            if (string.IsNullOrWhiteSpace(phone))
+                return Result<Company>.Failure("Số điện thoại không được để trống.");
             if (requestedByUserId == Guid.Empty)
                 return Result<Company>.Failure("Phải xác định User đứng ra đăng ký thành lập công ty.");
 
@@ -76,6 +80,14 @@ namespace TaskMind.DomainLayer.TaskMind.Domain.Entities
             IsVerified = true;
             UpdateStatus(Enums.EntityStatus.Active);
             AddDomainEvent(new CompanyVerifiedEvent { CompanyId = Id, CompanyName = CompanyName });
+            return Result.Success();
+        }
+
+        public Result RejectRegistration()
+        {
+            if (IsVerified || Status != Enums.EntityStatus.Paused)
+                return Result.Failure("Chỉ yêu cầu đăng ký đang chờ mới có thể bị từ chối.");
+            UpdateStatus(Enums.EntityStatus.Deleted);
             return Result.Success();
         }
 
@@ -117,6 +129,25 @@ namespace TaskMind.DomainLayer.TaskMind.Domain.Entities
             Email = email.Trim();
             Phone = phone?.Trim() ?? Phone;
             if (address != null) Address = address;
+            return Result.Success();
+        }
+
+        public Result UpdateDetails(string companyName, string field, string email, string phone, Address? address)
+        {
+            if (string.IsNullOrWhiteSpace(companyName))
+                return Result.Failure("Tên công ty không được để trống.");
+            if (string.IsNullOrWhiteSpace(field))
+                return Result.Failure("Lĩnh vực hoạt động không được để trống.");
+            if (string.IsNullOrWhiteSpace(email))
+                return Result.Failure("Email không được để trống.");
+            if (string.IsNullOrWhiteSpace(phone))
+                return Result.Failure("Số điện thoại không được để trống.");
+
+            CompanyName = companyName.Trim();
+            Field = field?.Trim() ?? string.Empty;
+            Email = email.Trim();
+            Phone = phone?.Trim() ?? string.Empty;
+            Address = address ?? new Address();
             return Result.Success();
         }
 

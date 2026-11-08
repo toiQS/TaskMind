@@ -51,6 +51,8 @@ namespace TaskMind.DomainLayer.TaskMind.Domain.Entities
                 return Result<School>.Failure("Lĩnh vực đào tạo không được để trống.");
             if (string.IsNullOrWhiteSpace(email))
                 return Result<School>.Failure("Email không được để trống.");
+            if (string.IsNullOrWhiteSpace(phone))
+                return Result<School>.Failure("Số điện thoại không được để trống.");
             if (requestedByUserId == Guid.Empty)
                 return Result<School>.Failure("Phải xác định User đứng ra đăng ký thành lập cơ sở đào tạo.");
 
@@ -68,6 +70,14 @@ namespace TaskMind.DomainLayer.TaskMind.Domain.Entities
             IsVerified = true;
             UpdateStatus(EntityStatus.Active);
             AddDomainEvent(new SchoolVerifiedEvent { SchoolId = Id, SchoolName = SchoolName });
+            return Result.Success();
+        }
+
+        public Result RejectRegistration()
+        {
+            if (IsVerified || Status != EntityStatus.Paused)
+                return Result.Failure("Chỉ yêu cầu đăng ký đang chờ mới có thể bị từ chối.");
+            UpdateStatus(EntityStatus.Deleted);
             return Result.Success();
         }
 
@@ -98,6 +108,25 @@ namespace TaskMind.DomainLayer.TaskMind.Domain.Entities
             if (string.IsNullOrWhiteSpace(package))
                 return Result.Failure("Gói dịch vụ không hợp lệ.");
             MembershipPackage = package;
+            return Result.Success();
+        }
+
+        public Result UpdateDetails(string schoolName, string field, string email, string phone, Address? address)
+        {
+            if (string.IsNullOrWhiteSpace(schoolName))
+                return Result.Failure("Tên cơ sở đào tạo không được để trống.");
+            if (string.IsNullOrWhiteSpace(field))
+                return Result.Failure("Lĩnh vực đào tạo không được để trống.");
+            if (string.IsNullOrWhiteSpace(email))
+                return Result.Failure("Email không được để trống.");
+            if (string.IsNullOrWhiteSpace(phone))
+                return Result.Failure("Số điện thoại không được để trống.");
+
+            SchoolName = schoolName.Trim();
+            Field = field.Trim();
+            Email = email.Trim();
+            Phone = phone?.Trim() ?? string.Empty;
+            Address = address ?? new Address();
             return Result.Success();
         }
     }

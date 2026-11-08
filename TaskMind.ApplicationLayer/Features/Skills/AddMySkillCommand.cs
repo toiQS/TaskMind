@@ -8,6 +8,75 @@ using TaskMind.DomainLayer.TaskMind.Domain.Enums;
 
 namespace TaskMind.ApplicationLayer.Features.Skills;
 
+public sealed record LinkSkillAssessmentSubmissionCommand(Guid RequestId, Guid SubmissionId)
+    : IRequest<ServiceResult>;
+
+public sealed class LinkSkillAssessmentSubmissionHandler :
+    IRequestHandler<LinkSkillAssessmentSubmissionCommand, ServiceResult>
+{
+    private readonly IApplicationDbContext _dbContext;
+    private readonly ICurrentSessionProvider _sessionProvider;
+
+    public LinkSkillAssessmentSubmissionHandler(
+        IApplicationDbContext dbContext,
+        ICurrentSessionProvider sessionProvider)
+    {
+        _dbContext = dbContext;
+        _sessionProvider = sessionProvider;
+    }
+
+    public async Task<ServiceResult> Handle(
+        LinkSkillAssessmentSubmissionCommand command,
+        CancellationToken cancellationToken)
+    {
+        if (command.RequestId == Guid.Empty || command.SubmissionId == Guid.Empty)
+            return ServiceResult.Failure("RequestId hoặc SubmissionId không hợp lệ.");
+
+        var accountResult = await SkillAccountResolver.ResolveAsync(
+            _dbContext, _sessionProvider, cancellationToken);
+        if (!accountResult.IsSuccess || accountResult.Data is null)
+            return ServiceResult.Forbidden(accountResult.Message);
+
+        var request = await _dbContext.SkillLevelUpRequests.SingleOrDefaultAsync(
+            item => item.Id == command.RequestId &&
+                    item.UserId == accountResult.Data.UserId,
+            cancellationToken);
+        if (request is null)
+            return ServiceResult.NotFound("Không tìm thấy yêu cầu nâng kỹ năng của bạn.");
+
+        var submission = await _dbContext.Submissions.SingleOrDefaultAsync(
+            item => item.Id == command.SubmissionId,
+            cancellationToken);
+        if (submission is null)
+            return ServiceResult.NotFound("Không tìm thấy bài nộp.");
+
+        var alreadyUsed = await _dbContext.SkillLevelUpRequests.AnyAsync(
+                              item => item.Id != request.Id && item.SubmissionId == submission.Id,
+                              cancellationToken) ||
+                          await _dbContext.CompanySkillReflectionRequests.AnyAsync(
+                              item => item.VerificationSubmissionId == submission.Id,
+                              cancellationToken);
+        if (alreadyUsed)
+            return ServiceResult.Failure("Bài nộp đã được liên kết với một yêu cầu kỹ năng khác.");
+
+        var linkResult = request.LinkSubmission(submission);
+        if (!linkResult.IsSuccess)
+            return ServiceResult.Failure(linkResult.Message);
+
+        try
+        {
+            await _dbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return ServiceResult.Failure(
+                "Yêu cầu hoặc bài nộp vừa được cập nhật. Hãy tải lại và thử lại.");
+        }
+
+        return ServiceResult.Success("Đã liên kết bài nộp với yêu cầu đánh giá kỹ năng.");
+    }
+}
+
 public sealed record AddMySkillCommand(Guid SkillId, string Level)
     : IRequest<ServiceResult<UserSkillDto>>;
 

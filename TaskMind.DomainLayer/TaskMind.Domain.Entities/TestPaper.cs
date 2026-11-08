@@ -46,5 +46,17 @@ namespace TaskMind.DomainLayer.TaskMind.Domain.Entities
             DurationMinutes = durationMinutes;
             return Result.Success();
         }
+
+        public Result UpdateDetails(string title, int durationMinutes)
+        {
+            if (string.IsNullOrWhiteSpace(title))
+                return Result.Failure("Tiêu đề bài kiểm tra không được để trống.");
+            if (durationMinutes <= 0)
+                return Result.Failure("Thời gian làm bài phải lớn hơn 0.");
+
+            Title = title.Trim();
+            DurationMinutes = durationMinutes;
+            return Result.Success();
+        }
     }
 }

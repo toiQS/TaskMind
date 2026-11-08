@@ -1,6 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
+using TaskMind.ApplicationLayer.Commons;
 using TaskMind.DomainLayer.TaskMind.Domain.Entities;
+using TaskMind.DomainLayer.TaskMind.Domain.Enums;
 
 namespace TaskMind.ApplicationLayer.Features.Auths;
 
@@ -40,4 +43,23 @@ internal static class AuthRules
     public static string FullName(Account account) =>
         string.Join(' ', new[] { account.Profile.FirstName, account.Profile.LastName }
             .Where(name => !string.IsNullOrWhiteSpace(name)));
+
+    public static async Task<bool> IsOrganizationActive(
+        IApplicationDbContext dbContext,
+        Account account,
+        CancellationToken cancellationToken) =>
+        account switch
+        {
+            AdminCompany admin => await dbContext.Companies.AnyAsync(
+                company => company.Id == admin.CompanyId &&
+                           company.IsVerified &&
+                           company.Status == EntityStatus.Active,
+                cancellationToken),
+            AdminSchool admin => await dbContext.Schools.AnyAsync(
+                school => school.Id == admin.SchoolId &&
+                          school.IsVerified &&
+                          school.Status == EntityStatus.Active,
+                cancellationToken),
+            _ => true
+        };
 }
