@@ -52,6 +52,23 @@ namespace TaskMind.DomainLayer.TaskMind.Domain.Entities
             return Result.Success();
         }
 
+        public Result UpdateDraft(string title, IEnumerable<Guid>? requiredSkillIds)
+        {
+            if (PostingStatus != JobPostingStatus.Draft)
+                return Result.Failure("Chỉ có thể cập nhật tin tuyển dụng ở trạng thái nháp.");
+            if (string.IsNullOrWhiteSpace(title))
+                return Result.Failure("Tiêu đề tin tuyển dụng không được để trống.");
+
+            var skillIds = requiredSkillIds?.Distinct().ToArray() ?? Array.Empty<Guid>();
+            if (skillIds.Contains(Guid.Empty))
+                return Result.Failure("SkillId không hợp lệ.");
+
+            Title = title.Trim();
+            _requiredSkillIds.Clear();
+            _requiredSkillIds.AddRange(skillIds);
+            return Result.Success();
+        }
+
         public Result Open()
         {
             if (PostingStatus != JobPostingStatus.Draft)

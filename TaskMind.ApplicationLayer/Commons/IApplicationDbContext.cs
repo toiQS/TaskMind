@@ -27,6 +27,7 @@ namespace TaskMind.ApplicationLayer.Commons
         public DbSet<Chat> Chats { get; }
         public DbSet<JobApplication> JobApplications { get; }
         public DbSet<JobPosting> JobPostings { get; }
+        public DbSet<Message> Messages { get; }
 
         public DbSet<AuditLog> AuditLogs { get; }
         public DbSet<Review> Reviews { get; }

@@ -52,6 +52,7 @@ namespace TaskMind.InfrastructorLayer.Datas
         public DbSet<Chat> Chats { get; set; }
         public DbSet<JobApplication> JobApplications { get; set; }
         public DbSet<JobPosting> JobPostings { get; set; }
+        public DbSet<Message> Messages { get; set; }
         public DbSet<AuditLog> AuditLogs { get; }
         public DbSet<Review> Reviews { get; }
         public DbSet<Certificate> Certificates { get; }

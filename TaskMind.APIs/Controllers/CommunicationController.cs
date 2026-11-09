@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using MediatR;
 using System.Text.Json;
 using TaskMind.ApplicationLayer.Features.Auths;
+using TaskMind.ApplicationLayer.Features.Communication;
 
 namespace TaskMind.APIs.Controllers;
 
@@ -36,46 +37,56 @@ public sealed class CommunicationController : ScaffoldControllerBase
 
     [HttpGet("chat-groups")]
     [EndpointSummary("List Chat Groups")]
-    public IActionResult ListChatGroups([FromQuery] int page = 1, [FromQuery] int pageSize = 20) => NotImplemented(nameof(ListChatGroups));
+    public async Task<IActionResult> ListChatGroups([FromQuery] int page = 1, [FromQuery] int pageSize = 20, CancellationToken cancellationToken = default) =>
+        ToActionResult(await _sender.Send(new ListChatGroupsQuery(page, pageSize), cancellationToken));
 
     [HttpPost("chat-groups")]
     [EndpointSummary("Create Chat Group")]
-    public IActionResult CreateChatGroup([FromBody] JsonElement request) => NotImplemented(nameof(CreateChatGroup));
+    public async Task<IActionResult> CreateChatGroup([FromBody] CreateChatGroupRequest request, CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new CreateChatGroupCommand(request.MemberAccountIds), cancellationToken));
 
     [HttpGet("chat-groups/{groupId:guid}")]
     [EndpointSummary("Get Chat Group")]
-    public IActionResult GetChatGroup(Guid groupId) => NotImplemented(nameof(GetChatGroup));
+    public async Task<IActionResult> GetChatGroup(Guid groupId, CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new GetChatGroupQuery(groupId), cancellationToken));
 
     [HttpPost("chat-groups/{groupId:guid}/members")]
     [EndpointSummary("Add Chat Group Members")]
-    public IActionResult AddChatGroupMembers(Guid groupId, [FromBody] JsonElement request) => NotImplemented(nameof(AddChatGroupMembers));
+    public async Task<IActionResult> AddChatGroupMembers(Guid groupId, [FromBody] AddChatMembersRequest request, CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new AddChatMembersCommand(groupId, request.MemberAccountIds), cancellationToken));
 
     [HttpPost("chat-groups/{groupId:guid}/messages")]
     [EndpointSummary("Send Message")]
-    public IActionResult SendMessage(Guid groupId, [FromBody] JsonElement request) => NotImplemented(nameof(SendMessage));
+    public async Task<IActionResult> SendMessage(Guid groupId, [FromBody] SendChatMessageRequest request, CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new SendChatMessageCommand(groupId, request.Content), cancellationToken));
 
     [HttpGet("chat-groups/{groupId:guid}/messages")]
     [EndpointSummary("List Messages")]
-    public IActionResult ListMessages(Guid groupId, [FromQuery] DateTimeOffset? before, [FromQuery] int pageSize = 20) => NotImplemented(nameof(ListMessages));
+    public async Task<IActionResult> ListMessages(Guid groupId, [FromQuery] DateTimeOffset? before, [FromQuery] int pageSize = 20, CancellationToken cancellationToken = default) =>
+        ToActionResult(await _sender.Send(new ListChatMessagesQuery(groupId, before, pageSize), cancellationToken));
 
     [HttpPost("chat-groups/{groupId:guid}/messages/{messageId:guid}/withdraw")]
     [EndpointSummary("Withdraw Message")]
-    public IActionResult WithdrawMessage(Guid groupId, Guid messageId, [FromBody] JsonElement request) => NotImplemented(nameof(WithdrawMessage));
+    public async Task<IActionResult> WithdrawMessage(Guid groupId, Guid messageId, CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new WithdrawChatMessageCommand(groupId, messageId), cancellationToken));
 
     [Authorize(Roles = "Admin")]
     [HttpPost("admin/chat-groups/{groupId:guid}/deletion")]
     [EndpointSummary("Delete Chat Group")]
-    public IActionResult DeleteChatGroup(Guid groupId, [FromBody] JsonElement request) => NotImplemented(nameof(DeleteChatGroup));
+    public async Task<IActionResult> DeleteChatGroup(Guid groupId, CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new DeleteChatGroupCommand(groupId), cancellationToken));
 
     [Authorize(Roles = "Admin")]
     [HttpPost("admin/chat-groups/{groupId:guid}/message-withdrawals")]
     [EndpointSummary("Withdraw All Group Messages")]
-    public IActionResult WithdrawAllGroupMessages(Guid groupId, [FromBody] JsonElement request) => NotImplemented(nameof(WithdrawAllGroupMessages));
+    public async Task<IActionResult> WithdrawAllGroupMessages(Guid groupId, CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new WithdrawAllChatMessagesCommand(groupId), cancellationToken));
 
     [Authorize(Roles = "Admin")]
     [HttpGet("admin/audit-logs")]
     [EndpointSummary("List Audit Logs")]
-    public IActionResult ListAuditLogs([FromQuery] Guid? actorId, [FromQuery] string? action, [FromQuery] DateTimeOffset? from, [FromQuery] DateTimeOffset? to, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) => NotImplemented(nameof(ListAuditLogs));
+    public async Task<IActionResult> ListAuditLogs([FromQuery] Guid? actorId, [FromQuery] string? action, [FromQuery] DateTimeOffset? from, [FromQuery] DateTimeOffset? to, [FromQuery] int page = 1, [FromQuery] int pageSize = 20, CancellationToken cancellationToken = default) =>
+        ToActionResult(await _sender.Send(new ListAuditLogsQuery(actorId, action, from, to, page, pageSize), cancellationToken));
 
     [Authorize(Roles = "Admin")]
     [HttpPost("admin/chat-groups/{groupId:guid}/access-requests")]
