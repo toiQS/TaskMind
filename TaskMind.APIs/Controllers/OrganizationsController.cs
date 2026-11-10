@@ -136,21 +136,49 @@ public sealed class OrganizationsController : ScaffoldControllerBase
 
     [HttpGet("companies/{companyId:guid}/staff")]
     [EndpointSummary("List Staff")]
-    public IActionResult ListStaff(Guid companyId, [FromQuery] string? status, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) => NotImplemented(nameof(ListStaff));
+    public async Task<IActionResult> ListStaff(
+        Guid companyId,
+        [FromQuery] string? status,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default) =>
+        ToActionResult(await _mediator.Send(
+            new ListCompanyStaffQuery(companyId, status, page, pageSize), cancellationToken));
 
     [HttpPost("companies/{companyId:guid}/staff/{staffId:guid}/deactivation")]
     [EndpointSummary("Deactivate Staff")]
-    public IActionResult DeactivateStaff(Guid companyId, Guid staffId, [FromBody] JsonElement request) => NotImplemented(nameof(DeactivateStaff));
+    public async Task<IActionResult> DeactivateStaff(
+        Guid companyId,
+        Guid staffId,
+        CancellationToken cancellationToken) =>
+        ToActionResult(await _mediator.Send(
+            new DeactivateOrganizationMemberCommand(companyId, staffId, "Staff"), cancellationToken));
 
     [HttpPost("schools/{schoolId:guid}/teachers/{teacherId:guid}/deactivation")]
     [EndpointSummary("Deactivate Teacher")]
-    public IActionResult DeactivateTeacher(Guid schoolId, Guid teacherId, [FromBody] JsonElement request) => NotImplemented(nameof(DeactivateTeacher));
+    public async Task<IActionResult> DeactivateTeacher(
+        Guid schoolId,
+        Guid teacherId,
+        CancellationToken cancellationToken) =>
+        ToActionResult(await _mediator.Send(
+            new DeactivateOrganizationMemberCommand(schoolId, teacherId, "Teacher"), cancellationToken));
 
     [HttpPost("schools/{schoolId:guid}/students/{studentId:guid}/deactivation")]
     [EndpointSummary("Deactivate Student")]
-    public IActionResult DeactivateStudent(Guid schoolId, Guid studentId, [FromBody] JsonElement request) => NotImplemented(nameof(DeactivateStudent));
+    public async Task<IActionResult> DeactivateStudent(
+        Guid schoolId,
+        Guid studentId,
+        CancellationToken cancellationToken) =>
+        ToActionResult(await _mediator.Send(
+            new DeactivateOrganizationMemberCommand(schoolId, studentId, "Student"), cancellationToken));
 
     [HttpPost("schools/{schoolId:guid}/students/{studentId:guid}/transfers")]
     [EndpointSummary("Transfer Student")]
-    public IActionResult TransferStudent(Guid schoolId, Guid studentId, [FromBody] JsonElement request) => NotImplemented(nameof(TransferStudent));
+    public async Task<IActionResult> TransferStudent(
+        Guid schoolId,
+        Guid studentId,
+        [FromBody] TransferStudentRequest request,
+        CancellationToken cancellationToken) =>
+        ToActionResult(await _mediator.Send(
+            new TransferStudentCommand(schoolId, studentId, request.TargetSchoolId), cancellationToken));
 }

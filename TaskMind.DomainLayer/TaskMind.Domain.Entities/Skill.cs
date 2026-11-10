@@ -57,7 +57,16 @@ namespace TaskMind.DomainLayer.TaskMind.Domain.Entities
         public Result Approve()
         {
             if (IsApproved) return Result.Failure("Kỹ năng đã được duyệt.");
+            if (Status != EntityStatus.Active) return Result.Failure("Kỹ năng không còn chờ duyệt.");
             IsApproved = true;
+            return Result.Success();
+        }
+
+        public Result Reject()
+        {
+            if (IsApproved) return Result.Failure("Không thể từ chối kỹ năng đã được duyệt.");
+            if (Status != EntityStatus.Active) return Result.Failure("Kỹ năng không còn chờ duyệt.");
+            UpdateStatus(EntityStatus.Deleted);
             return Result.Success();
         }
 

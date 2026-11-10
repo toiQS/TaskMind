@@ -65,8 +65,9 @@ public sealed class LoginHandler : IRequestHandler<LoginCommand, ServiceResult<L
                 _ => "Tài khoản không ở trạng thái hoạt động."
             });
         }
-        if (!await AuthRules.IsOrganizationActive(_dbContext, account, cancellationToken))
-            return ServiceResult<LoginResultDto>.Forbidden("Tổ chức liên kết với tài khoản không hoạt động.");
+        if (!AuthRules.IsMembershipActive(account) ||
+            !await AuthRules.IsOrganizationActive(_dbContext, account, cancellationToken))
+            return ServiceResult<LoginResultDto>.Forbidden("Tài khoản thành viên hoặc tổ chức liên kết không hoạt động.");
 
         var tokens = _tokenService.CreateTokenPair(account.Id, account.Profile.Email, account.Role);
         var rotateResult = account.Security.RotateRefreshToken(

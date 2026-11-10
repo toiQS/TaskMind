@@ -37,8 +37,9 @@ public sealed class RefreshTokensHandler : IRequestHandler<RefreshTokensCommand,
             return ServiceResult<LoginResultDto>.Unauthorized("Refresh token không hợp lệ hoặc đã hết hạn.");
         if (!account.IsVerified || account.Status != EntityStatus.Active)
             return ServiceResult<LoginResultDto>.Forbidden("Tài khoản không đủ điều kiện để làm mới phiên đăng nhập.");
-        if (!await AuthRules.IsOrganizationActive(_dbContext, account, cancellationToken))
-            return ServiceResult<LoginResultDto>.Forbidden("Tổ chức liên kết với tài khoản không hoạt động.");
+        if (!AuthRules.IsMembershipActive(account) ||
+            !await AuthRules.IsOrganizationActive(_dbContext, account, cancellationToken))
+            return ServiceResult<LoginResultDto>.Forbidden("Tài khoản thành viên hoặc tổ chức liên kết không hoạt động.");
 
         var tokens = _tokenService.CreateTokenPair(account.Id, account.Profile.Email, account.Role);
         var rotateResult = account.Security.RotateRefreshToken(

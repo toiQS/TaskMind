@@ -55,11 +55,35 @@ internal static class AuthRules
                            company.IsVerified &&
                            company.Status == EntityStatus.Active,
                 cancellationToken),
+            Staff staff => await dbContext.Companies.AnyAsync(
+                company => company.Id == staff.CompanyId &&
+                           company.IsVerified &&
+                           company.Status == EntityStatus.Active,
+                cancellationToken),
             AdminSchool admin => await dbContext.Schools.AnyAsync(
                 school => school.Id == admin.SchoolId &&
                           school.IsVerified &&
                           school.Status == EntityStatus.Active,
                 cancellationToken),
+            Teacher teacher => await dbContext.Schools.AnyAsync(
+                school => school.Id == teacher.SchoolId &&
+                          school.IsVerified &&
+                          school.Status == EntityStatus.Active,
+                cancellationToken),
+            Student student => await dbContext.Schools.AnyAsync(
+                school => school.Id == student.SchoolId &&
+                          school.IsVerified &&
+                          school.Status == EntityStatus.Active,
+                cancellationToken),
+            _ => true
+        };
+
+    public static bool IsMembershipActive(Account account) =>
+        account switch
+        {
+            Staff staff => staff.IsActive,
+            Teacher teacher => teacher.IsActive,
+            Student student => student.IsActive,
             _ => true
         };
 }
