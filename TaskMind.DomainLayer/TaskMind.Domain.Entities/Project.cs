@@ -80,12 +80,18 @@ namespace TaskMind.DomainLayer.TaskMind.Domain.Entities
         {
             if (!Enum.IsDefined(role))
                 return Result.Failure("Vai trò thành viên dự án không hợp lệ.");
+            if (role == ProjectRole.Owner)
+                return Result.Failure("Không thể gán lại vai trò Owner.");
             if (ProjectStatus == ProjectStatus.Completed || ProjectStatus == ProjectStatus.Cancelled)
                 return Result.Failure("Không thể thêm thành viên vào dự án đã kết thúc.");
 
             var existing = _members.FirstOrDefault(m => m.AccountId == accountId && m.IsActive);
             if (existing != null)
+            {
+                if (existing.Role == ProjectRole.Owner)
+                    return Result.Failure("Không thể thay đổi vai trò Owner.");
                 return existing.ChangeRole(role);
+            }
 
             var result = ProjectMember.Create(accountId, role);
             if (!result.IsSuccess) return Result.Failure(result.Message);
@@ -98,7 +104,35 @@ namespace TaskMind.DomainLayer.TaskMind.Domain.Entities
         {
             var member = _members.FirstOrDefault(m => m.AccountId == accountId && m.IsActive);
             if (member == null) return Result.Failure("Không tìm thấy thành viên đang hoạt động trong dự án.");
+            if (member.Role == ProjectRole.Owner)
+                return Result.Failure("Không thể cho Owner rời dự án.");
             return member.Leave();
+        }
+
+        public Result UpdateDetails(string title, string description)
+        {
+            if (ProjectStatus is ProjectStatus.Completed or ProjectStatus.Cancelled)
+                return Result.Failure("Không thể cập nhật dự án đã kết thúc.");
+            if (string.IsNullOrWhiteSpace(title))
+                return Result.Failure("Tên dự án không được để trống.");
+            Title = title.Trim();
+            Description = description?.Trim() ?? string.Empty;
+            return Result.Success();
+        }
+
+        public Result ChangeMemberRole(Guid accountId, ProjectRole role)
+        {
+            if (role == ProjectRole.Owner)
+                return Result.Failure("Không thể gán lại vai trò Owner.");
+            if (!Enum.IsDefined(role))
+                return Result.Failure("Vai trò thành viên dự án không hợp lệ.");
+            if (ProjectStatus is ProjectStatus.Completed or ProjectStatus.Cancelled)
+                return Result.Failure("Không thể đổi vai trò trong dự án đã kết thúc.");
+            var member = _members.FirstOrDefault(item => item.AccountId == accountId && item.IsActive);
+            if (member is null) return Result.Failure("Không tìm thấy thành viên đang hoạt động trong dự án.");
+            if (member.Role == ProjectRole.Owner)
+                return Result.Failure("Không thể thay đổi vai trò Owner.");
+            return member.ChangeRole(role);
         }
 
         public Result Pause()

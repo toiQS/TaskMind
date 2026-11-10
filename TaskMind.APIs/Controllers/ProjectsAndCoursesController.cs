@@ -1,74 +1,96 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using System.Text.Json;
+using MediatR;
+using TaskMind.ApplicationLayer.Features.Projects;
+using TaskMind.DomainLayer.TaskMind.Domain.Enums;
 
 namespace TaskMind.APIs.Controllers;
 
 public sealed class ProjectsAndCoursesController : ScaffoldControllerBase
 {
+    private readonly ISender _sender;
+
+    public ProjectsAndCoursesController(ISender sender) => _sender = sender;
+
     [HttpGet("projects")]
     [EndpointSummary("List Projects")]
     [AllowAnonymous]
-    public IActionResult ListProjects([FromQuery] string? source, [FromQuery] string? status, [FromQuery] string? keyword, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) => NotImplemented(nameof(ListProjects));
+    public async Task<IActionResult> ListProjects([FromQuery] string? source, [FromQuery] string? status, [FromQuery] string? keyword, [FromQuery] int page = 1, [FromQuery] int pageSize = 20, CancellationToken cancellationToken = default) =>
+        ToActionResult(await _sender.Send(new ListProjectsQuery(source, status, keyword, page, pageSize), cancellationToken));
 
     [HttpPost("projects")]
     [EndpointSummary("Create Project")]
-    public IActionResult CreateProject([FromBody] JsonElement request) => NotImplemented(nameof(CreateProject));
+    public async Task<IActionResult> CreateProject([FromBody] ProjectRequest request, CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new CreateProjectCommand(request), cancellationToken));
     [HttpGet("projects/{projectId:guid}")]
     [EndpointSummary("Get Project")]
     [AllowAnonymous]
-    public IActionResult GetProject(Guid projectId) => NotImplemented(nameof(GetProject));
+    public async Task<IActionResult> GetProject(Guid projectId, CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new GetProjectQuery(projectId), cancellationToken));
 
     [HttpPatch("projects/{projectId:guid}")]
     [EndpointSummary("Update Project")]
-    public IActionResult UpdateProject(Guid projectId, [FromBody] JsonElement request) => NotImplemented(nameof(UpdateProject));
+    public async Task<IActionResult> UpdateProject(Guid projectId, [FromBody] UpdateProjectRequest request, CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new UpdateProjectCommand(projectId, request.Title, request.Description), cancellationToken));
 
     [HttpPost("projects/{projectId:guid}/pause")]
     [EndpointSummary("Pause Project")]
-    public IActionResult PauseProject(Guid projectId, [FromBody] JsonElement request) => NotImplemented(nameof(PauseProject));
+    public async Task<IActionResult> PauseProject(Guid projectId, [FromBody] ProjectReasonRequest request, CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new ProjectStatusCommand(projectId, ProjectStatus.Paused, false, request.Reason), cancellationToken));
 
     [HttpPost("projects/{projectId:guid}/resume")]
     [EndpointSummary("Resume Project")]
-    public IActionResult ResumeProject(Guid projectId, [FromBody] JsonElement request) => NotImplemented(nameof(ResumeProject));
+    public async Task<IActionResult> ResumeProject(Guid projectId, [FromBody] ProjectReasonRequest request, CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new ProjectStatusCommand(projectId, ProjectStatus.InProgress, false, request.Reason), cancellationToken));
 
     [HttpPost("projects/{projectId:guid}/complete")]
     [EndpointSummary("Complete Project")]
-    public IActionResult CompleteProject(Guid projectId, [FromBody] JsonElement request) => NotImplemented(nameof(CompleteProject));
+    public async Task<IActionResult> CompleteProject(Guid projectId, [FromBody] ProjectReasonRequest request, CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new ProjectStatusCommand(projectId, ProjectStatus.Completed, false, request.Reason), cancellationToken));
 
     [HttpPost("projects/{projectId:guid}/cancel")]
     [EndpointSummary("Cancel Project")]
-    public IActionResult CancelProject(Guid projectId, [FromBody] JsonElement request) => NotImplemented(nameof(CancelProject));
+    public async Task<IActionResult> CancelProject(Guid projectId, [FromBody] ProjectReasonRequest request, CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new ProjectStatusCommand(projectId, ProjectStatus.Cancelled, false, request.Reason), cancellationToken));
 
     [HttpPost("admin/projects/{projectId:guid}/force-pause")]
     [Authorize(Roles = "Admin")]
     [EndpointSummary("Force Pause Project")]
-    public IActionResult ForcePauseProject(Guid projectId, [FromBody] JsonElement request) => NotImplemented(nameof(ForcePauseProject));
+    public async Task<IActionResult> ForcePauseProject(Guid projectId, [FromBody] ProjectReasonRequest request, CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new ProjectStatusCommand(projectId, ProjectStatus.Paused, true, request.Reason), cancellationToken));
 
     [HttpPost("admin/projects/{projectId:guid}/force-cancel")]
     [Authorize(Roles = "Admin")]
     [EndpointSummary("Force Cancel Project")]
-    public IActionResult ForceCancelProject(Guid projectId, [FromBody] JsonElement request) => NotImplemented(nameof(ForceCancelProject));
+    public async Task<IActionResult> ForceCancelProject(Guid projectId, [FromBody] ProjectReasonRequest request, CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new ProjectStatusCommand(projectId, ProjectStatus.Cancelled, true, request.Reason), cancellationToken));
 
     [HttpGet("projects/{projectId:guid}/members")]
     [EndpointSummary("List Project Members")]
-    public IActionResult ListProjectMembers(Guid projectId, [FromQuery] string? status, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) => NotImplemented(nameof(ListProjectMembers));
+    public async Task<IActionResult> ListProjectMembers(Guid projectId, [FromQuery] string? status, [FromQuery] int page = 1, [FromQuery] int pageSize = 20, CancellationToken cancellationToken = default) =>
+        ToActionResult(await _sender.Send(new ListProjectMembersQuery(projectId, status, page, pageSize), cancellationToken));
 
     [HttpPost("projects/{projectId:guid}/members")]
     [EndpointSummary("Add Project Member")]
-    public IActionResult AddProjectMember(Guid projectId, [FromBody] JsonElement request) => NotImplemented(nameof(AddProjectMember));
+    public async Task<IActionResult> AddProjectMember(Guid projectId, [FromBody] ProjectMemberRequest request, CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new AddProjectMemberCommand(projectId, request.AccountId, request.Role), cancellationToken));
 
     [HttpPatch("projects/{projectId:guid}/members/{memberId:guid}/role")]
     [EndpointSummary("Change Project Member Role")]
-    public IActionResult ChangeProjectMemberRole(Guid projectId, Guid memberId, [FromBody] JsonElement request) => NotImplemented(nameof(ChangeProjectMemberRole));
+    public async Task<IActionResult> ChangeProjectMemberRole(Guid projectId, Guid memberId, [FromBody] ProjectMemberRoleRequest request, CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new ChangeProjectMemberRoleCommand(projectId, memberId, request.Role), cancellationToken));
 
     [HttpPost("projects/{projectId:guid}/members/{memberId:guid}/leave")]
     [EndpointSummary("Leave Project")]
-    public IActionResult LeaveProject(Guid projectId, Guid memberId) => NotImplemented(nameof(LeaveProject));
+    public async Task<IActionResult> LeaveProject(Guid projectId, Guid memberId, CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new LeaveProjectCommand(projectId, memberId), cancellationToken));
 
     [HttpPost("admin/projects/{projectId:guid}/members/{memberId:guid}/remove")]
     [Authorize(Roles = "Admin")]
     [EndpointSummary("Force Remove Project Member")]
-    public IActionResult ForceRemoveProjectMember(Guid projectId, Guid memberId, [FromBody] JsonElement request) => NotImplemented(nameof(ForceRemoveProjectMember));
+    public async Task<IActionResult> ForceRemoveProjectMember(Guid projectId, Guid memberId, [FromBody] ProjectReasonRequest request, CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new ForceRemoveProjectMemberCommand(projectId, memberId, request.Reason), cancellationToken));
 
     [HttpPost("projects/{projectId:guid}/course-links")]
     [EndpointSummary("Link Course")]
