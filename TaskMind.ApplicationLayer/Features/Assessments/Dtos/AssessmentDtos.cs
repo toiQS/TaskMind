@@ -7,6 +7,15 @@ public sealed class TestPaperDto
     public Guid OwnerId { get; init; }
     public string Title { get; init; } = string.Empty;
     public int DurationMinutes { get; init; }
+    public IReadOnlyCollection<TestQuestionDto> Questions { get; init; } = Array.Empty<TestQuestionDto>();
+}
+
+public sealed class TestQuestionDto
+{
+    public Guid Id { get; init; }
+    public string Prompt { get; init; } = string.Empty;
+    public IReadOnlyCollection<string> Options { get; init; } = Array.Empty<string>();
+    public decimal Points { get; init; }
 }
 
 public sealed class SubmissionDto

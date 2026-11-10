@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TaskMind.ApplicationLayer.Commons;
+using TaskMind.DomainLayer.TaskMind.Domain.Entities;
 using TaskMind.DomainLayer.TaskMind.Domain.Enums;
 
 namespace TaskMind.ApplicationLayer.Features.Auths;
@@ -14,7 +15,18 @@ public sealed record UpdateCurrentProfileCommand(
     string? PhoneNumber,
     string? Street,
     string? City,
-    string? Country) : IRequest<ServiceResult>;
+    string? Country,
+    string? GitHubUrl = null,
+    string? LinkedInUrl = null,
+    bool? IsPublic = null,
+    IReadOnlyCollection<ProfileEducationRequest>? Education = null) : IRequest<ServiceResult>;
+
+public sealed record ProfileEducationRequest(
+    string Institution,
+    string? Degree,
+    string? FieldOfStudy,
+    DateOnly? StartDate,
+    DateOnly? EndDate);
 
 public sealed class UpdateCurrentProfileHandler : IRequestHandler<UpdateCurrentProfileCommand, ServiceResult>
 {
@@ -41,7 +53,11 @@ public sealed class UpdateCurrentProfileHandler : IRequestHandler<UpdateCurrentP
             command.PhoneNumber is null &&
             command.Street is null &&
             command.City is null &&
-            command.Country is null)
+            command.Country is null &&
+            command.GitHubUrl is null &&
+            command.LinkedInUrl is null &&
+            command.IsPublic is null &&
+            command.Education is null)
             return ServiceResult.Failure("Cần cung cấp ít nhất một trường hồ sơ để cập nhật.");
 
         var accountId = _sessionProvider.GetUserId();
@@ -68,6 +84,12 @@ public sealed class UpdateCurrentProfileHandler : IRequestHandler<UpdateCurrentP
             command.Country);
         if (!updateResult.IsSuccess)
             return ServiceResult.Failure(updateResult.Message);
+        var education = command.Education?.Select(item => ProfileEducation.Create(
+            item.Institution, item.Degree, item.FieldOfStudy, item.StartDate, item.EndDate));
+        var professionalUpdate = account.Profile.UpdateProfessionalProfile(
+            command.GitHubUrl, command.LinkedInUrl, command.IsPublic, education);
+        if (!professionalUpdate.IsSuccess)
+            return ServiceResult.Failure(professionalUpdate.Message);
 
         try
         {

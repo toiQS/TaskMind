@@ -12,6 +12,7 @@ namespace TaskMind.InfrastructorLayer.Datas
             {
                 p.WithOwner().HasForeignKey(profile => profile.Id);
                 p.OwnsOne(pp => pp.Address);
+                p.Property(profile => profile.IsPublic).HasDefaultValue(true);
                 p.HasIndex(profile => profile.Email)
                     .IsUnique()
                     .HasFilter("\"Discriminator\" = 'User'")
@@ -30,6 +31,7 @@ namespace TaskMind.InfrastructorLayer.Datas
             {
                 p.WithOwner().HasForeignKey(profile => profile.Id);
                 p.OwnsOne(pp => pp.Address);
+                p.Property(profile => profile.IsPublic).HasDefaultValue(true);
             });
             builder.OwnsOne(x => x.Security, AccountConfigurationHelpers.ConfigureSecurity);
         }
@@ -43,6 +45,7 @@ namespace TaskMind.InfrastructorLayer.Datas
             {
                 p.WithOwner().HasForeignKey(profile => profile.Id);
                 p.OwnsOne(pp => pp.Address);
+                p.Property(profile => profile.IsPublic).HasDefaultValue(true);
             });
             builder.OwnsOne(x => x.Security, AccountConfigurationHelpers.ConfigureSecurity);
         }
@@ -57,6 +60,7 @@ namespace TaskMind.InfrastructorLayer.Datas
             {
                 p.WithOwner().HasForeignKey(profile => profile.Id);
                 p.OwnsOne(pp => pp.Address);
+                p.Property(profile => profile.IsPublic).HasDefaultValue(true);
             });
             builder.OwnsOne(x => x.Security, AccountConfigurationHelpers.ConfigureSecurity);
         }
@@ -76,6 +80,7 @@ namespace TaskMind.InfrastructorLayer.Datas
             {
                 p.WithOwner().HasForeignKey(profile => profile.Id);
                 p.OwnsOne(pp => pp.Address);
+                p.Property(profile => profile.IsPublic).HasDefaultValue(true);
             });
             builder.OwnsOne(x => x.Security, AccountConfigurationHelpers.ConfigureSecurity);
         }
@@ -89,6 +94,7 @@ namespace TaskMind.InfrastructorLayer.Datas
             {
                 p.WithOwner().HasForeignKey(profile => profile.Id);
                 p.OwnsOne(pp => pp.Address);
+                p.Property(profile => profile.IsPublic).HasDefaultValue(true);
             });
             builder.OwnsOne(x => x.Security, AccountConfigurationHelpers.ConfigureSecurity);
         }
@@ -102,6 +108,7 @@ namespace TaskMind.InfrastructorLayer.Datas
             {
                 p.WithOwner().HasForeignKey(profile => profile.Id);
                 p.OwnsOne(pp => pp.Address);
+                p.Property(profile => profile.IsPublic).HasDefaultValue(true);
             });
             builder.OwnsOne(x => x.Security, AccountConfigurationHelpers.ConfigureSecurity);
         }

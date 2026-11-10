@@ -86,10 +86,36 @@ public sealed class AssessmentsController : ScaffoldControllerBase
             new UpdateTestPaperCommand(testPaperId, request.Title, request.DurationMinutes),
             cancellationToken));
 
+    [HttpPost("test-papers/{testPaperId:guid}/questions")]
+    [EndpointSummary("Add Multiple Choice Question")]
+    public async Task<IActionResult> AddTestQuestion(
+        Guid testPaperId,
+        [FromBody] AddTestQuestionRequest request,
+        CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(
+            new AddTestQuestionCommand(
+                testPaperId, request.Prompt, request.Options,
+                request.CorrectOptionIndex, request.Points),
+            cancellationToken));
+
     [HttpPost("test-papers/{testPaperId:guid}/submissions")]
     [EndpointSummary("Create Submission")]
     public async Task<IActionResult> CreateSubmission(Guid testPaperId, CancellationToken cancellationToken) =>
         ToActionResult(await _sender.Send(new CreateSubmissionCommand(testPaperId), cancellationToken));
+
+    [HttpPut("submissions/{submissionId:guid}/answers")]
+    [EndpointSummary("Save Submission Answers")]
+    public async Task<IActionResult> SaveSubmissionAnswers(
+        Guid submissionId,
+        [FromBody] SubmissionAnswersRequest request,
+        CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(
+            new SaveSubmissionAnswersCommand(
+                submissionId,
+                request.Answers.Select(item =>
+                    new TaskMind.DomainLayer.TaskMind.Domain.Entities.SubmissionAnswerInput(
+                        item.QuestionId, item.SelectedOptionIndex)).ToArray()),
+            cancellationToken));
 
     [HttpGet("me/submissions")]
     [EndpointSummary("List My Submissions")]
@@ -139,3 +165,8 @@ public sealed class AssessmentsController : ScaffoldControllerBase
 public sealed record CreateTestPaperRequest(string Title, int DurationMinutes);
 public sealed record UpdateTestPaperRequest(string Title, int DurationMinutes);
 public sealed record GradeSubmissionRequest(decimal Score);
+public sealed record AddTestQuestionRequest(
+    string Prompt, IReadOnlyCollection<string> Options, int CorrectOptionIndex, decimal Points);
+public sealed record SubmissionAnswersRequest(
+    IReadOnlyCollection<SubmissionAnswerRequest> Answers);
+public sealed record SubmissionAnswerRequest(Guid QuestionId, int SelectedOptionIndex);

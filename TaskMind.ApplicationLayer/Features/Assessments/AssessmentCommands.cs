@@ -103,6 +103,82 @@ public sealed class UpdateTestPaperHandler :
     }
 }
 
+public sealed record AddTestQuestionCommand(
+    Guid TestPaperId, string Prompt, IReadOnlyCollection<string> Options,
+    int CorrectOptionIndex, decimal Points) : IRequest<ServiceResult<TestQuestionDto>>;
+
+public sealed class AddTestQuestionHandler :
+    IRequestHandler<AddTestQuestionCommand, ServiceResult<TestQuestionDto>>
+{
+    private readonly IApplicationDbContext _dbContext;
+    private readonly ICurrentSessionProvider _sessionProvider;
+
+    public AddTestQuestionHandler(IApplicationDbContext dbContext, ICurrentSessionProvider sessionProvider)
+    {
+        _dbContext = dbContext;
+        _sessionProvider = sessionProvider;
+    }
+
+    public async Task<ServiceResult<TestQuestionDto>> Handle(
+        AddTestQuestionCommand command, CancellationToken cancellationToken)
+    {
+        var paper = await _dbContext.TestPapers.Include(item => item.Questions)
+            .SingleOrDefaultAsync(item => item.Id == command.TestPaperId, cancellationToken);
+        if (paper is null) return ServiceResult<TestQuestionDto>.NotFound("Không tìm thấy bài kiểm tra.");
+        var actor = await AssessmentAccountResolver.ResolveAsync(
+            _dbContext, _sessionProvider, cancellationToken);
+        if (!actor.IsSuccess || actor.Data is null)
+            return ServiceResult<TestQuestionDto>.Forbidden(actor.Message);
+        if (!await AssessmentAuthorization.CanManageOwnerAsync(
+                _dbContext, actor.Data, paper.OwnerType, paper.OwnerId, cancellationToken))
+            return ServiceResult<TestQuestionDto>.Forbidden("Bạn không có quyền quản lý câu hỏi của bài kiểm tra.");
+        if (await _dbContext.Submissions.AnyAsync(item => item.TestPaperId == paper.Id, cancellationToken))
+            return ServiceResult<TestQuestionDto>.Failure("Không thể thay đổi ngân hàng câu hỏi sau khi tạo bài nộp.");
+        var added = paper.AddQuestion(
+            command.Prompt, command.Options, command.CorrectOptionIndex, command.Points);
+        if (!added.IsSuccess || added.Data is null)
+            return ServiceResult<TestQuestionDto>.Failure(added.Message);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return ServiceResult<TestQuestionDto>.Success(AssessmentMappings.ToDto(added.Data));
+    }
+}
+
+public sealed record SaveSubmissionAnswersCommand(
+    Guid SubmissionId, IReadOnlyCollection<SubmissionAnswerInput> Answers)
+    : IRequest<ServiceResult>;
+
+public sealed class SaveSubmissionAnswersHandler :
+    IRequestHandler<SaveSubmissionAnswersCommand, ServiceResult>
+{
+    private readonly IApplicationDbContext _dbContext;
+    private readonly ICurrentSessionProvider _sessionProvider;
+
+    public SaveSubmissionAnswersHandler(IApplicationDbContext dbContext, ICurrentSessionProvider sessionProvider)
+    {
+        _dbContext = dbContext;
+        _sessionProvider = sessionProvider;
+    }
+
+    public async Task<ServiceResult> Handle(SaveSubmissionAnswersCommand command, CancellationToken cancellationToken)
+    {
+        var actor = await AssessmentAccountResolver.ResolveAsync(
+            _dbContext, _sessionProvider, cancellationToken);
+        if (!actor.IsSuccess || actor.Data?.UserId is null)
+            return ServiceResult.Forbidden(actor.Message);
+        var submission = await _dbContext.Submissions.Include(item => item.Answers)
+            .SingleOrDefaultAsync(item => item.Id == command.SubmissionId &&
+                                          item.UserId == actor.Data.UserId.Value, cancellationToken);
+        if (submission is null) return ServiceResult.NotFound("Không tìm thấy bài nộp của bạn.");
+        var paper = await _dbContext.TestPapers.Include(item => item.Questions)
+            .SingleOrDefaultAsync(item => item.Id == submission.TestPaperId, cancellationToken);
+        if (paper is null) return ServiceResult.NotFound("Không tìm thấy bài kiểm tra.");
+        var saved = submission.SaveAnswers(paper, command.Answers);
+        if (!saved.IsSuccess) return ServiceResult.Failure(saved.Message);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return ServiceResult.Success("Đã lưu câu trả lời.");
+    }
+}
+
 public sealed record CreateSubmissionCommand(Guid TestPaperId) : IRequest<ServiceResult<SubmissionDto>>;
 
 public sealed class CreateSubmissionHandler :
@@ -174,21 +250,22 @@ public sealed class SubmitSubmissionHandler :
         if (!accountResult.Data.UserId.HasValue)
             return ServiceResult<SubmissionDto>.Forbidden("Tài khoản này không được liên kết với một hồ sơ User.");
 
-        var submission = await _dbContext.Submissions.SingleOrDefaultAsync(
+        var submission = await _dbContext.Submissions.Include(item => item.Answers).SingleOrDefaultAsync(
             item => item.Id == command.SubmissionId &&
                     item.UserId == accountResult.Data.UserId.Value,
             cancellationToken);
         if (submission is null)
             return ServiceResult<SubmissionDto>.NotFound("Không tìm thấy bài nộp của bạn.");
 
-        var result = submission.Submit();
+        var paper = await _dbContext.TestPapers.Include(item => item.Questions)
+            .SingleOrDefaultAsync(item => item.Id == submission.TestPaperId, cancellationToken);
+        if (paper is null)
+            return ServiceResult<SubmissionDto>.NotFound("Không tìm thấy bài kiểm tra.");
+        var result = submission.Submit(paper);
         if (!result.IsSuccess)
             return ServiceResult<SubmissionDto>.Failure(result.Message);
 
-        var title = await _dbContext.TestPapers.AsNoTracking()
-            .Where(item => item.Id == submission.TestPaperId)
-            .Select(item => item.Title)
-            .SingleAsync(cancellationToken);
+        var title = paper.Title;
         try
         {
             await _dbContext.SaveChangesAsync(cancellationToken);
@@ -465,7 +542,16 @@ internal static class AssessmentMappings
         OwnerType = paper.OwnerType.ToString(),
         OwnerId = paper.OwnerId,
         Title = paper.Title,
-        DurationMinutes = paper.DurationMinutes
+        DurationMinutes = paper.DurationMinutes,
+        Questions = paper.Questions.Select(ToDto).ToArray()
+    };
+
+    public static TestQuestionDto ToDto(TestQuestion question) => new()
+    {
+        Id = question.Id,
+        Prompt = question.Prompt,
+        Options = question.Options,
+        Points = question.Points
     };
 
     public static SubmissionDto ToDto(Submission submission, string title) => new()

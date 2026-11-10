@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json;
 using TaskMind.DomainLayer.TaskMind.Domain.Commons.ObjectValues;
 using TaskMind.DomainLayer.TaskMind.Domain.Commons.Result;
 
@@ -18,6 +20,14 @@ namespace TaskMind.DomainLayer.TaskMind.Domain.Entities
         public string PhoneNumber { get; private set; } = string.Empty;
         public string CitizenId { get; private set; } = string.Empty;
         public Address Address { get; private set; } = new Address();
+        public string GitHubUrl { get; private set; } = string.Empty;
+        public string LinkedInUrl { get; private set; } = string.Empty;
+        public bool IsPublic { get; private set; } = true;
+
+        public string EducationJson { get; private set; } = "[]";
+        [NotMapped]
+        public IReadOnlyCollection<ProfileEducation> Education =>
+            JsonSerializer.Deserialize<ProfileEducation[]>(EducationJson) ?? Array.Empty<ProfileEducation>();
 
         private Profile() { }
 
@@ -140,5 +150,66 @@ namespace TaskMind.DomainLayer.TaskMind.Domain.Entities
 
             return Result.Success();
         }
+
+        public Result UpdateProfessionalProfile(
+            string? gitHubUrl,
+            string? linkedInUrl,
+            bool? isPublic,
+            IEnumerable<ProfileEducation>? education)
+        {
+            if (gitHubUrl is not null && !IsValidProfileUrl(gitHubUrl, "github.com"))
+                return Result.Failure("GitHubUrl phải là URL HTTPS thuộc github.com.");
+            if (linkedInUrl is not null && !IsValidProfileUrl(linkedInUrl, "linkedin.com"))
+                return Result.Failure("LinkedInUrl phải là URL HTTPS thuộc linkedin.com.");
+
+            var educationEntries = education?.ToArray();
+            if (educationEntries is not null &&
+                (educationEntries.Length > 100 || educationEntries.Any(item => item is null || !item.IsValid)))
+                return Result.Failure("Thông tin học vấn không hợp lệ.");
+
+            if (gitHubUrl is not null) GitHubUrl = gitHubUrl.Trim();
+            if (linkedInUrl is not null) LinkedInUrl = linkedInUrl.Trim();
+            if (isPublic.HasValue) IsPublic = isPublic.Value;
+            if (educationEntries is not null)
+                EducationJson = JsonSerializer.Serialize(educationEntries);
+            return Result.Success();
+        }
+
+        private static bool IsValidProfileUrl(string value, string host)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return true;
+            if (!Uri.TryCreate(value.Trim(), UriKind.Absolute, out var uri) ||
+                uri.Scheme != Uri.UriSchemeHttps)
+                return false;
+            var hostname = uri.Host.StartsWith("www.", StringComparison.OrdinalIgnoreCase)
+                ? uri.Host[4..]
+                : uri.Host;
+            return hostname.Equals(host, StringComparison.OrdinalIgnoreCase) ||
+                   hostname.EndsWith($".{host}", StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    public sealed record ProfileEducation(
+        string Institution,
+        string Degree,
+        string FieldOfStudy,
+        DateOnly? StartDate,
+        DateOnly? EndDate)
+    {
+        public bool IsValid =>
+            !string.IsNullOrWhiteSpace(Institution) &&
+            Institution.Length <= 200 &&
+            Degree.Length <= 200 &&
+            FieldOfStudy.Length <= 200 &&
+            (!StartDate.HasValue || !EndDate.HasValue || StartDate <= EndDate);
+
+        public static ProfileEducation Create(
+            string institution,
+            string? degree,
+            string? fieldOfStudy,
+            DateOnly? startDate,
+            DateOnly? endDate) =>
+            new(institution.Trim(), degree?.Trim() ?? string.Empty,
+                fieldOfStudy?.Trim() ?? string.Empty, startDate, endDate);
     }
 }

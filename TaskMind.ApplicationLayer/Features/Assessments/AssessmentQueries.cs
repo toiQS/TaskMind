@@ -80,7 +80,7 @@ public sealed class GetTestPaperHandler : IRequestHandler<GetTestPaperQuery, Ser
         GetTestPaperQuery query,
         CancellationToken cancellationToken)
     {
-        var paper = await _dbContext.TestPapers.AsNoTracking()
+        var paper = await _dbContext.TestPapers.AsNoTracking().Include(item => item.Questions)
             .SingleOrDefaultAsync(
                 item => item.Id == query.TestPaperId && item.Status == EntityStatus.Active,
                 cancellationToken);

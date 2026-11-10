@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using System.Text.Json;
 using MediatR;
 using TaskMind.ApplicationLayer.Features.Organizations;
+using TaskMind.DomainLayer.TaskMind.Domain.Enums;
 
 namespace TaskMind.APIs.Controllers;
 
@@ -120,19 +120,41 @@ public sealed class OrganizationsController : ScaffoldControllerBase
 
     [HttpPost("companies/{companyId:guid}/staff-invitations")]
     [EndpointSummary("Invite Staff")]
-    public IActionResult InviteStaff(Guid companyId, [FromBody] JsonElement request) => NotImplemented(nameof(InviteStaff));
+    public async Task<IActionResult> InviteStaff(
+        Guid companyId,
+        [FromBody] OrganizationInvitationRequest request,
+        CancellationToken cancellationToken) =>
+        ToActionResult(await _mediator.Send(
+            new InviteOrganizationMemberCommand(companyId, request.Email, OrganizationMemberType.Staff),
+            cancellationToken));
 
     [HttpPost("schools/{schoolId:guid}/teacher-invitations")]
     [EndpointSummary("Invite Teacher")]
-    public IActionResult InviteTeacher(Guid schoolId, [FromBody] JsonElement request) => NotImplemented(nameof(InviteTeacher));
+    public async Task<IActionResult> InviteTeacher(
+        Guid schoolId,
+        [FromBody] OrganizationInvitationRequest request,
+        CancellationToken cancellationToken) =>
+        ToActionResult(await _mediator.Send(
+            new InviteOrganizationMemberCommand(schoolId, request.Email, OrganizationMemberType.Teacher),
+            cancellationToken));
 
     [HttpPost("schools/{schoolId:guid}/student-enrollments")]
     [EndpointSummary("Enroll Student")]
-    public IActionResult EnrollStudent(Guid schoolId, [FromBody] JsonElement request) => NotImplemented(nameof(EnrollStudent));
+    public async Task<IActionResult> EnrollStudent(
+        Guid schoolId,
+        [FromBody] OrganizationInvitationRequest request,
+        CancellationToken cancellationToken) =>
+        ToActionResult(await _mediator.Send(
+            new InviteOrganizationMemberCommand(schoolId, request.Email, OrganizationMemberType.Student),
+            cancellationToken));
 
     [HttpPost("invitations/{invitationToken}/accept")]
     [EndpointSummary("Accept Invitation")]
-    public IActionResult AcceptInvitation(string invitationToken, [FromBody] JsonElement request) => NotImplemented(nameof(AcceptInvitation));
+    public async Task<IActionResult> AcceptInvitation(
+        string invitationToken,
+        CancellationToken cancellationToken) =>
+        ToActionResult(await _mediator.Send(
+            new AcceptOrganizationInvitationCommand(invitationToken), cancellationToken));
 
     [HttpGet("companies/{companyId:guid}/staff")]
     [EndpointSummary("List Staff")]
@@ -182,3 +204,5 @@ public sealed class OrganizationsController : ScaffoldControllerBase
         ToActionResult(await _mediator.Send(
             new TransferStudentCommand(schoolId, studentId, request.TargetSchoolId), cancellationToken));
 }
+
+public sealed record OrganizationInvitationRequest(string Email);

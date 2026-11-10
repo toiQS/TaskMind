@@ -40,6 +40,17 @@ public sealed class GetCurrentAccountHandler :
             ImageUrl = account.Profile.ImageUrl,
             Bio = account.Profile.Bio,
             PhoneNumber = account.Profile.PhoneNumber,
+            GitHubUrl = account.Profile.GitHubUrl,
+            LinkedInUrl = account.Profile.LinkedInUrl,
+            IsPublic = account.Profile.IsPublic,
+            Education = account.Profile.Education.Select(item => new ProfileEducationDto
+            {
+                Institution = item.Institution,
+                Degree = item.Degree,
+                FieldOfStudy = item.FieldOfStudy,
+                StartDate = item.StartDate,
+                EndDate = item.EndDate
+            }).ToArray(),
             Address = new ProfileAddressDto
             {
                 Street = account.Profile.Address.Street,

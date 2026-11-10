@@ -10,5 +10,11 @@ public sealed class SubmissionConfiguration : IEntityTypeConfiguration<Submissio
     {
         builder.Property(submission => submission.Score).IsConcurrencyToken();
         builder.Property(submission => submission.SubmittedAtUtc).IsConcurrencyToken();
+        builder.OwnsMany(item => item.Answers, answer =>
+        {
+            answer.WithOwner().HasForeignKey("SubmissionId");
+            answer.HasKey(nameof(SubmissionAnswer.Id));
+        });
+        builder.Navigation(item => item.Answers).UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }

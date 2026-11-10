@@ -32,7 +32,20 @@ public sealed class CurrentAccountDto
     public string ImageUrl { get; init; } = string.Empty;
     public string Bio { get; init; } = string.Empty;
     public string PhoneNumber { get; init; } = string.Empty;
+    public string GitHubUrl { get; init; } = string.Empty;
+    public string LinkedInUrl { get; init; } = string.Empty;
+    public bool IsPublic { get; init; }
+    public IReadOnlyCollection<ProfileEducationDto> Education { get; init; } = Array.Empty<ProfileEducationDto>();
     public ProfileAddressDto Address { get; init; } = new();
+}
+
+public sealed class ProfileEducationDto
+{
+    public string Institution { get; init; } = string.Empty;
+    public string Degree { get; init; } = string.Empty;
+    public string FieldOfStudy { get; init; } = string.Empty;
+    public DateOnly? StartDate { get; init; }
+    public DateOnly? EndDate { get; init; }
 }
 
 public sealed class ProfileAddressDto
@@ -51,6 +64,9 @@ public sealed class PublicUserProfileDto
     public string NickName { get; init; } = string.Empty;
     public string ImageUrl { get; init; } = string.Empty;
     public string Bio { get; init; } = string.Empty;
+    public string GitHubUrl { get; init; } = string.Empty;
+    public string LinkedInUrl { get; init; } = string.Empty;
+    public IReadOnlyCollection<ProfileEducationDto> Education { get; init; } = Array.Empty<ProfileEducationDto>();
     public IReadOnlyCollection<PublicUserSkillDto> Skills { get; init; } = Array.Empty<PublicUserSkillDto>();
 }
 

@@ -35,6 +35,8 @@ public sealed class GetPublicUserProfileHandler :
                 cancellationToken);
         if (user is null)
             return ServiceResult<PublicUserProfileDto>.NotFound("Không tìm thấy hồ sơ công khai.");
+        if (!user.Profile.IsPublic)
+            return ServiceResult<PublicUserProfileDto>.NotFound("Không tìm thấy hồ sơ công khai.");
 
         var skillProfile = await _dbContext.SkillProfiles
             .AsNoTracking()
@@ -77,6 +79,16 @@ public sealed class GetPublicUserProfileHandler :
             NickName = user.Profile.NickName,
             ImageUrl = user.Profile.ImageUrl,
             Bio = user.Profile.Bio,
+            GitHubUrl = user.Profile.GitHubUrl,
+            LinkedInUrl = user.Profile.LinkedInUrl,
+            Education = user.Profile.Education.Select(item => new ProfileEducationDto
+            {
+                Institution = item.Institution,
+                Degree = item.Degree,
+                FieldOfStudy = item.FieldOfStudy,
+                StartDate = item.StartDate,
+                EndDate = item.EndDate
+            }).ToArray(),
             Skills = skills
         });
     }
