@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TaskMind.ApplicationLayer.Commons;
+using TaskMind.ApplicationLayer.Features.Projects;
 using TaskMind.DomainLayer.TaskMind.Domain.Entities;
 using TaskMind.DomainLayer.TaskMind.Domain.Enums;
 
@@ -149,6 +150,7 @@ public sealed class DeactivateOrganizationMemberHandler :
             return ServiceResult.Failure("Loại thành viên không hợp lệ.");
         }
 
+        await ProjectResourceRules.RevokeAccountWorkspacesAsync(_db, command.MemberId, ct);
         await _db.SaveChangesAsync(ct);
         return ServiceResult.Success("Đã ngừng hoạt động thành viên.");
     }

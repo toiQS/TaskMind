@@ -92,6 +92,76 @@ public sealed class ProjectsAndCoursesController : ScaffoldControllerBase
     public async Task<IActionResult> ForceRemoveProjectMember(Guid projectId, Guid memberId, [FromBody] ProjectReasonRequest request, CancellationToken cancellationToken) =>
         ToActionResult(await _sender.Send(new ForceRemoveProjectMemberCommand(projectId, memberId, request.Reason), cancellationToken));
 
+    [HttpPost("projects/{projectId:guid}/repository")]
+    [EndpointSummary("Create Project Resource Repository")]
+    public async Task<IActionResult> CreateProjectRepository(
+        Guid projectId, [FromBody] CreateProjectRepositoryRequest request, CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new CreateProjectRepositoryCommand(projectId, request), cancellationToken));
+
+    [HttpGet("projects/{projectId:guid}/repository")]
+    [EndpointSummary("Get Project Resource Repository")]
+    public async Task<IActionResult> GetProjectRepository(Guid projectId, CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new GetProjectRepositoryQuery(projectId), cancellationToken));
+
+    [HttpGet("projects/{projectId:guid}/repository/revisions")]
+    [EndpointSummary("List Project Revisions")]
+    public async Task<IActionResult> ListProjectRevisions(
+        Guid projectId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default) =>
+        ToActionResult(await _sender.Send(new ListProjectRevisionsQuery(projectId, page, pageSize), cancellationToken));
+
+    [HttpGet("projects/{projectId:guid}/repository/promotions")]
+    [EndpointSummary("List Revision Promotions")]
+    public async Task<IActionResult> ListRevisionPromotions(
+        Guid projectId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default) =>
+        ToActionResult(await _sender.Send(new ListRevisionPromotionsQuery(projectId, page, pageSize), cancellationToken));
+
+    [HttpPost("projects/{projectId:guid}/repository/workspaces")]
+    [EndpointSummary("Register Project Workspace")]
+    public async Task<IActionResult> RegisterProjectWorkspace(
+        Guid projectId, [FromBody] RegisterProjectWorkspaceRequest request, CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new RegisterProjectWorkspaceCommand(projectId, request), cancellationToken));
+
+    [HttpPost("projects/{projectId:guid}/repository/workspaces/{workspaceId:guid}/pull")]
+    [EndpointSummary("Pull Project Workspace Snapshot")]
+    public async Task<IActionResult> PullProjectWorkspace(
+        Guid projectId, Guid workspaceId, CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new PullProjectWorkspaceCommand(projectId, workspaceId), cancellationToken));
+
+    [HttpPost("projects/{projectId:guid}/repository/revisions")]
+    [EndpointSummary("Push Project Revision Metadata")]
+    public async Task<IActionResult> PushProjectRevision(
+        Guid projectId, [FromBody] PushProjectRevisionRequest request, CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new PushProjectRevisionCommand(projectId, request), cancellationToken));
+
+    [HttpPost("projects/{projectId:guid}/repository/revisions/{revisionId:guid}/reviews")]
+    [EndpointSummary("Review Project Revision")]
+    public async Task<IActionResult> ReviewProjectRevision(
+        Guid projectId, Guid revisionId, [FromBody] ReviewProjectRevisionRequest request, CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new ReviewProjectRevisionCommand(projectId, revisionId, request), cancellationToken));
+
+    [HttpPost("projects/{projectId:guid}/repository/promote")]
+    [EndpointSummary("Promote Project Revision")]
+    public async Task<IActionResult> PromoteProjectRevision(
+        Guid projectId, [FromBody] PromoteProjectRevisionRequest request, CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new PromoteProjectRevisionCommand(projectId, request), cancellationToken));
+
+    [HttpPost("admin/projects/{projectId:guid}/repository/revisions/{revisionId:guid}/redact")]
+    [Authorize(Roles = "Admin")]
+    [EndpointSummary("Redact Project Revision Metadata")]
+    public async Task<IActionResult> RedactProjectRevision(
+        Guid projectId, Guid revisionId, [FromBody] RedactProjectRevisionRequest request,
+        CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(
+            new RedactProjectRevisionCommand(projectId, revisionId, request), cancellationToken));
+
+    [HttpDelete("projects/{projectId:guid}/repository/workspaces/{workspaceId:guid}")]
+    [EndpointSummary("Revoke Project Workspace")]
+    public async Task<IActionResult> RevokeProjectWorkspace(
+        Guid projectId, Guid workspaceId, CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new RevokeProjectWorkspaceCommand(projectId, workspaceId), cancellationToken));
+
     [HttpPost("projects/{projectId:guid}/course-links")]
     [EndpointSummary("Link Course")]
     public IActionResult LinkCourse(Guid projectId, [FromBody] JsonElement request) => NotImplemented(nameof(LinkCourse));

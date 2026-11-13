@@ -16,6 +16,10 @@ namespace TaskMind.ApplicationLayer.Commons
         public DbSet<Notification> Notifications { get; }
         public DbSet<Project> Projects { get; }
         public DbSet<ProjectMember> ProjectMembers { get; }
+        public DbSet<ProjectRepository> ProjectRepositories { get; }
+        public DbSet<ProjectRevision> ProjectRevisions { get; }
+        public DbSet<LocalProjectWorkspace> LocalProjectWorkspaces { get; }
+        public DbSet<RevisionPromotion> RevisionPromotions { get; }
         public DbSet<School> Schools { get; }
         public DbSet<Skill> Skills { get; }
         public DbSet<SkillLevelUpRequest> SkillLevelUpRequests { get; }

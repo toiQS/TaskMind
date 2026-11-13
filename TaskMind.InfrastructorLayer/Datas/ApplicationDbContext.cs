@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -8,7 +9,6 @@ using TaskMind.DomainLayer.TaskMind.Domain.Commons.Cores;
 using TaskMind.DomainLayer.TaskMind.Domain.Commons.Events;
 using TaskMind.DomainLayer.TaskMind.Domain.Entities;
 using TaskMind.DomainLayer.TaskMind.Domain.Enums;
-using TaskMind.InfrastructorLayer.Security;
 
 namespace TaskMind.InfrastructorLayer.Datas
 {
@@ -17,16 +17,19 @@ namespace TaskMind.InfrastructorLayer.Datas
         private readonly ICurrentSessionProvider _sessionProvider;
         private readonly IPublisher _publisher;
         private readonly ILogger<ApplicationDbContext> _logger;
+        private readonly IDataProtector _citizenIdProtector;
 
         public ApplicationDbContext(
             DbContextOptions<ApplicationDbContext> options,
             ICurrentSessionProvider sessionProvider,
             IPublisher publisher,
+            IDataProtectionProvider dataProtectionProvider,
             ILogger<ApplicationDbContext> logger) : base(options)
         {
             _sessionProvider = sessionProvider;
             _publisher = publisher;
             _logger = logger;
+            _citizenIdProtector = dataProtectionProvider.CreateProtector("TaskMind.Profile.CitizenId.v1");
         }
 
         // ... (giữ nguyên toàn bộ DbSet<> như cũ) ...
@@ -41,6 +44,10 @@ namespace TaskMind.InfrastructorLayer.Datas
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<Project> Projects { get; set; }
         public DbSet<ProjectMember> ProjectMembers { get; set; }
+        public DbSet<ProjectRepository> ProjectRepositories { get; set; }
+        public DbSet<ProjectRevision> ProjectRevisions { get; set; }
+        public DbSet<LocalProjectWorkspace> LocalProjectWorkspaces { get; set; }
+        public DbSet<RevisionPromotion> RevisionPromotions { get; set; }
         public DbSet<School> Schools { get; set; }
         public DbSet<Skill> Skills { get; set; }
         public DbSet<SkillLevelUpRequest> SkillLevelUpRequests { get; set; }
@@ -69,8 +76,8 @@ namespace TaskMind.InfrastructorLayer.Datas
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
 
             var citizenIdConverter = new ValueConverter<string, string>(
-                citizenId => CitizenIdEncryption.Encrypt(citizenId),
-                encryptedCitizenId => CitizenIdEncryption.Decrypt(encryptedCitizenId));
+                citizenId => _citizenIdProtector.Protect(citizenId),
+                protectedCitizenId => _citizenIdProtector.Unprotect(protectedCitizenId));
             foreach (var profileType in modelBuilder.Model.GetEntityTypes()
                          .Where(entityType => entityType.ClrType == typeof(Profile)))
             {

@@ -39,8 +39,9 @@ public sealed class RegisterHandler : IRequestHandler<RegisterCommand, ServiceRe
             return ServiceResult<RegisteredAccountDto>.Failure("Email không hợp lệ.");
         if (!AuthRules.IsValidPassword(command.Password))
             return ServiceResult<RegisteredAccountDto>.Failure("Mật khẩu phải có ít nhất 8 ký tự và tối đa 72 byte UTF-8.");
-        if (citizenId is null || citizenId.Length != 12 || citizenId.Any(character => !char.IsDigit(character)))
-            return ServiceResult<RegisteredAccountDto>.Failure("CitizenId phải gồm đúng 12 chữ số.");
+        if (citizenId is null || !Profile.IsValidCitizenId(citizenId))
+            return ServiceResult<RegisteredAccountDto>.Failure(
+                "Mã số định danh phải gồm đúng 12 chữ số ASCII. Định dạng này chưa xác minh danh tính.");
 
         var emailExists = await _dbContext.Users
             .AnyAsync(user => user.Profile.Email.ToUpper() == email!.ToUpper(), cancellationToken);

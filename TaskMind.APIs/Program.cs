@@ -1,5 +1,6 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Threading.RateLimiting;
@@ -31,13 +32,14 @@ builder.Services.AddRateLimiter(options =>
             }));
 });
 
-var connectionString = builder.Configuration.GetConnectionString("TaskMind");
+var connectionString = builder.Configuration.GetConnectionString("PostgreConnectString");
 if (string.IsNullOrWhiteSpace(connectionString))
-    throw new InvalidOperationException("ConnectionStrings:TaskMind must be configured.");
+    throw new InvalidOperationException("ConnectionStrings:PostgreConnectString must be configured.");
 
 var jwtOptions = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>() ?? new JwtOptions();
 jwtOptions.Validate();
-CitizenIdEncryption.Configure(builder.Configuration["Security:CitizenIdEncryptionKey"]);
+builder.Services.AddDataProtection()
+    .SetApplicationName("TaskMind");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
 builder.Services.AddScoped<IApplicationDbContext>(

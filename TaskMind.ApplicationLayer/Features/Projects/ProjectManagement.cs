@@ -262,6 +262,9 @@ public sealed class ProjectStatusHandler : IRequestHandler<ProjectStatusCommand,
             _db.AuditLogs.Add(audit.Data);
         }
 
+        if (command.Status is ProjectStatus.Completed or ProjectStatus.Cancelled)
+            await ProjectResourceRules.RevokeProjectWorkspacesAsync(_db, project.Id, ct);
+
         var notice = ProjectRules.StatusMessage(project, command.Status, command.Reason);
         foreach (var accountId in project.Members.Where(member => member.IsActive).Select(member => member.AccountId))
         {
@@ -439,6 +442,7 @@ public sealed class LeaveProjectHandler : IRequestHandler<LeaveProjectCommand, S
             return ServiceResult.Forbidden("Bạn chỉ có thể tự rời khỏi dự án bằng tài khoản hiện tại.");
         var result = project.RemoveMember(actor.Id);
         if (!result.IsSuccess) return ServiceResult.Failure(result.Message);
+        await ProjectResourceRules.RevokeMemberWorkspacesAsync(_db, project.Id, actor.Id, ct);
         await _db.SaveChangesAsync(ct);
         return ServiceResult.Success("Đã rời dự án.");
     }
@@ -467,6 +471,7 @@ public sealed class ForceRemoveProjectMemberHandler
         if (member is null) return ServiceResult.NotFound("Không tìm thấy thành viên đang hoạt động.");
         var removed = project.RemoveMember(member.AccountId);
         if (!removed.IsSuccess) return ServiceResult.Failure(removed.Message);
+        await ProjectResourceRules.RevokeMemberWorkspacesAsync(_db, project.Id, member.AccountId, ct);
         var audit = AuditLog.Record(admin.Id, "ProjectMemberForceRemoved", "ProjectMember", member.Id);
         if (!audit.IsSuccess || audit.Data is null) return ServiceResult.Error(audit.Message);
         _db.AuditLogs.Add(audit.Data);

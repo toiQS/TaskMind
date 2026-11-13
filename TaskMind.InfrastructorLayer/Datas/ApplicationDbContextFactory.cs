@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -19,6 +20,7 @@ public sealed class ApplicationDbContextFactory : IDesignTimeDbContextFactory<Ap
             optionsBuilder.Options,
             new NullCurrentSessionProvider(),
             new NoopPublisher(),
+            new EphemeralDataProtectionProvider(),
             NullLogger<ApplicationDbContext>.Instance);
     }
 

@@ -18,6 +18,10 @@ namespace TaskMind.DomainLayer.TaskMind.Domain.Entities
         public string Bio { get; private set; } = string.Empty;
         public string Email { get; private set; } = string.Empty;
         public string PhoneNumber { get; private set; } = string.Empty;
+        /// <summary>
+        /// National identity number retained as sensitive profile data. Its presence or format
+        /// does not verify the account or authenticate the person.
+        /// </summary>
         public string CitizenId { get; private set; } = string.Empty;
         public Address Address { get; private set; } = new Address();
         public string GitHubUrl { get; private set; } = string.Empty;
@@ -45,14 +49,17 @@ namespace TaskMind.DomainLayer.TaskMind.Domain.Entities
             {
                 return Result<Profile>.Failure("Email cannot be null or empty.");
             }
-            if (string.IsNullOrWhiteSpace(citizenId) || citizenId.Length != 12)
+            if (!IsValidCitizenId(citizenId))
             {
-                return Result<Profile>.Failure("Citizen ID cannot be null or empty and must be 12 characters long.");
+                return Result<Profile>.Failure("CitizenId must contain exactly 12 ASCII digits.");
             }
 
             var profile = new Profile(id, email, citizenId);
             return Result<Profile>.Success(profile);
         }
+
+        public static bool IsValidCitizenId(string? citizenId) =>
+            citizenId is { Length: 12 } && citizenId.All(character => character is >= '0' and <= '9');
 
         // --- Granular Domain Behaviors ---
 
