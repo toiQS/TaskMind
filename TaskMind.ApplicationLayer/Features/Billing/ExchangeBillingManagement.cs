@@ -42,6 +42,7 @@ public sealed record InvoiceDto(
 public sealed record InvoicePageDto(
     IReadOnlyCollection<InvoiceDto> Items, int Page, int PageSize, int TotalCount);
 public sealed record InvoiceStatusRequest(string? Reason);
+public sealed record CreateSubscriptionInvoiceRequest(decimal Amount, string Currency = "VND");
 public sealed record ListExchangeContractsQuery(Guid ProjectId, int Page, int PageSize)
     : IRequest<ServiceResult<ExchangeContractPageDto>>;
 public sealed record CreateExchangeContractCommand(Guid ProjectId, CreateExchangeContractRequest Request)
@@ -58,6 +59,9 @@ public sealed record ListInvoicesQuery(string? Status, string? SourceType, int P
     : IRequest<ServiceResult<InvoicePageDto>>;
 public sealed record SetInvoiceStatusCommand(Guid InvoiceId, InvoiceStatusAction Action, string? Reason)
     : IRequest<ServiceResult>;
+public sealed record CreateSubscriptionInvoiceCommand(
+    InvoiceSourceType SourceType, Guid OrganizationId, decimal Amount, string Currency)
+    : IRequest<ServiceResult<InvoiceDto>>;
 public enum InvoiceStatusAction { Issue, Paid, Overdue }
 
 public sealed class CreateExchangeContractHandler
@@ -370,6 +374,62 @@ public sealed class SetInvoiceStatusHandler : IRequestHandler<SetInvoiceStatusCo
         _db.AuditLogs.Add(audit.Data);
         await _db.SaveChangesAsync(ct);
         return ServiceResult.Success($"Hoá đơn đã chuyển sang trạng thái {invoice.InvoiceStatus}.");
+    }
+}
+
+public sealed class CreateSubscriptionInvoiceHandler
+    : IRequestHandler<CreateSubscriptionInvoiceCommand, ServiceResult<InvoiceDto>>
+{
+    private readonly IApplicationDbContext _db;
+    private readonly ICurrentSessionProvider _session;
+
+    public CreateSubscriptionInvoiceHandler(IApplicationDbContext db, ICurrentSessionProvider session)
+    {
+        _db = db;
+        _session = session;
+    }
+
+    public async Task<ServiceResult<InvoiceDto>> Handle(
+        CreateSubscriptionInvoiceCommand command, CancellationToken ct)
+    {
+        var admin = await ProjectRules.GetSystemAdmin(_db, _session, ct);
+        if (admin is null) return ServiceResult<InvoiceDto>.Forbidden();
+        if (command.SourceType is not (InvoiceSourceType.CompanySubscription or InvoiceSourceType.SchoolSubscription))
+            return ServiceResult<InvoiceDto>.Failure("Chỉ có thể phát hành hoá đơn Subscription cho Company hoặc School.");
+        if (command.Amount <= 0)
+            return ServiceResult<InvoiceDto>.Failure("Số tiền hoá đơn phải lớn hơn 0.");
+        var currency = command.Currency?.Trim().ToUpperInvariant();
+        if (currency is not { Length: 3 } ||
+            currency.Any(character => character is < 'A' or > 'Z'))
+            return ServiceResult<InvoiceDto>.Failure("Mã tiền tệ phải gồm đúng 3 chữ cái ASCII.");
+
+        var organizationIsActive = command.SourceType switch
+        {
+            InvoiceSourceType.CompanySubscription => await _db.Companies.AnyAsync(item =>
+                item.Id == command.OrganizationId && item.IsVerified && item.Status == EntityStatus.Active, ct),
+            InvoiceSourceType.SchoolSubscription => await _db.Schools.AnyAsync(item =>
+                item.Id == command.OrganizationId && item.IsVerified && item.Status == EntityStatus.Active, ct),
+            _ => false
+        };
+        if (!organizationIsActive)
+            return ServiceResult<InvoiceDto>.NotFound("Không tìm thấy tổ chức đang hoạt động.");
+
+        var created = Invoice.Create(
+            command.SourceType, command.OrganizationId, Money.Of(command.Amount, currency));
+        if (!created.IsSuccess || created.Data is null)
+            return ServiceResult<InvoiceDto>.Failure(created.Message);
+        var issued = created.Data.MarkAsIssued();
+        if (!issued.IsSuccess)
+            return ServiceResult<InvoiceDto>.Failure(issued.Message);
+        var audit = AuditLog.Record(admin.Id, "SubscriptionInvoiceIssued", nameof(Invoice), created.Data.Id);
+        if (!audit.IsSuccess || audit.Data is null)
+            return ServiceResult<InvoiceDto>.Error(audit.Message);
+
+        _db.Invoices.Add(created.Data);
+        _db.AuditLogs.Add(audit.Data);
+        await _db.SaveChangesAsync(ct);
+        return ServiceResult<InvoiceDto>.Success(
+            InvoiceMapping.ToDto(created.Data), "Đã phát hành hoá đơn Subscription.");
     }
 }
 

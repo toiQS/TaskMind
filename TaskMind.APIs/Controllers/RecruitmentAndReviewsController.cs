@@ -84,7 +84,10 @@ public sealed class RecruitmentAndReviewsController : ScaffoldControllerBase
 
     [HttpPost("job-applications/{applicationId:guid}/staff-invitations")]
     [EndpointSummary("Invite Successful Applicant")]
-    public IActionResult InviteSuccessfulApplicant(Guid applicationId, [FromBody] System.Text.Json.JsonElement request) => NotImplemented(nameof(InviteSuccessfulApplicant));
+    public async Task<IActionResult> InviteSuccessfulApplicant(
+        Guid applicationId, CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(
+            new InviteSuccessfulApplicantCommand(applicationId), cancellationToken));
 
     [HttpPost("reviews")]
     [EndpointSummary("Create Review")]

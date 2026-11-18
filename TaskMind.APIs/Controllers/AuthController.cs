@@ -89,6 +89,14 @@ public sealed class AuthController : ScaffoldControllerBase
         CancellationToken cancellationToken) =>
         ToActionResult(await _sender.Send(request, cancellationToken));
 
+    [Authorize(Roles = "Admin")]
+    [HttpPost("admin/system-administrators")]
+    [EndpointSummary("Create System Administrator")]
+    public async Task<IActionResult> CreateSystemAdministrator(
+        [FromBody] CreateSystemAdminRequest request,
+        CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new CreateSystemAdminCommand(request), cancellationToken));
+
     [AllowAnonymous]
     [EnableRateLimiting("auth")]
     [HttpPost("auth/oauth/{provider}")]

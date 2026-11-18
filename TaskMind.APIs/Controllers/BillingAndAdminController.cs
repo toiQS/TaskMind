@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using MediatR;
 using TaskMind.ApplicationLayer.Features.Billing;
+using TaskMind.DomainLayer.TaskMind.Domain.Enums;
 
 namespace TaskMind.APIs.Controllers;
 
@@ -106,27 +107,58 @@ public sealed class BillingAndAdminController : ScaffoldControllerBase
             cancellationToken));
 
     [Authorize(Roles = "Admin")]
+    [HttpPost("admin/companies/{companyId:guid}/subscription-invoices")]
+    [EndpointSummary("Issue Company Subscription Invoice")]
+    public async Task<IActionResult> IssueCompanySubscriptionInvoice(
+        Guid companyId, [FromBody] CreateSubscriptionInvoiceRequest request,
+        CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(
+            new CreateSubscriptionInvoiceCommand(
+                InvoiceSourceType.CompanySubscription, companyId, request.Amount, request.Currency),
+            cancellationToken));
+
+    [Authorize(Roles = "Admin")]
+    [HttpPost("admin/schools/{schoolId:guid}/subscription-invoices")]
+    [EndpointSummary("Issue School Subscription Invoice")]
+    public async Task<IActionResult> IssueSchoolSubscriptionInvoice(
+        Guid schoolId, [FromBody] CreateSubscriptionInvoiceRequest request,
+        CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(
+            new CreateSubscriptionInvoiceCommand(
+                InvoiceSourceType.SchoolSubscription, schoolId, request.Amount, request.Currency),
+            cancellationToken));
+
+    [Authorize(Roles = "Admin")]
     [HttpGet("admin/dashboard")]
     [EndpointSummary("Get Dashboard")]
-    public IActionResult GetDashboard() => NotImplemented(nameof(GetDashboard));
+    public async Task<IActionResult> GetDashboard(CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new GetAdminDashboardQuery(), cancellationToken));
 
     [Authorize(Roles = "Admin")]
     [HttpGet("admin/dashboard/revenue")]
     [EndpointSummary("Get Revenue Dashboard")]
-    public IActionResult GetRevenueDashboard([FromQuery] DateOnly? from, [FromQuery] DateOnly? to, [FromQuery] string? groupBy) => NotImplemented(nameof(GetRevenueDashboard));
+    public async Task<IActionResult> GetRevenueDashboard(
+        [FromQuery] DateOnly? from, [FromQuery] DateOnly? to, [FromQuery] string? groupBy,
+        CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(
+            new GetAdminRevenueDashboardQuery(from, to, groupBy), cancellationToken));
 
     [Authorize(Roles = "Admin")]
     [HttpGet("admin/dashboard/projects")]
     [EndpointSummary("Get Project Dashboard")]
-    public IActionResult GetProjectDashboard() => NotImplemented(nameof(GetProjectDashboard));
+    public async Task<IActionResult> GetProjectDashboard(CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new GetAdminProjectDashboardQuery(), cancellationToken));
 
     [Authorize(Roles = "Admin")]
     [HttpGet("admin/dashboard/accounts")]
     [EndpointSummary("Get Account Dashboard")]
-    public IActionResult GetAccountDashboard() => NotImplemented(nameof(GetAccountDashboard));
+    public async Task<IActionResult> GetAccountDashboard(CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(new GetAdminAccountDashboardQuery(), cancellationToken));
 
     [Authorize(Roles = "Admin")]
     [HttpGet("admin/dashboard/recent-invoices")]
     [EndpointSummary("Get Recent Invoices")]
-    public IActionResult GetRecentInvoices([FromQuery] int count = 10) => NotImplemented(nameof(GetRecentInvoices));
+    public async Task<IActionResult> GetRecentInvoices(
+        [FromQuery] int count = 10, CancellationToken cancellationToken = default) =>
+        ToActionResult(await _sender.Send(new GetRecentAdminInvoicesQuery(count), cancellationToken));
 }

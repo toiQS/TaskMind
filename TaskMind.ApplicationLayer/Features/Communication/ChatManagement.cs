@@ -9,6 +9,7 @@ namespace TaskMind.ApplicationLayer.Features.Communication;
 public sealed record CreateChatGroupRequest(IReadOnlyCollection<Guid> MemberAccountIds);
 public sealed record AddChatMembersRequest(IReadOnlyCollection<Guid> MemberAccountIds);
 public sealed record SendChatMessageRequest(string Content);
+public sealed record AdminChatAccessRequest(string Reason, DateTimeOffset? Before = null, int PageSize = 20);
 public sealed record ChatGroupDto(Guid Id, IReadOnlyCollection<Guid> MemberAccountIds, DateTime CreatedAtUtc);
 public sealed record ChatMessageDto(
     Guid Id,
@@ -34,6 +35,10 @@ public sealed record SendChatMessageCommand(Guid GroupId, string Content)
     : IRequest<ServiceResult<Guid>>;
 public sealed record ListChatMessagesQuery(Guid GroupId, DateTimeOffset? Before, int PageSize)
     : IRequest<ServiceResult<ChatMessagesPageDto>>;
+public sealed record AdminChatAccessCommand(
+    Guid GroupId, string Reason, DateTimeOffset? Before, int PageSize)
+    : IRequest<ServiceResult<AdminChatAccessDto>>;
+public sealed record AdminChatAccessDto(ChatGroupDto Chat, ChatMessagesPageDto Messages);
 public sealed record WithdrawChatMessageCommand(Guid GroupId, Guid MessageId)
     : IRequest<ServiceResult>;
 public sealed record DeleteChatGroupCommand(Guid GroupId) : IRequest<ServiceResult>;
@@ -76,10 +81,16 @@ public sealed class ListChatGroupsHandler : IRequestHandler<ListChatGroupsQuery,
         if (account is null) return ServiceResult<ChatGroupPageDto>.Forbidden();
         var chats = _db.Chats.AsNoTracking().Where(chat =>
             chat.Status == EntityStatus.Active && chat.MemberIds.Contains(account.Id));
-        var count = await chats.CountAsync(ct);
-        var rows = await chats.OrderByDescending(chat => chat.CreateAt).ThenBy(chat => chat.Id)
-            .Skip(skip).Take(query.PageSize)
+        var candidates = await chats.OrderByDescending(chat => chat.CreateAt).ThenBy(chat => chat.Id)
             .ToListAsync(ct);
+        var rows = new List<Chat>();
+        foreach (var candidate in candidates)
+        {
+            if (await ChatRules.AreCompatibleMembers(_db, candidate.MemberIds, ct))
+                rows.Add(candidate);
+        }
+        var count = rows.Count;
+        rows = rows.Skip(skip).Take(query.PageSize).ToList();
         var items = rows.Select(chat =>
             new ChatGroupDto(chat.Id, chat.MemberIds.ToArray(), chat.CreateAt)).ToArray();
         return ServiceResult<ChatGroupPageDto>.Success(
@@ -105,6 +116,9 @@ public sealed class CreateChatGroupHandler : IRequestHandler<CreateChatGroupComm
             .Append(account.Id).Distinct().ToArray();
         if (!await ChatRules.AreActiveAccounts(_db, memberIds, ct))
             return ServiceResult<Guid>.Failure("Một hoặc nhiều thành viên không tồn tại hoặc không hoạt động.");
+        if (!await ChatRules.AreCompatibleMembers(_db, memberIds, ct))
+            return ServiceResult<Guid>.Failure(
+                "Thành viên phải thuộc cùng phạm vi trò chuyện; Admin hệ thống không thể tham gia nhóm.");
         var created = Chat.Create(memberIds);
         if (!created.IsSuccess || created.Data is null)
             return ServiceResult<Guid>.Failure(created.Message);
@@ -132,10 +146,10 @@ public sealed class GetChatGroupHandler : IRequestHandler<GetChatGroupQuery, Ser
             item.Id == query.GroupId &&
             item.Status == EntityStatus.Active &&
             item.MemberIds.Contains(account.Id), ct);
-        return chat is null
-            ? ServiceResult<ChatGroupDto>.NotFound("Không tìm thấy nhóm trò chuyện.")
-            : ServiceResult<ChatGroupDto>.Success(
-                new ChatGroupDto(chat.Id, chat.MemberIds.ToArray(), chat.CreateAt));
+        if (chat is null || !await ChatRules.AreCompatibleMembers(_db, chat.MemberIds, ct))
+            return ServiceResult<ChatGroupDto>.NotFound("Không tìm thấy nhóm trò chuyện.");
+        return ServiceResult<ChatGroupDto>.Success(
+            new ChatGroupDto(chat.Id, chat.MemberIds.ToArray(), chat.CreateAt));
     }
 }
 
@@ -162,6 +176,9 @@ public sealed class AddChatMembersHandler : IRequestHandler<AddChatMembersComman
         if (memberIds.Length == 0) return ServiceResult.Failure("Cần chỉ định ít nhất một thành viên.");
         if (!await ChatRules.AreActiveAccounts(_db, memberIds, ct))
             return ServiceResult.Failure("Một hoặc nhiều thành viên không tồn tại hoặc không hoạt động.");
+        if (!await ChatRules.AreCompatibleMembers(_db, chat.MemberIds.Concat(memberIds).Distinct().ToArray(), ct))
+            return ServiceResult.Failure(
+                "Thành viên phải thuộc cùng phạm vi trò chuyện; Admin hệ thống không thể tham gia nhóm.");
         foreach (var memberId in memberIds)
         {
             var added = chat.AddMember(memberId);
@@ -190,7 +207,8 @@ public sealed class SendChatMessageHandler : IRequestHandler<SendChatMessageComm
             item.Id == command.GroupId &&
             item.Status == EntityStatus.Active &&
             item.MemberIds.Contains(account.Id), ct);
-        if (chat is null) return ServiceResult<Guid>.NotFound("Không tìm thấy nhóm trò chuyện.");
+        if (chat is null || !await ChatRules.AreCompatibleMembers(_db, chat.MemberIds, ct))
+            return ServiceResult<Guid>.NotFound("Không tìm thấy nhóm trò chuyện.");
         var sent = chat.SendMessage(account.Id, command.Content);
         if (!sent.IsSuccess || sent.Data is null)
             return ServiceResult<Guid>.Failure(sent.Message);
@@ -230,7 +248,8 @@ public sealed class ListChatMessagesHandler : IRequestHandler<ListChatMessagesQu
             item.Id == query.GroupId &&
             item.Status == EntityStatus.Active &&
             item.MemberIds.Contains(account.Id), ct);
-        if (chat is null) return ServiceResult<ChatMessagesPageDto>.NotFound("Không tìm thấy nhóm trò chuyện.");
+        if (chat is null || !await ChatRules.AreCompatibleMembers(_db, chat.MemberIds, ct))
+            return ServiceResult<ChatMessagesPageDto>.NotFound("Không tìm thấy nhóm trò chuyện.");
         var messages = _db.Messages.AsNoTracking().Where(message => message.ChatId == chat.Id);
         if (query.Before.HasValue)
             messages = messages.Where(message => message.SentAtUtc < query.Before.Value.UtcDateTime);
@@ -265,7 +284,8 @@ public sealed class WithdrawChatMessageHandler : IRequestHandler<WithdrawChatMes
             item.Id == command.GroupId &&
             item.Status == EntityStatus.Active &&
             item.MemberIds.Contains(account.Id), ct);
-        if (chat is null) return ServiceResult.NotFound("Không tìm thấy nhóm trò chuyện.");
+        if (chat is null || !await ChatRules.AreCompatibleMembers(_db, chat.MemberIds, ct))
+            return ServiceResult.NotFound("Không tìm thấy nhóm trò chuyện.");
         var message = await _db.Messages.SingleOrDefaultAsync(item =>
             item.Id == command.MessageId &&
             item.ChatId == chat.Id &&
@@ -337,6 +357,63 @@ public sealed class WithdrawAllChatMessagesHandler
     }
 }
 
+public sealed class AdminChatAccessHandler
+    : IRequestHandler<AdminChatAccessCommand, ServiceResult<AdminChatAccessDto>>
+{
+    private readonly IApplicationDbContext _db;
+    private readonly ICurrentSessionProvider _session;
+
+    public AdminChatAccessHandler(IApplicationDbContext db, ICurrentSessionProvider session)
+    {
+        _db = db;
+        _session = session;
+    }
+
+    public async Task<ServiceResult<AdminChatAccessDto>> Handle(
+        AdminChatAccessCommand command, CancellationToken ct)
+    {
+        var admin = await ChatRules.GetSystemAdmin(_db, _session, ct);
+        if (admin is null) return ServiceResult<AdminChatAccessDto>.Forbidden();
+        var reason = command.Reason?.Trim();
+        if (string.IsNullOrWhiteSpace(reason) || reason.Length > 500)
+            return ServiceResult<AdminChatAccessDto>.Failure(
+                "Lý do truy cập là bắt buộc và không được vượt quá 500 ký tự.");
+        if (command.PageSize is < 1 or > 100)
+            return ServiceResult<AdminChatAccessDto>.Failure("PageSize phải từ 1 đến 100.");
+
+        var chat = await _db.Chats.AsNoTracking().SingleOrDefaultAsync(item =>
+            item.Id == command.GroupId && item.Status == EntityStatus.Active, ct);
+        if (chat is null)
+            return ServiceResult<AdminChatAccessDto>.NotFound("Không tìm thấy nhóm trò chuyện.");
+        var messages = _db.Messages.AsNoTracking().Where(item => item.ChatId == chat.Id);
+        if (command.Before.HasValue)
+            messages = messages.Where(item =>
+                item.SentAtUtc < command.Before.Value.UtcDateTime);
+        var rows = await messages.OrderByDescending(item => item.SentAtUtc)
+            .ThenByDescending(item => item.Id)
+            .Take(command.PageSize)
+            .Select(item => new ChatMessageDto(
+                item.Id,
+                item.SenderAccountId,
+                item.Status == EntityStatus.Deleted ? null : item.Content,
+                item.Status == EntityStatus.Deleted ? "Withdrawn" : "Sent",
+                item.SentAtUtc))
+            .ToArrayAsync(ct);
+
+        var safeReason = new string(reason.Where(character => !char.IsControl(character)).ToArray());
+        var audit = AuditLog.Record(
+            admin.Id, $"AdminChatAccess: {safeReason}", "Chat", chat.Id);
+        if (!audit.IsSuccess || audit.Data is null)
+            return ServiceResult<AdminChatAccessDto>.Error(audit.Message);
+        _db.AuditLogs.Add(audit.Data);
+        await _db.SaveChangesAsync(ct);
+
+        var group = new ChatGroupDto(chat.Id, chat.MemberIds.ToArray(), chat.CreateAt);
+        return ServiceResult<AdminChatAccessDto>.Success(
+            new AdminChatAccessDto(group, new ChatMessagesPageDto(rows, command.PageSize)));
+    }
+}
+
 public sealed class ListAuditLogsHandler : IRequestHandler<ListAuditLogsQuery, ServiceResult<AuditLogPageDto>>
 {
     private readonly IApplicationDbContext _db;
@@ -360,7 +437,10 @@ public sealed class ListAuditLogsHandler : IRequestHandler<ListAuditLogsQuery, S
         if (!string.IsNullOrWhiteSpace(query.Action))
         {
             var action = query.Action.Trim().ToUpperInvariant();
-            logs = logs.Where(item => item.Action.ToUpper() == action);
+            logs = action == "ADMINCHATACCESS"
+                ? logs.Where(item => item.Action.ToUpper() == action ||
+                                     item.Action.ToUpper().StartsWith("ADMINCHATACCESS:"))
+                : logs.Where(item => item.Action.ToUpper() == action);
         }
         if (query.From.HasValue) logs = logs.Where(item => item.CreatedAtUtc >= query.From.Value.UtcDateTime);
         if (query.To.HasValue) logs = logs.Where(item => item.CreatedAtUtc <= query.To.Value.UtcDateTime);
@@ -399,6 +479,70 @@ internal static class ChatRules
         if (ids.Count == 0 || ids.Contains(Guid.Empty)) return false;
         return await db.Accounts.CountAsync(account =>
             ids.Contains(account.Id) && account.IsVerified && account.Status == EntityStatus.Active, ct) == ids.Count;
+    }
+
+    public static async Task<bool> AreCompatibleMembers(
+        IApplicationDbContext db, IReadOnlyCollection<Guid> ids, CancellationToken ct)
+    {
+        var memberIds = ids.Distinct().ToArray();
+        if (memberIds.Length < 2 || memberIds.Contains(Guid.Empty))
+            return false;
+        var accounts = await db.Accounts.AsNoTracking()
+            .Where(item => memberIds.Contains(item.Id))
+            .ToListAsync(ct);
+        if (accounts.Count != memberIds.Length ||
+            accounts.Any(item => !item.IsVerified || item.Status != EntityStatus.Active))
+            return false;
+
+        var scopes = new List<(int Type, Guid OrganizationId)>(accounts.Count);
+        foreach (var account in accounts)
+        {
+            switch (account)
+            {
+                case User:
+                    scopes.Add((0, Guid.Empty));
+                    break;
+                case AdminCompany adminCompany:
+                    scopes.Add((1, adminCompany.CompanyId));
+                    break;
+                case Staff staff when staff.IsActive:
+                    scopes.Add((1, staff.CompanyId));
+                    break;
+                case AdminSchool adminSchool:
+                    scopes.Add((2, adminSchool.SchoolId));
+                    break;
+                case Teacher teacher when teacher.IsActive:
+                    scopes.Add((2, teacher.SchoolId));
+                    break;
+                case Student student when student.IsActive:
+                    scopes.Add((2, student.SchoolId));
+                    break;
+                default:
+                    return false;
+            }
+        }
+
+        var companyIds = scopes.Where(item => item.Type == 1)
+            .Select(item => item.OrganizationId).Distinct().ToArray();
+        var schoolIds = scopes.Where(item => item.Type == 2)
+            .Select(item => item.OrganizationId).Distinct().ToArray();
+        var activeCompanyIds = companyIds.Length == 0
+            ? new HashSet<Guid>()
+            : await db.Companies.AsNoTracking()
+                .Where(item => companyIds.Contains(item.Id) &&
+                               item.IsVerified && item.Status == EntityStatus.Active)
+                .Select(item => item.Id).ToHashSetAsync(ct);
+        var activeSchoolIds = schoolIds.Length == 0
+            ? new HashSet<Guid>()
+            : await db.Schools.AsNoTracking()
+                .Where(item => schoolIds.Contains(item.Id) &&
+                               item.IsVerified && item.Status == EntityStatus.Active)
+                .Select(item => item.Id).ToHashSetAsync(ct);
+        if (companyIds.Any(id => !activeCompanyIds.Contains(id)) ||
+            schoolIds.Any(id => !activeSchoolIds.Contains(id)))
+            return false;
+
+        return scopes.All(item => item == scopes[0]);
     }
 
     public static bool TryPaging(int page, int pageSize, out int skip)

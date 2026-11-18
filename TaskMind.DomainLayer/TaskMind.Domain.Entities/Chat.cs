@@ -7,9 +7,9 @@ namespace TaskMind.DomainLayer.TaskMind.Domain.Entities
     /// <summary>
     /// Aggregate Root Chat [MỚI] — nhóm trò chuyện nội bộ (mục 4.22). Sở hữu các Message như thực thể
     /// con, giao tiếp với các Bounded Context khác qua MessageSentEvent (kích hoạt Notification).
-    /// Lưu ý (mục 8 - vấn đề mở): phạm vi thành viên (Teacher, User mã nguồn mở, Admin hệ thống có
-    /// tham gia hay không) và việc Chat có gắn ProjectId hay không vẫn cần làm rõ ở thiết kế chi tiết;
-    /// hiện để MemberIds là danh sách AccountId chung, không ràng buộc theo loại tài khoản cụ thể.
+    /// MemberIds remains schema-compatible; the Application layer infers and enforces a single
+    /// organization scope from the member account types. System Admins access chats only through
+    /// the audited administrative read path.
     /// </summary>
     public class Chat : AggregateRoot
     {

@@ -16,6 +16,9 @@ public sealed record OrganizationMembersPageDto(
 
 public sealed record ListCompanyStaffQuery(Guid CompanyId, string? Status, int Page, int PageSize)
     : IRequest<ServiceResult<OrganizationMembersPageDto>>;
+public sealed record ListSchoolMembersQuery(
+    Guid SchoolId, string MemberType, string? Status, int Page, int PageSize)
+    : IRequest<ServiceResult<OrganizationMembersPageDto>>;
 public sealed record DeactivateOrganizationMemberCommand(
     Guid OrganizationId, Guid MemberId, string MemberType)
     : IRequest<ServiceResult>;
@@ -69,6 +72,82 @@ public sealed class ListCompanyStaffHandler :
             .ToArrayAsync(ct);
         return ServiceResult<OrganizationMembersPageDto>.Success(
             new OrganizationMembersPageDto(rows, query.Page, query.PageSize, total));
+    }
+}
+
+public sealed class ListSchoolMembersHandler :
+    IRequestHandler<ListSchoolMembersQuery, ServiceResult<OrganizationMembersPageDto>>
+{
+    private readonly IApplicationDbContext _db;
+    private readonly ICurrentSessionProvider _session;
+
+    public ListSchoolMembersHandler(IApplicationDbContext db, ICurrentSessionProvider session)
+    {
+        _db = db;
+        _session = session;
+    }
+
+    public async Task<ServiceResult<OrganizationMembersPageDto>> Handle(
+        ListSchoolMembersQuery query, CancellationToken ct)
+    {
+        if (!OrganizationRules.TryPaging(query.Page, query.PageSize, out var skip))
+            return ServiceResult<OrganizationMembersPageDto>.Failure(
+                "Page phải từ 1 trở lên và PageSize phải từ 1 đến 100.");
+        if (query.MemberType is not ("Teacher" or "Student"))
+            return ServiceResult<OrganizationMembersPageDto>.Failure("Loại thành viên không hợp lệ.");
+        var status = query.Status?.Trim();
+        if (!string.IsNullOrEmpty(status) &&
+            !status.Equals("Active", StringComparison.OrdinalIgnoreCase) &&
+            !status.Equals("Inactive", StringComparison.OrdinalIgnoreCase))
+            return ServiceResult<OrganizationMembersPageDto>.Failure("Trạng thái thành viên không hợp lệ.");
+
+        var accountId = _session.GetUserId();
+        var admin = !accountId.HasValue
+            ? null
+            : await _db.AdminSchools.SingleOrDefaultAsync(item => item.Id == accountId.Value, ct);
+        if (admin is not { IsVerified: true, Status: EntityStatus.Active } ||
+            admin.SchoolId != query.SchoolId ||
+            !await _db.Schools.AnyAsync(item => item.Id == query.SchoolId &&
+                item.IsVerified && item.Status == EntityStatus.Active, ct))
+            return ServiceResult<OrganizationMembersPageDto>.Forbidden(
+                "Chỉ Admin của cơ sở đào tạo mới có quyền xem danh sách giảng viên/học viên.");
+
+        if (query.MemberType == "Teacher")
+        {
+            var members = _db.Teachers.AsNoTracking().Where(item => item.SchoolId == query.SchoolId);
+            if (string.Equals(status, "Active", StringComparison.OrdinalIgnoreCase))
+                members = members.Where(item => item.IsActive);
+            else if (string.Equals(status, "Inactive", StringComparison.OrdinalIgnoreCase))
+                members = members.Where(item => !item.IsActive);
+            var total = await members.CountAsync(ct);
+            var rows = await members.OrderByDescending(item => item.IsActive)
+                .ThenBy(item => item.Profile.LastName)
+                .ThenBy(item => item.Profile.FirstName)
+                .Skip(skip).Take(query.PageSize)
+                .Select(item => new OrganizationMemberDto(
+                    item.Id, item.LinkedUserId, item.Profile.FirstName, item.Profile.LastName,
+                    item.Profile.NickName, item.IsActive, item.CreatedAtUtc, item.LeftAtUtc))
+                .ToArrayAsync(ct);
+            return ServiceResult<OrganizationMembersPageDto>.Success(
+                new OrganizationMembersPageDto(rows, query.Page, query.PageSize, total));
+        }
+
+        var students = _db.Students.AsNoTracking().Where(item => item.SchoolId == query.SchoolId);
+        if (string.Equals(status, "Active", StringComparison.OrdinalIgnoreCase))
+            students = students.Where(item => item.IsActive);
+        else if (string.Equals(status, "Inactive", StringComparison.OrdinalIgnoreCase))
+            students = students.Where(item => !item.IsActive);
+        var studentCount = await students.CountAsync(ct);
+        var studentRows = await students.OrderByDescending(item => item.IsActive)
+            .ThenBy(item => item.Profile.LastName)
+            .ThenBy(item => item.Profile.FirstName)
+            .Skip(skip).Take(query.PageSize)
+            .Select(item => new OrganizationMemberDto(
+                item.Id, item.LinkedUserId, item.Profile.FirstName, item.Profile.LastName,
+                item.Profile.NickName, item.IsActive, item.CreatedAtUtc, item.LeftAtUtc))
+            .ToArrayAsync(ct);
+        return ServiceResult<OrganizationMembersPageDto>.Success(
+            new OrganizationMembersPageDto(studentRows, query.Page, query.PageSize, studentCount));
     }
 }
 

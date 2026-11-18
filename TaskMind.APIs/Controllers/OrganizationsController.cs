@@ -167,6 +167,28 @@ public sealed class OrganizationsController : ScaffoldControllerBase
         ToActionResult(await _mediator.Send(
             new ListCompanyStaffQuery(companyId, status, page, pageSize), cancellationToken));
 
+    [HttpGet("schools/{schoolId:guid}/teachers")]
+    [EndpointSummary("List School Teachers")]
+    public async Task<IActionResult> ListTeachers(
+        Guid schoolId,
+        [FromQuery] string? status,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default) =>
+        ToActionResult(await _mediator.Send(
+            new ListSchoolMembersQuery(schoolId, "Teacher", status, page, pageSize), cancellationToken));
+
+    [HttpGet("schools/{schoolId:guid}/students")]
+    [EndpointSummary("List School Students")]
+    public async Task<IActionResult> ListStudents(
+        Guid schoolId,
+        [FromQuery] string? status,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default) =>
+        ToActionResult(await _mediator.Send(
+            new ListSchoolMembersQuery(schoolId, "Student", status, page, pageSize), cancellationToken));
+
     [HttpPost("companies/{companyId:guid}/staff/{staffId:guid}/deactivation")]
     [EndpointSummary("Deactivate Staff")]
     public async Task<IActionResult> DeactivateStaff(

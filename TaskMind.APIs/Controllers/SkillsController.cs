@@ -65,6 +65,15 @@ public sealed class SkillsController : ScaffoldControllerBase
             new DecideSkillProposalCommand(proposalId, false, null), cancellationToken));
 
     [Authorize(Roles = "Admin")]
+    [HttpPost("admin/skills")]
+    [EndpointSummary("Create Approved Skill")]
+    public async Task<IActionResult> CreateSkill(
+        [FromBody] SkillProposalRequest request,
+        CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(
+            new CreateSkillByAdminCommand(request), cancellationToken));
+
+    [Authorize(Roles = "Admin")]
     [HttpPost("admin/skills/{skillId:guid}/related-skills")]
     [EndpointSummary("Link Related Skills")]
     public async Task<IActionResult> LinkRelatedSkills(

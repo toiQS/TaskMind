@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using MediatR;
-using System.Text.Json;
 using TaskMind.ApplicationLayer.Features.Auths;
 using TaskMind.ApplicationLayer.Features.Communication;
 
@@ -91,5 +90,10 @@ public sealed class CommunicationController : ScaffoldControllerBase
     [Authorize(Roles = "Admin")]
     [HttpPost("admin/chat-groups/{groupId:guid}/access-requests")]
     [EndpointSummary("Request Administrative Chat Access")]
-    public IActionResult RequestAdministrativeChatAccess(Guid groupId, [FromBody] JsonElement request) => NotImplemented(nameof(RequestAdministrativeChatAccess));
+    public async Task<IActionResult> RequestAdministrativeChatAccess(
+        Guid groupId, [FromBody] AdminChatAccessRequest request,
+        CancellationToken cancellationToken) =>
+        ToActionResult(await _sender.Send(
+            new AdminChatAccessCommand(groupId, request.Reason, request.Before, request.PageSize),
+            cancellationToken));
 }

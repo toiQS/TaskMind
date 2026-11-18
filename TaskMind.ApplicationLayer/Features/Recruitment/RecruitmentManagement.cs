@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using TaskMind.ApplicationLayer.Commons;
+using TaskMind.ApplicationLayer.Features.Organizations;
 using TaskMind.DomainLayer.TaskMind.Domain.Entities;
 using TaskMind.DomainLayer.TaskMind.Domain.Enums;
 
@@ -55,6 +56,8 @@ public sealed record ListJobApplicationsQuery(Guid JobPostingId, string? Status,
     : IRequest<ServiceResult<JobApplicationPageDto>>;
 public sealed record TransitionJobApplicationCommand(Guid ApplicationId, string Status)
     : IRequest<ServiceResult>;
+public sealed record InviteSuccessfulApplicantCommand(Guid ApplicationId)
+    : IRequest<ServiceResult<Guid>>;
 
 public sealed class CreateJobPostingHandler
     : IRequestHandler<CreateJobPostingCommand, ServiceResult<Guid>>
@@ -473,6 +476,60 @@ public sealed record CreateReviewCommand(CreateReviewRequest Request) : IRequest
 public sealed record ListReviewsQuery(ReviewTargetType TargetType, Guid TargetId, int Page, int PageSize)
     : IRequest<ServiceResult<ReviewPageDto>>;
 public sealed record RemoveReviewCommand(Guid ReviewId, string? Reason) : IRequest<ServiceResult>;
+
+public sealed class InviteSuccessfulApplicantHandler
+    : IRequestHandler<InviteSuccessfulApplicantCommand, ServiceResult<Guid>>
+{
+    private readonly IApplicationDbContext _db;
+    private readonly ICurrentSessionProvider _session;
+    private readonly ISender _sender;
+
+    public InviteSuccessfulApplicantHandler(
+        IApplicationDbContext db, ICurrentSessionProvider session, ISender sender)
+    {
+        _db = db;
+        _session = session;
+        _sender = sender;
+    }
+
+    public async Task<ServiceResult<Guid>> Handle(
+        InviteSuccessfulApplicantCommand command, CancellationToken ct)
+    {
+        var currentAccount = await RecruitmentRules.GetCurrentAccount(_db, _session, ct);
+        if (currentAccount is not AdminCompany companyAdmin ||
+            await RecruitmentRules.GetOwnedCompany(_db, _session, companyAdmin.CompanyId, ct) is null)
+            return ServiceResult<Guid>.Forbidden(
+                "Chỉ Admin của công ty mới có thể mời ứng viên.");
+
+        var application = await _db.JobApplications.AsNoTracking()
+            .Where(item => item.Id == command.ApplicationId &&
+                _db.JobPostings.Any(posting =>
+                    posting.Id == item.JobPostingId && posting.CompanyId == companyAdmin.CompanyId))
+            .SingleOrDefaultAsync(ct);
+        if (application is null)
+            return ServiceResult<Guid>.NotFound(
+                "Không tìm thấy hồ sơ ứng tuyển của công ty.");
+        if (application.ApplicationStatus != ApplicationStatus.Accepted)
+            return ServiceResult<Guid>.Failure(
+                "Chỉ có thể mời ứng viên sau khi hồ sơ được chấp nhận.");
+
+        var posting = await _db.JobPostings.AsNoTracking()
+            .SingleOrDefaultAsync(item => item.Id == application.JobPostingId, ct);
+        if (posting is null)
+            return ServiceResult<Guid>.NotFound("Không tìm thấy tin tuyển dụng.");
+
+        var applicant = await _db.Users.AsNoTracking()
+            .SingleOrDefaultAsync(item => item.Id == application.UserId, ct);
+        if (applicant is not { IsVerified: true, Status: EntityStatus.Active })
+            return ServiceResult<Guid>.Failure(
+                "Ứng viên phải có tài khoản User đã xác minh và đang hoạt động.");
+
+        return await _sender.Send(
+            new InviteOrganizationMemberCommand(
+                posting.CompanyId, applicant.Profile.Email, OrganizationMemberType.Staff),
+            ct);
+    }
+}
 
 public sealed class CreateReviewHandler : IRequestHandler<CreateReviewCommand, ServiceResult<Guid>>
 {
