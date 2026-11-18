@@ -355,26 +355,43 @@ public sealed class AddProjectMemberHandler : IRequestHandler<AddProjectMemberCo
             .SingleOrDefaultAsync(item => item.Id == command.ProjectId, ct);
         if (project is null) return ServiceResult.NotFound("Không tìm thấy dự án.");
         var actor = await ProjectRules.GetActiveAccount(_db, _session, ct);
-        if (!await ProjectRules.CanManage(_db, actor, project, ct))
-            return ServiceResult.Forbidden("Chỉ Owner, Project Manager hoặc quản trị viên sở hữu mới có thể thêm thành viên.");
+        if (!await ProjectRules.IsProjectOwner(_db, actor, project.Id, ct))
+            return ServiceResult.Forbidden("Chỉ Owner của dự án mới có thể thêm thành viên.");
         var target = await _db.Accounts.SingleOrDefaultAsync(item =>
             item.Id == command.AccountId &&
             item.IsVerified &&
             item.Status == EntityStatus.Active, ct);
         if (target is null || !await ProjectRules.IsEligibleMember(_db, target, project, ct))
             return ServiceResult.Failure("Tài khoản thành viên không tồn tại, không hoạt động hoặc không thuộc phạm vi dự án.");
+        var existingMember = project.Members.SingleOrDefault(item =>
+            item.AccountId == target.Id && item.IsActive);
         var added = project.AssignMember(target.Id, role.Value);
         if (!added.IsSuccess) return ServiceResult.Failure(added.Message);
+        var activeMember = project.Members.SingleOrDefault(item =>
+            item.AccountId == target.Id && item.IsActive);
+        if (activeMember is null)
+            return ServiceResult.Error("Không tìm thấy bản ghi thành viên sau khi cập nhật dự án.");
+        var audit = AuditLog.Record(
+            actor!.Id,
+            existingMember is null ? "ProjectMemberAdded" : "ProjectMemberRoleChanged",
+            "ProjectMember",
+            activeMember.Id);
+        if (!audit.IsSuccess || audit.Data is null) return ServiceResult.Error(audit.Message);
+        _db.AuditLogs.Add(audit.Data);
         var notification = Notification.Create(
             target.Id,
-            "Bạn đã được thêm vào dự án",
-            $"Bạn đã được thêm vào dự án {project.Title} với vai trò {role.Value}.",
-            NotificationType.Success);
+            existingMember is null ? "Bạn đã được thêm vào dự án" : "Vai trò dự án đã thay đổi",
+            existingMember is null
+                ? $"Bạn đã được thêm vào dự án {project.Title} với vai trò {role.Value}."
+                : $"Vai trò của bạn trong dự án {project.Title} đã được đổi thành {role.Value}.",
+            existingMember is null ? NotificationType.Success : NotificationType.System);
         if (!notification.IsSuccess || notification.Data is null)
             return ServiceResult.Error(notification.Message);
         _db.Notifications.Add(notification.Data);
         await _db.SaveChangesAsync(ct);
-        return ServiceResult.Success("Đã thêm thành viên vào dự án.");
+        return ServiceResult.Success(existingMember is null
+            ? "Đã thêm thành viên vào dự án."
+            : "Thành viên đã tồn tại; vai trò được cập nhật theo yêu cầu.");
     }
 }
 
@@ -401,10 +418,13 @@ public sealed class ChangeProjectMemberRoleHandler
             item.Id == command.MemberId && item.IsActive);
         if (member is null) return ServiceResult.NotFound("Không tìm thấy thành viên đang hoạt động.");
         var actor = await ProjectRules.GetActiveAccount(_db, _session, ct);
-        if (!await ProjectRules.CanManage(_db, actor, project, ct))
-            return ServiceResult.Forbidden();
+        if (!await ProjectRules.IsProjectOwner(_db, actor, project.Id, ct))
+            return ServiceResult.Forbidden("Chỉ Owner của dự án mới có thể đổi vai trò.");
         var changed = project.ChangeMemberRole(member.AccountId, role.Value);
         if (!changed.IsSuccess) return ServiceResult.Failure(changed.Message);
+        var audit = AuditLog.Record(actor!.Id, "ProjectMemberRoleChanged", "ProjectMember", member.Id);
+        if (!audit.IsSuccess || audit.Data is null) return ServiceResult.Error(audit.Message);
+        _db.AuditLogs.Add(audit.Data);
         var notification = Notification.Create(
             member.AccountId,
             "Vai trò dự án đã thay đổi",
@@ -442,6 +462,9 @@ public sealed class LeaveProjectHandler : IRequestHandler<LeaveProjectCommand, S
             return ServiceResult.Forbidden("Bạn chỉ có thể tự rời khỏi dự án bằng tài khoản hiện tại.");
         var result = project.RemoveMember(actor.Id);
         if (!result.IsSuccess) return ServiceResult.Failure(result.Message);
+        var audit = AuditLog.Record(actor.Id, "ProjectMemberLeft", "ProjectMember", membership.Id);
+        if (!audit.IsSuccess || audit.Data is null) return ServiceResult.Error(audit.Message);
+        _db.AuditLogs.Add(audit.Data);
         await ProjectResourceRules.RevokeMemberWorkspacesAsync(_db, project.Id, actor.Id, ct);
         await _db.SaveChangesAsync(ct);
         return ServiceResult.Success("Đã rời dự án.");
@@ -611,6 +634,17 @@ internal static class ProjectRules
         return member;
     }
 
+    public static Task<bool> IsProjectOwner(
+        IApplicationDbContext db, Account? account, Guid projectId, CancellationToken ct)
+    {
+        if (account is null) return Task.FromResult(false);
+        return db.ProjectMembers.AsNoTracking().AnyAsync(item =>
+            EF.Property<Guid>(item, "ProjectId") == projectId &&
+            item.AccountId == account.Id &&
+            item.LeftAt == null &&
+            item.Role == ProjectRole.Owner, ct);
+    }
+
     public static async Task<bool> CanView(
         IApplicationDbContext db,
         Account? account,
@@ -644,18 +678,13 @@ internal static class ProjectRules
         Account account,
         Project project,
         CancellationToken ct) =>
-        project.SourceType switch
+        account switch
         {
-            ProjectSourceType.OpenSource => true,
-            ProjectSourceType.Company => account is Staff staff &&
-                staff.IsActive &&
-                staff.CompanyId == project.OwningEntityId,
-            ProjectSourceType.School => account is Teacher teacher &&
-                teacher.IsActive &&
-                teacher.SchoolId == project.OwningEntityId ||
-                account is Student student &&
-                student.IsActive &&
-                student.SchoolId == project.OwningEntityId,
+            User => true,
+            Staff staff => project.SourceType == ProjectSourceType.Company &&
+                           staff.IsActive && staff.CompanyId == project.OwningEntityId,
+            Student student => project.SourceType == ProjectSourceType.School &&
+                               student.IsActive && student.SchoolId == project.OwningEntityId,
             _ => false
         };
 

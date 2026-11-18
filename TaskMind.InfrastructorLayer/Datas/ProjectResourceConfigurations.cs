@@ -4,6 +4,44 @@ using TaskMind.DomainLayer.TaskMind.Domain.Entities;
 
 namespace TaskMind.InfrastructorLayer.Datas;
 
+public sealed class ProjectConfiguration : IEntityTypeConfiguration<Project>
+{
+    public void Configure(EntityTypeBuilder<Project> builder)
+    {
+        builder.HasMany(item => item.Members)
+            .WithOne()
+            .HasForeignKey("ProjectId")
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.Navigation(item => item.Members).UsePropertyAccessMode(PropertyAccessMode.Field);
+    }
+}
+
+public sealed class ProjectMemberConfiguration : IEntityTypeConfiguration<ProjectMember>
+{
+    public void Configure(EntityTypeBuilder<ProjectMember> builder)
+    {
+        builder.ToTable("ProjectMembers");
+        builder.HasOne<Account>().WithMany()
+            .HasForeignKey(item => item.AccountId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex("ProjectId", nameof(ProjectMember.AccountId))
+            .IsUnique()
+            .HasFilter("\"LeftAt\" IS NULL")
+            .HasDatabaseName("IX_ProjectMembers_ActiveProject_Account");
+    }
+}
+
+public sealed class ExchangeInvoiceConfiguration : IEntityTypeConfiguration<Invoice>
+{
+    public void Configure(EntityTypeBuilder<Invoice> builder)
+    {
+        builder.HasIndex(item => item.SourceRefId)
+            .IsUnique()
+            .HasFilter("\"SourceType\" = 0")
+            .HasDatabaseName("IX_Invoices_ExchangeFee_SourceRefId");
+    }
+}
+
 public sealed class ProjectRepositoryConfiguration : IEntityTypeConfiguration<ProjectRepository>
 {
     public void Configure(EntityTypeBuilder<ProjectRepository> builder)

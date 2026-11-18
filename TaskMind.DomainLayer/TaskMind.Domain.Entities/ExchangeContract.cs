@@ -66,10 +66,12 @@ namespace TaskMind.DomainLayer.TaskMind.Domain.Entities
             return Result<ExchangeContract>.Success(new ExchangeContract(projectId, partyAAccountId, partyBAccountId, contractValue, serviceFeePercent, paymentType));
         }
 
-        public Result Activate()
+        public Result Activate(Guid acceptingAccountId)
         {
             if (ContractStatus != ExchangeStatus.Negotiating)
                 return Result.Failure("Chỉ hợp đồng đang thương lượng mới có thể kích hoạt.");
+            if (acceptingAccountId == Guid.Empty || acceptingAccountId != PartyBAccountId)
+                return Result.Failure("Chỉ bên B mới có thể chấp nhận và kích hoạt hợp đồng.");
             ContractStatus = ExchangeStatus.Active;
             return Result.Success();
         }
@@ -78,10 +80,12 @@ namespace TaskMind.DomainLayer.TaskMind.Domain.Entities
         /// Hoàn tất giao dịch: hệ thống khấu trừ phí dịch vụ tự động (mục 4.14), phát sinh
         /// ExchangeContractCompletedEvent để Exchange & Billing context tạo Invoice (SourceType = ExchangeFee) tương ứng.
         /// </summary>
-        public Result Complete()
+        public Result Complete(Guid confirmingAccountId)
         {
             if (ContractStatus != ExchangeStatus.Active)
                 return Result.Failure("Chỉ hợp đồng đang hoạt động mới có thể hoàn tất.");
+            if (confirmingAccountId == Guid.Empty || confirmingAccountId != PartyBAccountId)
+                return Result.Failure("Chỉ bên B mới có thể xác nhận hoàn tất hợp đồng.");
 
             ContractStatus = ExchangeStatus.Completed;
             var serviceFee = ContractValue.Percentage(ServiceFeePercent);

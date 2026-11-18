@@ -70,8 +70,8 @@ namespace TaskMind.DomainLayer.TaskMind.Domain.Entities
 
         public Result MarkAsPaid()
         {
-            if (InvoiceStatus != InvoiceStatus.Issued)
-                return Result.Failure("Chỉ hoá đơn đã phát hành mới có thể được thanh toán.");
+            if (InvoiceStatus is not (InvoiceStatus.Issued or InvoiceStatus.Overdue))
+                return Result.Failure("Chỉ hoá đơn đã phát hành hoặc quá hạn mới có thể được thanh toán.");
 
             InvoiceStatus = InvoiceStatus.Paid;
             PaidAtUtc = DateTime.UtcNow;
