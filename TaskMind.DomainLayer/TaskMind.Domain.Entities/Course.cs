@@ -14,7 +14,6 @@ namespace TaskMind.DomainLayer.TaskMind.Domain.Entities
     {
         public Guid TeacherId { get; private set; }
         public Guid SchoolId { get; private set; }
-        public virtual School School { get; private set; } = default!;
 
         private readonly List<Guid> _studentIds = new();
         public IReadOnlyCollection<Guid> StudentIds => _studentIds.AsReadOnly();

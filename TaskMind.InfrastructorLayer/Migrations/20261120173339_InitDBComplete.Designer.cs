@@ -12,8 +12,8 @@ using TaskMind.InfrastructorLayer.Datas;
 namespace TaskMind.InfrastructorLayer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20261120172126_InitDB")]
-    partial class InitDB
+    [Migration("20261120173339_InitDBComplete")]
+    partial class InitDBComplete
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -206,6 +206,8 @@ namespace TaskMind.InfrastructorLayer.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("SubmissionId");
+
                     b.HasIndex("UserId");
 
                     b.HasIndex("VerificationCode")
@@ -308,6 +310,8 @@ namespace TaskMind.InfrastructorLayer.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
+                    b.HasIndex("RequestedByUserId");
+
                     b.HasIndex("TaxCode")
                         .IsUnique();
 
@@ -392,6 +396,18 @@ namespace TaskMind.InfrastructorLayer.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AssignedTestPaperId");
+
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("ResponsibleAccountId");
+
+                    b.HasIndex("SkillId");
+
+                    b.HasIndex("StaffAccountId");
+
+                    b.HasIndex("VerificationSubmissionId");
+
                     b.HasIndex("CompanyId", "RequestStatus");
 
                     b.HasIndex("UserId", "SkillId");
@@ -401,6 +417,40 @@ namespace TaskMind.InfrastructorLayer.Migrations
                         .HasFilter("\"RequestStatus\" IN (0, 1)");
 
                     b.ToTable("CompanySkillReflectionRequests");
+                });
+
+            modelBuilder.Entity("TaskMind.DomainLayer.TaskMind.Domain.Entities.Course", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreateAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("SchoolId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TeacherId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UpdateAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeacherId");
+
+                    b.HasIndex("SchoolId", "TeacherId");
+
+                    b.ToTable("Course");
                 });
 
             modelBuilder.Entity("TaskMind.DomainLayer.TaskMind.Domain.Entities.ExchangeContract", b =>
@@ -454,6 +504,8 @@ namespace TaskMind.InfrastructorLayer.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PartyBAccountId");
 
                     b.HasIndex("PartyAAccountId", "PartyBAccountId");
 
@@ -674,6 +726,8 @@ namespace TaskMind.InfrastructorLayer.Migrations
 
                     b.HasIndex("ChatId");
 
+                    b.HasIndex("SenderAccountId");
+
                     b.ToTable("Messages");
                 });
 
@@ -774,6 +828,10 @@ namespace TaskMind.InfrastructorLayer.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("InvitedByAccountId");
+
+                    b.HasIndex("InvitedUserId");
 
                     b.HasIndex("TokenHash")
                         .IsUnique();
@@ -1132,6 +1190,8 @@ namespace TaskMind.InfrastructorLayer.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
+                    b.HasIndex("RequestedByUserId");
+
                     b.HasIndex("IsVerified", "Status");
 
                     b.ToTable("Schools");
@@ -1259,6 +1319,14 @@ namespace TaskMind.InfrastructorLayer.Migrations
 
                     b.HasIndex("CompanyId");
 
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("RelatedSubmissionId");
+
+                    b.HasIndex("ResponsibleAccountId");
+
+                    b.HasIndex("SkillId");
+
                     b.HasIndex("UserId", "SkillId");
 
                     b.ToTable("SkillHistoryEntries");
@@ -1308,6 +1376,12 @@ namespace TaskMind.InfrastructorLayer.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ApproverAccountId");
+
+                    b.HasIndex("SkillId");
+
+                    b.HasIndex("SubmissionId");
 
                     b.HasIndex("UserId", "SkillId", "RequestStatus");
 
@@ -1378,6 +1452,8 @@ namespace TaskMind.InfrastructorLayer.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.HasIndex("TestPaperId", "UserId");
 
@@ -1662,8 +1738,37 @@ namespace TaskMind.InfrastructorLayer.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("TaskMind.DomainLayer.TaskMind.Domain.Entities.AuditLog", b =>
+                {
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.Account", null)
+                        .WithMany()
+                        .HasForeignKey("ActorAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TaskMind.DomainLayer.TaskMind.Domain.Entities.Certificate", b =>
+                {
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.Submission", null)
+                        .WithMany()
+                        .HasForeignKey("SubmissionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.Account", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("TaskMind.DomainLayer.TaskMind.Domain.Entities.Company", b =>
                 {
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("RequestedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.OwnsOne("TaskMind.DomainLayer.TaskMind.Domain.Commons.ObjectValues.Address", "Address", b1 =>
                         {
                             b1.Property<Guid>("CompanyId")
@@ -1693,8 +1798,89 @@ namespace TaskMind.InfrastructorLayer.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("TaskMind.DomainLayer.TaskMind.Domain.Entities.CompanySkillReflectionRequest", b =>
+                {
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.TestPaper", null)
+                        .WithMany()
+                        .HasForeignKey("AssignedTestPaperId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.Company", null)
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.Project", null)
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.Account", null)
+                        .WithMany()
+                        .HasForeignKey("ResponsibleAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.Skill", null)
+                        .WithMany()
+                        .HasForeignKey("SkillId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.Account", null)
+                        .WithMany()
+                        .HasForeignKey("StaffAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.Account", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.Submission", null)
+                        .WithMany()
+                        .HasForeignKey("VerificationSubmissionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("TaskMind.DomainLayer.TaskMind.Domain.Entities.Course", b =>
+                {
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.School", null)
+                        .WithMany()
+                        .HasForeignKey("SchoolId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.Account", null)
+                        .WithMany()
+                        .HasForeignKey("TeacherId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("TaskMind.DomainLayer.TaskMind.Domain.Entities.ExchangeContract", b =>
                 {
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.Account", null)
+                        .WithMany()
+                        .HasForeignKey("PartyAAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.Account", null)
+                        .WithMany()
+                        .HasForeignKey("PartyBAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.Project", null)
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.OwnsOne("TaskMind.DomainLayer.TaskMind.Domain.Commons.ObjectValues.Money", "ContractValue", b1 =>
                         {
                             b1.Property<Guid>("ExchangeContractId")
@@ -1745,6 +1931,30 @@ namespace TaskMind.InfrastructorLayer.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("TaskMind.DomainLayer.TaskMind.Domain.Entities.JobApplication", b =>
+                {
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.JobPosting", null)
+                        .WithMany()
+                        .HasForeignKey("JobPostingId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.Account", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TaskMind.DomainLayer.TaskMind.Domain.Entities.JobPosting", b =>
+                {
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.Company", null)
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("TaskMind.DomainLayer.TaskMind.Domain.Entities.LocalProjectWorkspace", b =>
                 {
                     b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.ProjectRevision", null)
@@ -1764,6 +1974,36 @@ namespace TaskMind.InfrastructorLayer.Migrations
                     b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.Chat", null)
                         .WithMany("Messages")
                         .HasForeignKey("ChatId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.Account", null)
+                        .WithMany()
+                        .HasForeignKey("SenderAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TaskMind.DomainLayer.TaskMind.Domain.Entities.Notification", b =>
+                {
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.Account", null)
+                        .WithMany()
+                        .HasForeignKey("RecipientAccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TaskMind.DomainLayer.TaskMind.Domain.Entities.OrganizationInvitation", b =>
+                {
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.Account", null)
+                        .WithMany()
+                        .HasForeignKey("InvitedByAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.Account", null)
+                        .WithMany()
+                        .HasForeignKey("InvitedUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -1922,6 +2162,15 @@ namespace TaskMind.InfrastructorLayer.Migrations
                     b.Navigation("Reviews");
                 });
 
+            modelBuilder.Entity("TaskMind.DomainLayer.TaskMind.Domain.Entities.Review", b =>
+                {
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.Account", null)
+                        .WithMany()
+                        .HasForeignKey("ReviewerAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("TaskMind.DomainLayer.TaskMind.Domain.Entities.RevisionPromotion", b =>
                 {
                     b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.ProjectRepository", null)
@@ -1939,6 +2188,12 @@ namespace TaskMind.InfrastructorLayer.Migrations
 
             modelBuilder.Entity("TaskMind.DomainLayer.TaskMind.Domain.Entities.School", b =>
                 {
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("RequestedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.OwnsOne("TaskMind.DomainLayer.TaskMind.Domain.Commons.ObjectValues.Address", "Address", b1 =>
                         {
                             b1.Property<Guid>("SchoolId")
@@ -1968,8 +2223,91 @@ namespace TaskMind.InfrastructorLayer.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("TaskMind.DomainLayer.TaskMind.Domain.Entities.SkillHistoryEntry", b =>
+                {
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.Company", null)
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.Project", null)
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.Submission", null)
+                        .WithMany()
+                        .HasForeignKey("RelatedSubmissionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.Account", null)
+                        .WithMany()
+                        .HasForeignKey("ResponsibleAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.Skill", null)
+                        .WithMany()
+                        .HasForeignKey("SkillId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.Account", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TaskMind.DomainLayer.TaskMind.Domain.Entities.SkillLevelUpRequest", b =>
+                {
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.Account", null)
+                        .WithMany()
+                        .HasForeignKey("ApproverAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.Skill", null)
+                        .WithMany()
+                        .HasForeignKey("SkillId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.Submission", null)
+                        .WithMany()
+                        .HasForeignKey("SubmissionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.Account", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TaskMind.DomainLayer.TaskMind.Domain.Entities.SkillProfile", b =>
+                {
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.User", null)
+                        .WithOne()
+                        .HasForeignKey("TaskMind.DomainLayer.TaskMind.Domain.Entities.SkillProfile", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("TaskMind.DomainLayer.TaskMind.Domain.Entities.Submission", b =>
                 {
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.TestPaper", null)
+                        .WithMany()
+                        .HasForeignKey("TestPaperId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TaskMind.DomainLayer.TaskMind.Domain.Entities.Account", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.OwnsMany("TaskMind.DomainLayer.TaskMind.Domain.Entities.SubmissionAnswer", "Answers", b1 =>
                         {
                             b1.Property<Guid>("Id")
