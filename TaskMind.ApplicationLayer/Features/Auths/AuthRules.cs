@@ -1,6 +1,6 @@
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
-using Microsoft.EntityFrameworkCore;
 using TaskMind.ApplicationLayer.Commons;
 using TaskMind.DomainLayer.TaskMind.Domain.Entities;
 using TaskMind.DomainLayer.TaskMind.Domain.Enums;

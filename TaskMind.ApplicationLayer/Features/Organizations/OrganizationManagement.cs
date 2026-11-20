@@ -1,10 +1,10 @@
-using Microsoft.EntityFrameworkCore;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using TaskMind.ApplicationLayer.Commons;
 using TaskMind.DomainLayer.TaskMind.Domain.Commons.ObjectValues;
 using TaskMind.DomainLayer.TaskMind.Domain.Entities;
 using TaskMind.DomainLayer.TaskMind.Domain.Enums;
-using Npgsql;
 
 namespace TaskMind.ApplicationLayer.Features.Organizations;
 

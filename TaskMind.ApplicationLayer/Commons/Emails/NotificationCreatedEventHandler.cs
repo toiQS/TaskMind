@@ -1,7 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using TaskMind.ApplicationLayer.Commons;
 using TaskMind.DomainLayer.TaskMind.Domain.Events;
 
 namespace TaskMind.ApplicationLayer.Commons.Emails;

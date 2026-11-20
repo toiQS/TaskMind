@@ -1,8 +1,8 @@
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
 using TaskMind.ApplicationLayer.Commons;
 using TaskMind.DomainLayer.TaskMind.Domain.Entities;
 using TaskMind.DomainLayer.TaskMind.Domain.Enums;
@@ -164,47 +164,47 @@ public sealed class AcceptOrganizationInvitationHandler :
         switch (invitation.MemberType)
         {
             case OrganizationMemberType.Staff:
-            {
-                if (!await _db.Companies.AnyAsync(item => item.Id == invitation.OrganizationId &&
-                        item.IsVerified && item.Status == EntityStatus.Active, ct))
-                    return ServiceResult<Guid>.Failure("Công ty đã ngừng hoạt động.");
-                if (await _db.Staffs.AnyAsync(item => item.CompanyId == invitation.OrganizationId &&
-                        item.LinkedUserId == user.Id && item.IsActive, ct))
-                    return ServiceResult<Guid>.Failure("Bạn đã là nhân sự đang hoạt động của công ty.");
-                var created = Staff.Create(user.Profile.CitizenId, user.Profile.Email,
-                    user.Security.PasswordHash, user.Id, invitation.OrganizationId);
-                if (!created.IsSuccess || created.Data is null) return ServiceResult<Guid>.Failure(created.Message);
-                member = created.Data;
-                break;
-            }
+                {
+                    if (!await _db.Companies.AnyAsync(item => item.Id == invitation.OrganizationId &&
+                            item.IsVerified && item.Status == EntityStatus.Active, ct))
+                        return ServiceResult<Guid>.Failure("Công ty đã ngừng hoạt động.");
+                    if (await _db.Staffs.AnyAsync(item => item.CompanyId == invitation.OrganizationId &&
+                            item.LinkedUserId == user.Id && item.IsActive, ct))
+                        return ServiceResult<Guid>.Failure("Bạn đã là nhân sự đang hoạt động của công ty.");
+                    var created = Staff.Create(user.Profile.CitizenId, user.Profile.Email,
+                        user.Security.PasswordHash, user.Id, invitation.OrganizationId);
+                    if (!created.IsSuccess || created.Data is null) return ServiceResult<Guid>.Failure(created.Message);
+                    member = created.Data;
+                    break;
+                }
             case OrganizationMemberType.Teacher:
-            {
-                if (!await _db.Schools.AnyAsync(item => item.Id == invitation.OrganizationId &&
-                        item.IsVerified && item.Status == EntityStatus.Active, ct))
-                    return ServiceResult<Guid>.Failure("Cơ sở đào tạo đã ngừng hoạt động.");
-                if (await _db.Teachers.AnyAsync(item => item.SchoolId == invitation.OrganizationId &&
-                        item.LinkedUserId == user.Id && item.IsActive, ct))
-                    return ServiceResult<Guid>.Failure("Bạn đã là giảng viên đang hoạt động của cơ sở đào tạo.");
-                var created = Teacher.Create(user.Profile.CitizenId, user.Profile.Email,
-                    user.Security.PasswordHash, user.Id, invitation.OrganizationId);
-                if (!created.IsSuccess || created.Data is null) return ServiceResult<Guid>.Failure(created.Message);
-                member = created.Data;
-                break;
-            }
+                {
+                    if (!await _db.Schools.AnyAsync(item => item.Id == invitation.OrganizationId &&
+                            item.IsVerified && item.Status == EntityStatus.Active, ct))
+                        return ServiceResult<Guid>.Failure("Cơ sở đào tạo đã ngừng hoạt động.");
+                    if (await _db.Teachers.AnyAsync(item => item.SchoolId == invitation.OrganizationId &&
+                            item.LinkedUserId == user.Id && item.IsActive, ct))
+                        return ServiceResult<Guid>.Failure("Bạn đã là giảng viên đang hoạt động của cơ sở đào tạo.");
+                    var created = Teacher.Create(user.Profile.CitizenId, user.Profile.Email,
+                        user.Security.PasswordHash, user.Id, invitation.OrganizationId);
+                    if (!created.IsSuccess || created.Data is null) return ServiceResult<Guid>.Failure(created.Message);
+                    member = created.Data;
+                    break;
+                }
             case OrganizationMemberType.Student:
-            {
-                if (!await _db.Schools.AnyAsync(item => item.Id == invitation.OrganizationId &&
-                        item.IsVerified && item.Status == EntityStatus.Active, ct))
-                    return ServiceResult<Guid>.Failure("Cơ sở đào tạo đã ngừng hoạt động.");
-                if (await _db.Students.AnyAsync(item => item.SchoolId == invitation.OrganizationId &&
-                        item.LinkedUserId == user.Id && item.IsActive, ct))
-                    return ServiceResult<Guid>.Failure("Bạn đã là học viên đang hoạt động của cơ sở đào tạo.");
-                var created = Student.Create(user.Profile.CitizenId, user.Profile.Email,
-                    user.Security.PasswordHash, user.Id, invitation.OrganizationId);
-                if (!created.IsSuccess || created.Data is null) return ServiceResult<Guid>.Failure(created.Message);
-                member = created.Data;
-                break;
-            }
+                {
+                    if (!await _db.Schools.AnyAsync(item => item.Id == invitation.OrganizationId &&
+                            item.IsVerified && item.Status == EntityStatus.Active, ct))
+                        return ServiceResult<Guid>.Failure("Cơ sở đào tạo đã ngừng hoạt động.");
+                    if (await _db.Students.AnyAsync(item => item.SchoolId == invitation.OrganizationId &&
+                            item.LinkedUserId == user.Id && item.IsActive, ct))
+                        return ServiceResult<Guid>.Failure("Bạn đã là học viên đang hoạt động của cơ sở đào tạo.");
+                    var created = Student.Create(user.Profile.CitizenId, user.Profile.Email,
+                        user.Security.PasswordHash, user.Id, invitation.OrganizationId);
+                    if (!created.IsSuccess || created.Data is null) return ServiceResult<Guid>.Failure(created.Message);
+                    member = created.Data;
+                    break;
+                }
             default:
                 return ServiceResult<Guid>.Failure("Vai trò lời mời không hợp lệ.");
         }

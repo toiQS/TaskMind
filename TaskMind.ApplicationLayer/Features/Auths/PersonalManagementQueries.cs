@@ -287,17 +287,17 @@ public sealed class ListMySkillLevelUpRequestsHandler :
     internal static PersonalSkillLevelUpRequestDto MapSkillLevelUpRequest(
         SkillLevelUpRequest request,
         IReadOnlyDictionary<Guid, string> skillNames) => new()
-    {
-        Id = request.Id,
-        SkillId = request.SkillId,
-        SkillName = skillNames.GetValueOrDefault(request.SkillId, string.Empty),
-        CurrentLevel = request.CurrentLevel.ToString(),
-        ApproverAccountId = request.ApproverAccountId,
-        RequestType = request.RequestType.ToString(),
-        SubmissionId = request.SubmissionId,
-        Status = request.RequestStatus.ToString(),
-        RejectionReason = request.RejectionReason
-    };
+        {
+            Id = request.Id,
+            SkillId = request.SkillId,
+            SkillName = skillNames.GetValueOrDefault(request.SkillId, string.Empty),
+            CurrentLevel = request.CurrentLevel.ToString(),
+            ApproverAccountId = request.ApproverAccountId,
+            RequestType = request.RequestType.ToString(),
+            SubmissionId = request.SubmissionId,
+            Status = request.RequestStatus.ToString(),
+            RejectionReason = request.RejectionReason
+        };
 }
 
 public sealed class GetMySkillLevelUpRequestHandler :

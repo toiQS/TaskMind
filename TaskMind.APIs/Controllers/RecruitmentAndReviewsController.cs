@@ -1,6 +1,6 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TaskMind.ApplicationLayer.Features.Auths;
 using TaskMind.ApplicationLayer.Features.Recruitment;
 using TaskMind.DomainLayer.TaskMind.Domain.Enums;

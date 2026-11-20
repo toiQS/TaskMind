@@ -173,7 +173,10 @@ public sealed class ListSkillProposalsHandler :
         return ServiceResult<PagedResultDto<SkillProposalItemDto>>.Success(
             new PagedResultDto<SkillProposalItemDto>
             {
-                Items = items, Page = query.Page, PageSize = query.PageSize, TotalCount = total
+                Items = items,
+                Page = query.Page,
+                PageSize = query.PageSize,
+                TotalCount = total
             });
     }
 }
@@ -474,7 +477,10 @@ public sealed class ListSkillReflectionRequestsHandler :
         return ServiceResult<PagedResultDto<SkillReflectionItemDto>>.Success(
             new PagedResultDto<SkillReflectionItemDto>
             {
-                Items = items, Page = query.Page, PageSize = query.PageSize, TotalCount = total
+                Items = items,
+                Page = query.Page,
+                PageSize = query.PageSize,
+                TotalCount = total
             });
     }
 }

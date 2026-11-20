@@ -1,8 +1,8 @@
-using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using System.Security.Claims;
 using TaskMind.ApplicationLayer.Features.Auths;
 
 namespace TaskMind.APIs.Controllers;

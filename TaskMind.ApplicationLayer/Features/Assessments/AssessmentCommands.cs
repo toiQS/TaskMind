@@ -2,7 +2,6 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TaskMind.ApplicationLayer.Commons;
 using TaskMind.ApplicationLayer.Features.Assessments.Dtos;
-using TaskMind.ApplicationLayer.Features.Auths;
 using TaskMind.DomainLayer.TaskMind.Domain.Entities;
 using TaskMind.DomainLayer.TaskMind.Domain.Enums;
 

@@ -1,7 +1,7 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using System.Text.Json;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 using TaskMind.ApplicationLayer.Features.Projects;
 using TaskMind.DomainLayer.TaskMind.Domain.Enums;
 

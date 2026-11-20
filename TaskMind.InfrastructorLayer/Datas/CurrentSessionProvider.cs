@@ -1,6 +1,6 @@
+using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using TaskMind.ApplicationLayer.Commons;
-using Microsoft.AspNetCore.Http;
 
 namespace TaskMind.InfrastructorLayer.Datas
 {

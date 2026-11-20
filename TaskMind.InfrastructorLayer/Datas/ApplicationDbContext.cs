@@ -61,11 +61,11 @@ namespace TaskMind.InfrastructorLayer.Datas
         public DbSet<JobPosting> JobPostings { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<OrganizationInvitation> OrganizationInvitations { get; set; }
-        public DbSet<AuditLog> AuditLogs { get; }
-        public DbSet<Review> Reviews { get; }
-        public DbSet<Certificate> Certificates { get; }
-        public DbSet<TestPaper> TestPapers { get; }
-        public DbSet<Submission> Submissions { get; }
+        public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+        public DbSet<Review> Reviews => Set<Review>();
+        public DbSet<Certificate> Certificates => Set<Certificate>();
+        public DbSet<TestPaper> TestPapers => Set<TestPaper>();
+        public DbSet<Submission> Submissions => Set<Submission>();
         public DbSet<CompanySkillReflectionRequest> CompanySkillReflectionRequests { get; set; }
         public DbSet<SkillHistoryEntry> SkillHistoryEntries { get; set; }
 

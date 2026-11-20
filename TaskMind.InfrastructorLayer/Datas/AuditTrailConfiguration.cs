@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System.Text.Json;
 using TaskMind.DomainLayer.TaskMind.Domain.Entities;
 
-namespace TaskMind.Infrastructor.Applications.Datas
+namespace TaskMind.InfrastructorLayer.Datas
 {
     public class AuditTrailConfiguration : IEntityTypeConfiguration<AuditTrail>
     {

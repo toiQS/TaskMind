@@ -1,6 +1,6 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TaskMind.ApplicationLayer.Features.Organizations;
 using TaskMind.DomainLayer.TaskMind.Domain.Enums;
 

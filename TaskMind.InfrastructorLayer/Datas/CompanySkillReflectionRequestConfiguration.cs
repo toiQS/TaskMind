@@ -10,11 +10,11 @@ public sealed class CompanySkillReflectionRequestConfiguration :
     public void Configure(EntityTypeBuilder<CompanySkillReflectionRequest> builder)
     {
         builder.HasIndex(request => new
-            {
-                request.CompanyId,
-                request.StaffAccountId,
-                request.SkillId
-            })
+        {
+            request.CompanyId,
+            request.StaffAccountId,
+            request.SkillId
+        })
             .IsUnique()
             .HasFilter("\"RequestStatus\" IN (0, 1)");
     }
