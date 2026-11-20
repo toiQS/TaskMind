@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using TaskMind.ApplicationLayer.Commons;
 
@@ -12,8 +13,32 @@ public sealed class ApplicationDbContextFactory : IDesignTimeDbContextFactory<Ap
     public ApplicationDbContext CreateDbContext(string[] args)
     {
         var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
-        var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__TaskMind")
-            ?? "Host=localhost;Database=TaskMind;Username=postgres";
+        var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
+        var searchDirectory = new DirectoryInfo(Directory.GetCurrentDirectory());
+        string? apiDirectory = null;
+        while (searchDirectory != null)
+        {
+            var candidate = Path.Combine(searchDirectory.FullName, "TaskMind.APIs");
+            if (Directory.Exists(candidate))
+            {
+                apiDirectory = candidate;
+                break;
+            }
+            searchDirectory = searchDirectory.Parent;
+        }
+        apiDirectory ??= Directory.GetCurrentDirectory();
+
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(apiDirectory)
+            .AddJsonFile("appsettings.json", optional: true)
+            .AddJsonFile($"appsettings.{environment}.json", optional: true)
+            .AddEnvironmentVariables()
+            .Build();
+        var connectionString = configuration.GetConnectionString("PostgreConnectString");
+        if (string.IsNullOrWhiteSpace(connectionString))
+            throw new InvalidOperationException(
+                "ConnectionStrings:PostgreConnectString must be configured for EF Core design-time operations.");
+
         optionsBuilder.UseNpgsql(connectionString);
 
         return new ApplicationDbContext(

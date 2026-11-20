@@ -1,0 +1,108 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Style x:Key="PrimaryButton" TargetType="Button">
+        <Setter Property="Background" Value="#4D9FFF" />
+        <Setter Property="Foreground" Value="#06111F" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="18,12" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="ButtonBorder" Background="{TemplateBinding Background}" CornerRadius="9">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                          Margin="{TemplateBinding Padding}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="ButtonBorder" Property="Background" Value="#78B8FF" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="QuietButton" TargetType="Button">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="#9AAAC2" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Cursor" Value="Hand" />
+    </Style>
+
+    <Style x:Key="LinkButton" TargetType="Button" BasedOn="{StaticResource QuietButton}">
+        <Setter Property="Foreground" Value="#4D9FFF" />
+    </Style>
+
+    <Style x:Key="IconButton" TargetType="Button" BasedOn="{StaticResource QuietButton}">
+        <Setter Property="FontSize" Value="17" />
+    </Style>
+
+    <Style x:Key="NavButton" TargetType="Button">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="#9AAAC2" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="Padding" Value="15,12" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="NavBorder" Background="{TemplateBinding Background}" CornerRadius="9">
+                        <ContentPresenter Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="NavBorder" Property="Background" Value="#18263B" />
+                            <Setter Property="Foreground" Value="#EAF1FA" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="OverviewNavButton" TargetType="Button" BasedOn="{StaticResource NavButton}">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsOverviewSelected}" Value="True">
+                <Setter Property="Background" Value="#142743" />
+                <Setter Property="Foreground" Value="#4D9FFF" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="ProjectsNavButton" TargetType="Button" BasedOn="{StaticResource NavButton}">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsProjectsSelected}" Value="True">
+                <Setter Property="Background" Value="#142743" />
+                <Setter Property="Foreground" Value="#4D9FFF" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="SkillsNavButton" TargetType="Button" BasedOn="{StaticResource NavButton}">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsSkillsSelected}" Value="True">
+                <Setter Property="Background" Value="#142743" />
+                <Setter Property="Foreground" Value="#4D9FFF" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="ProfileNavButton" TargetType="Button" BasedOn="{StaticResource NavButton}">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsProfileSelected}" Value="True">
+                <Setter Property="Background" Value="#142743" />
+                <Setter Property="Foreground" Value="#4D9FFF" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+</ResourceDictionary>

@@ -1,6 +1,7 @@
 <Solution>
   <Project Path="TaskMind.APIs/TaskMind.APIs.csproj" />
   <Project Path="TaskMind.ApplicationLayer/TaskMind.ApplicationLayer.csproj" Id="b75b0d07-21c3-4f79-888c-092a8c710d36" />
+  <Project Path="TaskMind.Apps/TaskMind.Apps.csproj" Id="949fbbd0-1a19-4878-b3f4-8e1564de1aef" />
   <Project Path="TaskMind.Aspires/TaskMind.Aspires.AppHost/TaskMind.Aspires.AppHost.csproj" Id="69f6e426-8104-40fd-aa83-37b97a0cecce" />
   <Project Path="TaskMind.Aspires/TaskMind.Aspires.ServiceDefaults/TaskMind.Aspires.ServiceDefaults.csproj" />
   <Project Path="TaskMind.DomainLayer/TaskMind.DomainLayer.csproj" Id="9faa4cd9-adae-46b5-8649-204e9ad8ade9" />
